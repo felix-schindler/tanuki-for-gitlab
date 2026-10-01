@@ -5,7 +5,6 @@
 //  Created by Felix Schindler on 26.02.24.
 //
 
-
 import Apollo
 import ApolloAPI
 import Foundation
@@ -157,6 +156,7 @@ class InstanceManager {
 enum WatchAuthError: LocalizedError {
 	case noInstance
 	case sessionExpired
+	case refreshFailed
 
 	var errorDescription: String? {
 		switch self {
@@ -164,6 +164,8 @@ enum WatchAuthError: LocalizedError {
 			return "No instance selected. Add an instance on iPhone first."
 		case .sessionExpired:
 			return "Session expired. Please open Tanuki on iPhone to log in again."
+		case .refreshFailed:
+			return "Token refresh failed. Please check your connection and try again."
 		}
 	}
 }
@@ -279,7 +281,11 @@ final class WatchAuth {
 
 		let (data, response) = try await URLSession.shared.data(for: request)
 		guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-			throw WatchAuthError.sessionExpired
+			let status = (response as? HTTPURLResponse)?.statusCode
+			if status == 400 || status == 401 {
+				throw WatchAuthError.sessionExpired
+			}
+			throw WatchAuthError.refreshFailed
 		}
 
 		let decoder = JSONDecoder()
@@ -310,7 +316,10 @@ final class WatchAuth {
 	}
 
 	nonisolated private static func isUnrecoverable(_ error: Error) -> Bool {
-		return error is WatchAuthError
+		if let authError = error as? WatchAuthError, case .sessionExpired = authError {
+			return true
+		}
+		return false
 	}
 }
 
