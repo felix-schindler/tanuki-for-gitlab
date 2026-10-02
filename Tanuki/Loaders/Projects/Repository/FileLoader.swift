@@ -21,7 +21,7 @@ struct FileLoader: View {
 	private var file: Result<Data, Error>? = nil
 
 	@State
-	private var videoURL: URL? = nil
+	private var localURL: URL? = nil
 
 	init(
 		id: Int,
@@ -49,54 +49,101 @@ struct FileLoader: View {
 			}
 
 			self.file = .success(data)
-			self.videoURL =
-				Formats.videoFormats.contains(fileExtension)
-				? FileLoader.writeTemporaryVideo(data, fileExtension: fileExtension) : nil
+			self.localURL = FileLoader.writeTemporaryFile(
+				data,
+				fileName: filePath.components(separatedBy: "/").last ?? filePath
+			)
 		} catch let error {
 			self.file = .failure(error)
-			self.videoURL = nil
+			self.localURL = nil
 			Notify.status(.error)
 		}
 	}
 
-	private static func writeTemporaryVideo(_ data: Data, fileExtension: String) -> URL? {
-		#if canImport(AVKit)
-			let url = FileManager.default.temporaryDirectory
-				.appendingPathComponent("tanuki-\(UUID().uuidString).\(fileExtension)")
-			do {
-				try data.write(to: url)
-				return url
-			} catch {
-				return nil
-			}
-		#else
+	private var isPDF: Bool {
+		Formats.pdfFormats.contains(fileExtension)
+	}
+
+	private static var temporaryDirectory: URL {
+		FileManager.default.temporaryDirectory
+			.appendingPathComponent("tanuki-files", isDirectory: true)
+	}
+
+	private static func writeTemporaryFile(_ data: Data, fileName: String) -> URL? {
+		let directory = temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+
+		do {
+			try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+			let url = directory.appendingPathComponent(fileName)
+			try data.write(to: url)
+			purgeTemporaryFiles()
+			return url
+		} catch {
 			return nil
-		#endif
+		}
+	}
+
+	private static func purgeTemporaryFiles() {
+		let staleBefore = Date().addingTimeInterval(-24 * 60 * 60)
+
+		guard
+			let entries = try? FileManager.default.contentsOfDirectory(
+				at: temporaryDirectory,
+				includingPropertiesForKeys: [.contentModificationDateKey]
+			)
+		else {
+			return
+		}
+
+		for entry in entries {
+			let modified = try? entry.resourceValues(forKeys: [.contentModificationDateKey])
+				.contentModificationDate
+			if let modified, modified < staleBefore {
+				try? FileManager.default.removeItem(at: entry)
+			}
+		}
 	}
 
 	public var body: some View {
-		ScrollView {
-			VStack(alignment: .leading) {
-				if Formats.audioFormats.contains(fileExtension) {
-					unavailable("Can't preview this \(fileExtension) audio file", systemImage: "play")
-				} else if Formats.videoFormats.contains(fileExtension) {
-					videoPreview
-				} else if Formats.imageFormats.contains(fileExtension) {
-					imagePreview
-				} else if Formats.binaryFormats.contains(fileExtension) {
-					unavailable("Can't preview this \(fileExtension) file", systemImage: "doc.zipper")
-				} else {
-					textPreview
+		Group {
+			if isPDF {
+				pdfPreview
+			} else {
+				ScrollView {
+					VStack(alignment: .leading) {
+						preview
+						Spacer()
+					}
+					.padding(.horizontal)
+					.frame(maxWidth: .infinity)
+				}.refreshable {
+					await loadFile()
 				}
-				Spacer()
 			}
-			.padding(.horizontal)
-			.frame(maxWidth: .infinity)
 		}.task {
 			await loadFile()
-		}.refreshable {
-			await loadFile()
+		}.toolbar {
+			if let localURL {
+				ShareButton(localURL)
+			}
 		}.navigationTitle(filePath)
+	}
+
+	@ViewBuilder
+	private var preview: some View {
+		if Formats.audioFormats.contains(fileExtension) {
+			unavailable("Can't preview this \(fileExtension) audio file", systemImage: "play")
+		} else if Formats.videoFormats.contains(fileExtension) {
+			videoPreview
+		} else if Formats.imageFormats.contains(fileExtension) {
+			imagePreview
+		} else if isPDF {
+			pdfPreview
+		} else if Formats.binaryFormats.contains(fileExtension) {
+			unavailable("Can't preview this \(fileExtension) file", systemImage: "doc.zipper")
+		} else {
+			textPreview
+		}
 	}
 
 	@ViewBuilder
@@ -123,8 +170,8 @@ struct FileLoader: View {
 	@ViewBuilder
 	private var videoPreview: some View {
 		#if canImport(AVKit)
-			if let videoURL {
-				VideoPlayer(player: AVPlayer(url: videoURL))
+			if let localURL {
+				VideoPlayer(player: AVPlayer(url: localURL))
 			} else if let file {
 				switch file {
 				case .success:
@@ -137,6 +184,28 @@ struct FileLoader: View {
 			}
 		#else
 			unavailable("Can't preview this \(fileExtension) video file", systemImage: "play")
+		#endif
+	}
+
+	@ViewBuilder
+	private var pdfPreview: some View {
+		#if canImport(PDFKit)
+			if let file {
+				switch file {
+				case .success:
+					if let localURL {
+						PDFPreview(url: localURL)
+					} else {
+						unavailable("Can't preview this \(fileExtension) file", systemImage: "doc.richtext")
+					}
+				case .failure(let error):
+					FailedView(error)
+				}
+			} else {
+				LoadingView("Loading file", systemImage: "doc.richtext")
+			}
+		#else
+			unavailable("Can't preview this \(fileExtension) file", systemImage: "doc.richtext")
 		#endif
 	}
 
