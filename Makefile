@@ -8,7 +8,7 @@ APOLLO_CONFIG := ./apollo-codegen-config.json
 APOLLO_CLI := ./apollo-ios-cli
 APOLLO_URL := https://github.com/apollographql/apollo-ios/releases/latest/download/apollo-ios-cli.tar.gz
 
-.PHONY: help fmt lint check install-apollo-cli fetch-schema generate-apollo
+.PHONY: help fmt lint check install-apollo-cli fetch-schema generate
 
 help:
 	@printf 'make fmt                 format sources in place\n'
@@ -16,7 +16,7 @@ help:
 	@printf 'make check               format, then lint\n'
 	@printf 'make install-apollo-cli  download latest apollo-ios-cli\n'
 	@printf 'make fetch-schema        refetch gitlab@current.graphqls\n'
-	@printf 'make generate-apollo     regenerate GitLabAPI\n'
+	@printf 'make generate            regenerate GitLabAPI\n'
 
 fmt:
 	$(SWIFT) format -p -r -i --configuration '$(CONFIG)' $(SOURCES)
@@ -38,7 +38,7 @@ install-apollo-cli: $(APOLLO_CLI)
 fetch-schema: | $(APOLLO_CLI)
 	$(APOLLO_CLI) fetch-schema --path $(APOLLO_CONFIG)
 
-generate-apollo: | $(APOLLO_CLI)
+generate: | $(APOLLO_CLI)
 	$(APOLLO_CLI) generate --path $(APOLLO_CONFIG)
 
 $(APOLLO_CLI):

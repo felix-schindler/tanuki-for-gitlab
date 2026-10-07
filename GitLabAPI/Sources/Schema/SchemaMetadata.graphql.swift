@@ -73,6 +73,7 @@ nonisolated public enum SchemaMetadata: ApolloAPI.SchemaMetadata {
     "ProjectMember": GitLabAPI.Objects.ProjectMember,
     "ProjectMemberConnection": GitLabAPI.Objects.ProjectMemberConnection,
     "ProjectPermissions": GitLabAPI.Objects.ProjectPermissions,
+    "ProjectStatistics": GitLabAPI.Objects.ProjectStatistics,
     "Query": GitLabAPI.Objects.Query,
     "Release": GitLabAPI.Objects.Release,
     "ReleaseAssetLink": GitLabAPI.Objects.ReleaseAssetLink,

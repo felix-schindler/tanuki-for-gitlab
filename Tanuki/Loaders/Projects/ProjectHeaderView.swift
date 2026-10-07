@@ -32,7 +32,6 @@ struct ProjectHeaderView: View {
 				if let avatarUrl = URL.fromAvatar(project.avatarUrl) {
 					AvatarImage(avatarUrl, size: .medium)
 				}
-				Spacer()
 				Text(project.name.emojized())
 					.font(.title)
 					.fontWeight(.bold)
@@ -62,15 +61,17 @@ struct ProjectHeaderView: View {
 						}
 					}
 				}
+			}.font(.footnote)
 
-				if let createdAt = project.createdAt {
-					Spacer()
-					Text(
-						Date.fromToString(
-							createdAt,
-							dateStyle: .short
-						)
-					)
+			ScrollView(.horizontal) {
+				HStack {
+					if let repositorySize = project.statistics?.repositorySize {
+						PillView(ByteFormatter.shared.format(repositorySize))
+					}
+
+					if let createdAt = project.createdAt {
+						PillView(Date.fromToString(createdAt, dateStyle: .short))
+					}
 				}
 			}.font(.footnote)
 

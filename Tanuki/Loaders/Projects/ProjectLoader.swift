@@ -242,9 +242,13 @@ struct ProjectLoader: View {
 										)
 
 										NavigationLink(
-											"Commits",
-											destination: CommitsLoader(projectId, refName: ref)
-										)
+											destination: CommitsLoader(projectId, refName: ref),
+											label: {
+												Text("Commits")
+												if let commitCount = project.statistics?.commitCount {
+													Text("\(Int(commitCount))")
+												}
+											})
 									}
 
 									NavigationLink(
