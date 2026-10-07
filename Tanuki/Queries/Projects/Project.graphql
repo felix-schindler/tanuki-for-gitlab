@@ -27,6 +27,12 @@ query Project($fullPath: ID!) {
       commitCount
       repositorySize
     }
+    releases {
+      count
+    }
+    labels {
+      count
+    }
     repository {
       rootRef
       readme: blobs(paths: ["README.md", "README", "README.txt"], first: 1) {

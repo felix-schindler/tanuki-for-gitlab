@@ -206,12 +206,20 @@ struct ProjectLoader: View {
 										)
 									)
 									NavigationLink(
-										"Labels",
 										destination: LabelsLoader(
 											fullPath: self.fullPath,
 											id: projectId,
 											queryType: .project
-										)
+										),
+										label: {
+											HStack {
+												Text("Labels")
+												if let count = project.labels?.count {
+													Spacer()
+													Text("\(count)")
+												}
+											}
+										}
 									)
 									NavigationLink(
 										"Milestones",
@@ -244,9 +252,12 @@ struct ProjectLoader: View {
 										NavigationLink(
 											destination: CommitsLoader(projectId, refName: ref),
 											label: {
-												Text("Commits")
-												if let commitCount = project.statistics?.commitCount {
-													Text("\(Int(commitCount))")
+												HStack {
+													Text("Commits")
+													if let commitCount = project.statistics?.commitCount {
+														Spacer()
+														Text("\(Int(commitCount))")
+													}
 												}
 											})
 									}
@@ -277,9 +288,17 @@ struct ProjectLoader: View {
 									destination: ProjectPipelinesLoader(fullPath: self.fullPath)
 								)
 								NavigationLink(
-									"Releases",
 									destination: ProjectReleasesLoader(
-										fullPath: self.fullPath, projectId: project.id.toIntId())
+										fullPath: self.fullPath, projectId: project.id.toIntId()),
+									label: {
+										HStack {
+											Text("Releases")
+											if let count = project.releases?.count {
+												Spacer()
+												Text("\(count)")
+											}
+										}
+									}
 								)
 							},
 							label: {

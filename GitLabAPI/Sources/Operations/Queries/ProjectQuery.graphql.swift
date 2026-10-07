@@ -8,7 +8,7 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
   public static let operationName: String = "Project"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query Project($fullPath: ID!) { project(fullPath: $fullPath) { __typename id avatarUrl name visibility description topics starCount forksCount issuesEnabled openIssuesCount mergeRequestsEnabled jobsEnabled openMergeRequestsCount webUrl httpUrlToRepo sshUrlToRepo createdAt archived namespace { __typename id name fullPath } statistics { __typename commitCount repositorySize } repository { __typename rootRef readme: blobs(paths: ["README.md", "README", "README.txt"], first: 1) { __typename nodes { __typename rawTextBlob } } license: blobs( paths: ["LICENSE", "LICENSE.txt", "LICENSE.md", "COPYING"] first: 1 ) { __typename nodes { __typename rawTextBlob } } contributing: blobs( paths: ["CONTRIBUTING", "CONTRIBUTING.txt", "CONTRIBUTING.md"] first: 1 ) { __typename nodes { __typename rawTextBlob } } tree { __typename lastCommit { __typename id title shortId authorName authoredDate webUrl signature { __typename verificationStatus } pipelines { __typename nodes { __typename status } } } } } languages { __typename name share color } userPermissions { __typename createIssue forkProject requestAccess } } }"#
+      #"query Project($fullPath: ID!) { project(fullPath: $fullPath) { __typename id avatarUrl name visibility description topics starCount forksCount issuesEnabled openIssuesCount mergeRequestsEnabled jobsEnabled openMergeRequestsCount webUrl httpUrlToRepo sshUrlToRepo createdAt archived namespace { __typename id name fullPath } statistics { __typename commitCount repositorySize } releases { __typename count } labels { __typename count } repository { __typename rootRef readme: blobs(paths: ["README.md", "README", "README.txt"], first: 1) { __typename nodes { __typename rawTextBlob } } license: blobs( paths: ["LICENSE", "LICENSE.txt", "LICENSE.md", "COPYING"] first: 1 ) { __typename nodes { __typename rawTextBlob } } contributing: blobs( paths: ["CONTRIBUTING", "CONTRIBUTING.txt", "CONTRIBUTING.md"] first: 1 ) { __typename nodes { __typename rawTextBlob } } tree { __typename lastCommit { __typename id title shortId authorName authoredDate webUrl signature { __typename verificationStatus } pipelines { __typename nodes { __typename status } } } } } languages { __typename name share color } userPermissions { __typename createIssue forkProject requestAccess } } }"#
     ))
 
   public var fullPath: ID
@@ -64,6 +64,8 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
         .field("archived", Bool?.self),
         .field("namespace", Namespace?.self),
         .field("statistics", Statistics?.self),
+        .field("releases", Releases?.self),
+        .field("labels", Labels?.self),
         .field("repository", Repository?.self),
         .field("languages", [Language]?.self),
         .field("userPermissions", UserPermissions.self),
@@ -112,6 +114,10 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
       public var namespace: Namespace? { __data["namespace"] }
       /// Statistics of the project.
       public var statistics: Statistics? { __data["statistics"] }
+      /// Releases of the project.
+      public var releases: Releases? { __data["releases"] }
+      /// Labels available on this project.
+      public var labels: Labels? { __data["labels"] }
       /// Git repository of the project.
       public var repository: Repository? { __data["repository"] }
       /// Programming languages used in the project.
@@ -166,6 +172,46 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
         public var commitCount: Double { __data["commitCount"] }
         /// Repository size of the project in bytes.
         public var repositorySize: Double { __data["repositorySize"] }
+      }
+
+      /// Project.Releases
+      ///
+      /// Parent Type: `ReleaseConnection`
+      nonisolated public struct Releases: GitLabAPI.SelectionSet {
+        @_spi(Unsafe) public let __data: DataDict
+        @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+        @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.ReleaseConnection }
+        @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+          .field("__typename", String.self),
+          .field("count", Int.self),
+        ] }
+        @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+          ProjectQuery.Data.Project.Releases.self
+        ] }
+
+        /// Total count of collection.
+        public var count: Int { __data["count"] }
+      }
+
+      /// Project.Labels
+      ///
+      /// Parent Type: `LabelConnection`
+      nonisolated public struct Labels: GitLabAPI.SelectionSet {
+        @_spi(Unsafe) public let __data: DataDict
+        @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+        @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.LabelConnection }
+        @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+          .field("__typename", String.self),
+          .field("count", Int.self),
+        ] }
+        @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+          ProjectQuery.Data.Project.Labels.self
+        ] }
+
+        /// Total count of collection.
+        public var count: Int { __data["count"] }
       }
 
       /// Project.Repository
