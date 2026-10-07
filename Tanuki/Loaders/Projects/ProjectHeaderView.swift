@@ -156,7 +156,9 @@ struct ProjectHeaderView: View {
 						Color(hex: $0.color) ?? .accentColor
 					}
 				)
-				.frame(height: 30)
+				.chartPlotStyle { plotArea in
+					plotArea.frame(height: 10)
+				}
 			}
 		}
 	}
