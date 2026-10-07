@@ -11,6 +11,7 @@
 		DC2511E22E7F4C7E0021371C /* Tanuki Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = DC2511D82E7F4C7D0021371C /* Tanuki Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DC3A24542B8C3F5800DB0E3F /* NVMColor in Frameworks */ = {isa = PBXBuildFile; productRef = DC3A24532B8C3F5800DB0E3F /* NVMColor */; };
 		DC42A2112C62D36E00B1EA85 /* HighlightedTextEditor in Frameworks */ = {isa = PBXBuildFile; productRef = DC42A2102C62D36E00B1EA85 /* HighlightedTextEditor */; };
+		DC53A0D32F9D000100000003 /* TanukiIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = DC53A0D22F9D000100000002 /* TanukiIcon.icon */; };
 		DC5AD7CF2E697E4B0031FC7B /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = DC5AD7CE2E697E4B0031FC7B /* Apollo */; };
 		DC5AD7D12E697E4B0031FC7B /* ApolloAPI in Frameworks */ = {isa = PBXBuildFile; productRef = DC5AD7D02E697E4B0031FC7B /* ApolloAPI */; };
 		DC5AD7D32E697E4B0031FC7B /* ApolloSQLite in Frameworks */ = {isa = PBXBuildFile; productRef = DC5AD7D22E697E4B0031FC7B /* ApolloSQLite */; };
@@ -24,7 +25,6 @@
 		DCAE856B2FA0D20000F64C2B /* Textual in Frameworks */ = {isa = PBXBuildFile; productRef = DCAE856D2FA0D20000F64C2B /* Textual */; };
 		DCAE856C2FA0D20000F64C2B /* MarkdownView in Frameworks */ = {isa = PBXBuildFile; productRef = DCAE856E2FA0D20000F64C2B /* MarkdownView */; };
 		DCAF9D9F2BC3755F001FF2E5 /* Highlightr in Frameworks */ = {isa = PBXBuildFile; productRef = DCAF9D9E2BC3755F001FF2E5 /* Highlightr */; };
-		DC53A0D32F9D000100000003 /* TanukiIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = DC53A0D22F9D000100000002 /* TanukiIcon.icon */; };
 		DCBC8B402F2C01DD00700380 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = DCBC8B3F2F2C01DD00700380 /* Settings.bundle */; };
 		DCBC8B412F2C01DD00700380 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = DCBC8B3F2F2C01DD00700380 /* Settings.bundle */; };
 		DCD225042E696BC8002256F0 /* GitLabAPI in Frameworks */ = {isa = PBXBuildFile; productRef = DCD225032E696BC8002256F0 /* GitLabAPI */; };
@@ -63,7 +63,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		DC53A0D12F9D000100000001 /* Exceptions for "Tanuki" folder in "Tanuki" target */ = {
+		DC53A0D12F9D000100000001 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -74,16 +74,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		DC2511D92E7F4C7D0021371C /* Tanuki Watch App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Tanuki Watch App"; sourceTree = "<group>"; };
-		DC4A1F76307661B8004A9B30 /* Tanuki */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				DC53A0D12F9D000100000001 /* Exceptions for "Tanuki" folder in "Tanuki" target */,
-			);
-			explicitFileTypes = {};
-			explicitFolders = ();
-			path = Tanuki;
-			sourceTree = "<group>";
-		};
+		DC4A1F76307661B8004A9B30 /* Tanuki */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (DC53A0D12F9D000100000001 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Tanuki; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */

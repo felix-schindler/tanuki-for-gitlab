@@ -139,6 +139,32 @@ class Auth {
 		try await Network.shared.apollo.store.clearCache()
 	}
 
+	// MARK: - Initial login (OAuth)
+
+	/// Exchanges the authorization code returned by ``OAuth`` for a token pair.
+	public static func exchangeAuthorizationCode(
+		code: String,
+		codeVerifier: String,
+		host: String
+	) async throws -> OAuthToken {
+		try await API.req(
+			type: OAuthToken.self,
+			method: .post,
+			endpoint: "oauth/token",
+			body: [
+				"client_id": Auth.clientID,
+				"code": code,
+				"grant_type": "authorization_code",
+				"redirect_uri": Auth.redirectUri,
+				"code_verifier": codeVerifier,
+			],
+			contentType: .formUrlEncoded,
+			auth: false,
+			useBase: false,
+			host: host
+		)
+	}
+
 	// MARK: - Token refresh (OAuth)
 	private static var refreshTask: Task<OAuthToken, Error>?
 
