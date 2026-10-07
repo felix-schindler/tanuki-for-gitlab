@@ -12,14 +12,11 @@ struct SetupView: View {
 	@Environment(\.openURL) private var openURL
 
 	/// For CSRF protection
-	private let state: String
-	private let codeVerifier: String
-	private let codeChallenge: String
+	@State private var state = UUID().uuidString
+	@State private var codeVerifier = Auth.generateCodeVerifier()
 
-	public init() {
-		self.state = UUID().uuidString
-		self.codeVerifier = Auth.generateCodeVerifier()
-		self.codeChallenge = Auth.generateCodeChallenge(codeVerifier: self.codeVerifier)
+	private var codeChallenge: String {
+		Auth.generateCodeChallenge(codeVerifier: self.codeVerifier)
 	}
 
 	public var body: some View {
@@ -100,8 +97,6 @@ struct SetupView: View {
 				if let code = queryItems?.first(where: { $0.name == "code" })?.value,
 					let state = queryItems?.first(where: { $0.name == "state" })?.value
 				{
-					print(code, state)
-
 					if state == self.state {
 						Task {
 							do {
