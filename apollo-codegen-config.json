@@ -3,7 +3,7 @@
 	"schemaDownload": {
 		"downloadMethod": {
 			"introspection": {
-				"endpointURL": "https://gitlab-r4rdhzkjzpp2pgieb4hobl8i.schindlerfelix.de/api/graphql",
+				"endpointURL": "https://gitlab.schindlerfelix.de/api/graphql",
 				"httpMethod": {
 					"POST": {}
 				},

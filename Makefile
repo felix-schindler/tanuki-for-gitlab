@@ -16,7 +16,7 @@ help:
 	@printf 'make check               format, then lint\n'
 	@printf 'make install-apollo-cli  download latest apollo-ios-cli\n'
 	@printf 'make fetch-schema        refetch gitlab@current.graphqls\n'
-	@printf 'make generate-apollo     fetch schema and regenerate GitLabAPI\n'
+	@printf 'make generate-apollo     regenerate GitLabAPI\n'
 
 fmt:
 	$(SWIFT) format -p -r -i --configuration '$(CONFIG)' $(SOURCES)
@@ -38,7 +38,7 @@ install-apollo-cli: $(APOLLO_CLI)
 fetch-schema: | $(APOLLO_CLI)
 	$(APOLLO_CLI) fetch-schema --path $(APOLLO_CONFIG)
 
-generate-apollo: fetch-schema | $(APOLLO_CLI)
+generate-apollo: | $(APOLLO_CLI)
 	$(APOLLO_CLI) generate --path $(APOLLO_CONFIG)
 
 $(APOLLO_CLI):
