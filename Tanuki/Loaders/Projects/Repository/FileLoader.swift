@@ -105,7 +105,7 @@ struct FileLoader: View {
 	}
 
 	public var body: some View {
-		Group {
+		SwiftUI.Group {
 			if isPDF {
 				pdfPreview
 			} else {
@@ -169,44 +169,36 @@ struct FileLoader: View {
 
 	@ViewBuilder
 	private var videoPreview: some View {
-		#if canImport(AVKit)
-			if let localURL {
-				VideoPlayer(player: AVPlayer(url: localURL))
-			} else if let file {
-				switch file {
-				case .success:
-					unavailable("Can't preview this \(fileExtension) video file", systemImage: "play")
-				case .failure(let error):
-					FailedView(error)
-				}
-			} else {
-				LoadingView("Loading file", systemImage: "play")
+		if let localURL {
+			VideoPlayer(player: AVPlayer(url: localURL))
+		} else if let file {
+			switch file {
+			case .success:
+				unavailable("Can't preview this \(fileExtension) video file", systemImage: "play")
+			case .failure(let error):
+				FailedView(error)
 			}
-		#else
-			unavailable("Can't preview this \(fileExtension) video file", systemImage: "play")
-		#endif
+		} else {
+			LoadingView("Loading file", systemImage: "play")
+		}
 	}
 
 	@ViewBuilder
 	private var pdfPreview: some View {
-		#if canImport(PDFKit)
-			if let file {
-				switch file {
-				case .success:
-					if let localURL {
-						PDFPreview(url: localURL)
-					} else {
-						unavailable("Can't preview this \(fileExtension) file", systemImage: "doc.richtext")
-					}
-				case .failure(let error):
-					FailedView(error)
+		if let file {
+			switch file {
+			case .success:
+				if let localURL {
+					PDFPreview(url: localURL)
+				} else {
+					unavailable("Can't preview this \(fileExtension) file", systemImage: "doc.richtext")
 				}
-			} else {
-				LoadingView("Loading file", systemImage: "doc.richtext")
+			case .failure(let error):
+				FailedView(error)
 			}
-		#else
-			unavailable("Can't preview this \(fileExtension) file", systemImage: "doc.richtext")
-		#endif
+		} else {
+			LoadingView("Loading file", systemImage: "doc.richtext")
+		}
 	}
 
 	@ViewBuilder
