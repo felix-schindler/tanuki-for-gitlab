@@ -22,6 +22,20 @@ struct MergeRequestLoader: View {
 		self.iid = iid
 	}
 
+	private func handleGraphQLErrors(_ errors: [any Error]?) {
+		guard let errors, !errors.isEmpty else { return }
+
+		let messages = errors.map(\.localizedDescription)
+		Notify.status(
+			.error, "Couldn't load merge request !\(iid)", messages.first,
+			systemImage: "exclamationmark.triangle")
+
+		if project == nil {
+			self.project = .failure(
+				ProjectLoadError(fullPath: "\(fullPath) !\(iid)", messages: messages))
+		}
+	}
+
 	private func loadMergeRequest() {
 		do {
 			let responses = try Network.shared.apollo.fetch(
@@ -33,16 +47,13 @@ struct MergeRequestLoader: View {
 				for try await response in responses {
 					if let project = response.data?.project {
 						self.project = .success(project)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
 					}
+					self.handleGraphQLErrors(response.errors)
 				}
 			}
 		} catch let error {
 			self.project = .failure(error)
-			Notify.status(.error)
+			Notify.status(.error, "Couldn't load merge request !\(iid)", error.localizedDescription)
 		}
 	}
 
@@ -55,12 +66,19 @@ struct MergeRequestLoader: View {
 
 			if let project = response.data?.project {
 				self.project = .success(project)
+				Notify.status(.success)
+			} else {
+				handleGraphQLErrors(response.errors)
+				if response.errors?.isEmpty ?? true {
+					self.project = .failure(
+						ProjectLoadError(
+							fullPath: "\(fullPath) !\(iid)",
+							messages: ["GitLab returned no merge request."]))
+				}
 			}
-
-			Notify.status(.success)
 		} catch let error {
 			self.project = .failure(error)
-			Notify.status(.error)
+			Notify.status(.error, "Couldn't load merge request !\(iid)", error.localizedDescription)
 		}
 	}
 

@@ -7,7 +7,6 @@
 
 import GitLabAPI
 import SwiftUI
-import Toast
 import UIKit
 
 struct HomeView: View {
@@ -15,7 +14,10 @@ struct HomeView: View {
 	private var starredProjects: Result<[SmallProject?], Error>?
 
 	@State
-	private var path: [AnyHashable] = []
+	private var path = NavigationPath()
+
+	@State
+	private var jumpDiagnostics: JumpDiagnostics?
 
 	private func loadStarredProjects() {
 		do {
@@ -60,20 +62,31 @@ struct HomeView: View {
 			UIPasteboard.general.string
 			?? UIPasteboard.general.url?.absoluteString
 
-		guard let pasted, pasted.isNotEmpty else {
-			Notify.status(.warning, "Nothing to open", "Copy a GitLab link first.", systemImage: "doc.on.clipboard")
+		let host = API.host
+		var diagnostics = JumpDiagnostics(raw: pasted ?? "", host: host)
+
+		if let pasted, pasted.isNotEmpty {
+			do {
+				diagnostics.target = try JumpURL.parse(pasted, host: host)
+			} catch let error as JumpURLError {
+				diagnostics.error = error
+			} catch {
+				diagnostics.error = .notALink(raw: pasted)
+			}
+		} else {
+			diagnostics.error = .emptyClipboard
+		}
+
+		guard let target = diagnostics.target else {
+			jumpDiagnostics = diagnostics
+			Notify.status(
+				.warning, diagnostics.summary, diagnostics.error?.message,
+				systemImage: "exclamationmark.triangle")
 			return
 		}
 
-		do {
-			path.append(try JumpURL.parse(pasted, host: API.host))
-		} catch let error as JumpURLError {
-			Notify.status(
-				.warning, "Can't open that link", error.errorDescription,
-				systemImage: "exclamationmark.triangle")
-		} catch {
-			Notify.status(.error, "Can't open that link", error.localizedDescription)
-		}
+		jumpDiagnostics = nil
+		path.append(target)
 	}
 
 	public var body: some View {
@@ -81,28 +94,14 @@ struct HomeView: View {
 			list
 				.navigationDestination(for: JumpTarget.self) { target in
 					switch target {
-					case .project(let fullPath):
-						ProjectLoader(fullPath: fullPath, path: $path)
-					case .group(let fullPath):
-						GroupLoader(fullPath: fullPath)
-					case .projectRoute(let fullPath, let route):
-						ProjectLoader(fullPath: fullPath, path: $path, jumpTo: route)
-					}
-				}
-				.navigationDestination(for: ResolvedProjectRoute.self) { route in
-					switch route {
-					case .issues(let fullPath):
-						ProjectIssuesLoader(fullPath: fullPath)
+					case .entity(let fullPath):
+						EntityLoader(fullPath: fullPath)
 					case .issue(let fullPath, let iid):
 						IssueLoader(fullPath: fullPath, iid: iid)
-					case .mergeRequests(let fullPath):
-						ProjectMergeLoader(fullPath: fullPath)
 					case .mergeRequest(let fullPath, let iid):
 						MergeRequestLoader(fullPath: fullPath, iid: iid)
-					case .tree(let projectId, let fullPath, let ref):
-						TreeLoader(projectId: projectId, fullPath: fullPath, refName: ref)
-					case .releases(let fullPath, let projectId):
-						ProjectReleasesLoader(fullPath: fullPath, projectId: projectId)
+					case .route(let fullPath, let route):
+						EntityLoader(fullPath: fullPath, route: route)
 					}
 				}
 		}
@@ -110,6 +109,16 @@ struct HomeView: View {
 
 	private var list: some View {
 		List {
+			if let jumpDiagnostics {
+				Section("Can't open that link") {
+					JumpFailureCard(jumpDiagnostics) {
+						withAnimation {
+							self.jumpDiagnostics = nil
+						}
+					}
+				}
+			}
+
 			Section("Your work") {
 				NavigationLink(
 					destination: UserIssuesLoader(),

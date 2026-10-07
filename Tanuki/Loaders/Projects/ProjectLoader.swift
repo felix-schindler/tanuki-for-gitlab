@@ -18,16 +18,18 @@ enum NavDest {
 		label
 }
 
+struct ProjectLoadError: LocalizedError {
+	let fullPath: String
+	let messages: [String]
+
+	var errorDescription: String? {
+		let detail = messages.first ?? "GitLab returned no project."
+		return "Couldn't load “\(fullPath)”: \(detail)"
+	}
+}
+
 struct ProjectLoader: View {
 	private let fullPath: String
-
-	@Binding
-	private var path: [AnyHashable]
-
-	private let jumpTo: ProjectRoute?
-
-	@State
-	private var hasPath: Bool
 
 	@State
 	private var project: Result<ProjectQuery.Data.Project, Error>? = nil
@@ -42,25 +44,21 @@ struct ProjectLoader: View {
 	@State
 	private var navigationDestination: NavDest? = nil
 
-	init(fullPath: String, path: Binding<[AnyHashable]> = .constant([]), jumpTo: ProjectRoute? = nil) {
+	init(fullPath: String) {
 		self.fullPath = fullPath
-		self._path = path
-		self.jumpTo = jumpTo
-		self._hasPath = State(initialValue: jumpTo != nil)
 	}
 
-	private func followJumpRoute(_ projectId: Int?) {
-		guard hasPath, let jumpTo, let projectId else { return }
-		hasPath = false
-		switch jumpTo {
-		case .issues(let iid):
-			path.append(ResolvedProjectRoute.issue(fullPath: fullPath, iid: iid))
-		case .mergeRequests(let iid):
-			path.append(ResolvedProjectRoute.mergeRequest(fullPath: fullPath, iid: iid))
-		case .tree(let ref):
-			path.append(ResolvedProjectRoute.tree(projectId: projectId, fullPath: fullPath, ref: ref))
-		case .releases:
-			path.append(ResolvedProjectRoute.releases(fullPath: fullPath, projectId: projectId))
+	private func handleGraphQLErrors(_ errors: [any Error]?) {
+		guard let errors, !errors.isEmpty else { return }
+
+		let messages = errors.map(\.localizedDescription)
+		Notify.status(
+			.error, "Couldn't load \(fullPath)", messages.first,
+			systemImage: "exclamationmark.triangle")
+
+		// Keep a cached success; the network response may fail after it.
+		if project == nil {
+			self.project = .failure(ProjectLoadError(fullPath: fullPath, messages: messages))
 		}
 	}
 
@@ -75,17 +73,13 @@ struct ProjectLoader: View {
 				for try await response in responses {
 					if let project = response.data?.project {
 						self.project = .success(project)
-						self.followJumpRoute(project.id.toIntId())
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
 					}
+					self.handleGraphQLErrors(response.errors)
 				}
 			}
 		} catch let error {
 			self.project = .failure(error)
-			Notify.status(.error)
+			Notify.status(.error, "Couldn't load \(fullPath)", error.localizedDescription)
 		}
 	}
 
@@ -98,13 +92,17 @@ struct ProjectLoader: View {
 
 			if let project = response.data?.project {
 				self.project = .success(project)
-				self.followJumpRoute(project.id.toIntId())
+				Notify.status(.success)
+			} else {
+				handleGraphQLErrors(response.errors)
+				if response.errors?.isEmpty ?? true {
+					self.project = .failure(
+						ProjectLoadError(fullPath: fullPath, messages: ["GitLab returned no project."]))
+				}
 			}
-
-			Notify.status(.success)
 		} catch let error {
 			self.project = .failure(error)
-			Notify.status(.error)
+			Notify.status(.error, "Couldn't load \(fullPath)", error.localizedDescription)
 		}
 	}
 
