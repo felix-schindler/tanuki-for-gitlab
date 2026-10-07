@@ -370,6 +370,110 @@ class API {
 		useBase: Bool = true,
 		host: String? = nil
 	) async throws -> AFDataResponse<Data> {
+		let (url, headers) = API.urlAndHeaders(
+			method: method,
+			endpoint: endpoint,
+			resource: resource,
+			suffix: suffix,
+			query: query,
+			contentType: contentType,
+			auth: auth,
+			useBase: useBase,
+			host: host
+		)
+
+		var parameters: Parameters?
+		if let body {
+			parameters = try JSONSerialization.jsonObject(with: encoder.encode(body)) as? Parameters
+		}
+
+		let encoding: ParameterEncoding =
+			(contentType == .json) ? JSONEncoding.default : URLEncoding.default
+
+		let response = await session.request(
+			url,
+			method: method,
+			parameters: parameters,
+			encoding: encoding,
+			headers: headers
+		).serializingData().response
+
+		return response
+	}
+
+	/// Streams a file straight to disk instead of buffering it in memory (see `FileLoader`).
+	///
+	/// Unlike `raw`, a rejected token is not retried — `Auth.ensureValidToken()` runs upfront.
+	public static func download(
+		to destination: @escaping DownloadRequest.Destination,
+		method: HTTPMethod,
+		endpoint: String,
+		resource: String? = nil,
+		suffix: String? = nil,
+		query: [String: String] = [:],
+		auth: Bool = true,
+		useBase: Bool = true,
+		host: String? = nil,
+		onProgress: (@MainActor @Sendable (_ received: Int64, _ total: Int64) -> Void)? = nil
+	) async throws -> URL {
+		if auth {
+			await Auth.ensureValidToken()
+		}
+
+		let (url, headers) = API.urlAndHeaders(
+			method: method,
+			endpoint: endpoint,
+			resource: resource,
+			suffix: suffix,
+			query: query,
+			contentType: .json,
+			auth: auth,
+			useBase: useBase,
+			host: host
+		)
+
+		let request = session.download(url, method: method, headers: headers, to: destination)
+
+		if let onProgress {
+			request.downloadProgress { progress in
+				MainActor.assumeIsolated {
+					onProgress(progress.completedUnitCount, progress.totalUnitCount)
+				}
+			}
+		}
+
+		let response = await request.serializingDownloadedFileURL().response
+
+		if let error = response.error {
+			logger.error("✗ \(method.rawValue) \(endpoint) — \(error.localizedDescription)")
+			throw error
+		}
+
+		if let status = response.response?.statusCode, !(200..<300).contains(status) {
+			logger.error("✗ \(status) \(method.rawValue) \(endpoint) — no error message")
+			throw APIError.http(status: status, message: nil)
+		}
+
+		guard let fileURL = response.fileURL else {
+			throw APIError.emptyResponse
+		}
+
+		logger.info("← \(method.rawValue) \(endpoint) (\(fileURL.fileSize()) bytes)")
+
+		return fileURL
+	}
+
+	private static func urlAndHeaders(
+		method: HTTPMethod,
+		endpoint: String,
+		resource: String?,
+		suffix: String?,
+		query: [String: String],
+		contentType: ContentType,
+		auth: Bool,
+		useBase: Bool,
+		host: String?
+	) -> (url: String, headers: HTTPHeaders) {
 		let targetHost = host ?? API.host
 
 		var path = useBase ? [base, endpoint] : [endpoint]
@@ -391,25 +495,9 @@ class API {
 			headers.add(.authorization(bearerToken: token))
 		}
 
-		var parameters: Parameters?
-		if let body {
-			parameters = try JSONSerialization.jsonObject(with: encoder.encode(body)) as? Parameters
-		}
-
-		let encoding: ParameterEncoding =
-			(contentType == .json) ? JSONEncoding.default : URLEncoding.default
-
 		logger.debug("→ \(method.rawValue) \(url) [\(API.redacted(headers))]")
 
-		let response = await session.request(
-			url,
-			method: method,
-			parameters: parameters,
-			encoding: encoding,
-			headers: headers
-		).serializingData().response
-
-		return response
+		return (url, headers)
 	}
 
 	private static func encodePathComponent(_ value: String) -> String {

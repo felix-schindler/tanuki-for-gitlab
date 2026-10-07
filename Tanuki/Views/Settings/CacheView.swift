@@ -49,6 +49,15 @@ struct CacheView: View {
 				}
 			}
 
+			Section("File cache") {
+				Text("Downloaded files: \(formatBytes(Int(FileCache.size())))")
+
+				Button("Clear cache", systemImage: "trash", role: .destructive) {
+					FileCache.clear()
+					Notify.status(.success, "Cleared file cache", systemImage: "checkmark")
+				}
+			}
+
 			Section("GraphQL cache") {
 				Text(
 					"Due to apollo-ios limitations, the actual size of the cache is unknown. If you feel this app is taking up too much storage, consider clearing this cache."

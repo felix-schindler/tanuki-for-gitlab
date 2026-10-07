@@ -9,6 +9,16 @@ import AVKit
 import SwiftUI
 
 struct FileLoader: View {
+	private static let confirmThreshold: Int64 = 3 * 1024 * 1024
+
+	private enum Phase {
+		case loading
+		case ready(size: Int64)
+		case downloading(received: Int64, total: Int64)
+		case loaded
+		case failed(Error)
+	}
+
 	private let projectId: Int
 	private let filePath: String
 	private let fileExtension: String
@@ -18,10 +28,18 @@ struct FileLoader: View {
 	private var colorScheme: ColorScheme
 
 	@State
-	private var file: Result<Data, Error>? = nil
+	private var phase: Phase = .loading
 
 	@State
 	private var localURL: URL? = nil
+
+	/// Resolved once per download — reading these in `body` would hit the disk on
+	/// every re-evaluation.
+	@State
+	private var text: String? = nil
+
+	@State
+	private var image: UIImage? = nil
 
 	init(
 		id: Int,
@@ -34,94 +52,160 @@ struct FileLoader: View {
 		self.fileExtension = filePath.components(separatedBy: ".").last?.lowercased() ?? ""
 	}
 
-	private func loadFile() async {
-		do {
-			let res = try await API.raw(
-				method: .get,
-				endpoint: "projects/\(projectId)/repository/files",
-				resource: filePath,
-				suffix: "/raw",
-				query: ["ref": refName]
-			)
-
-			guard let data = res.data else {
-				throw APIError.emptyResponse
-			}
-
-			self.file = .success(data)
-			self.localURL = FileLoader.writeTemporaryFile(
-				data,
-				fileName: filePath.components(separatedBy: "/").last ?? filePath
-			)
-		} catch let error {
-			self.file = .failure(error)
-			self.localURL = nil
-			Notify.status(.error)
-		}
+	private var fileName: String {
+		filePath.components(separatedBy: "/").last ?? filePath
 	}
 
 	private var isPDF: Bool {
 		Formats.pdfFormats.contains(fileExtension)
 	}
 
-	private static var temporaryDirectory: URL {
-		FileManager.default.temporaryDirectory
-			.appendingPathComponent("tanuki-files", isDirectory: true)
+	private var isVideo: Bool {
+		Formats.videoFormats.contains(fileExtension)
 	}
 
-	private static func writeTemporaryFile(_ data: Data, fileName: String) -> URL? {
-		let directory = temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-
-		do {
-			try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-			let url = directory.appendingPathComponent(fileName)
-			try data.write(to: url)
-			purgeTemporaryFiles()
-			return url
-		} catch {
-			return nil
+	private var icon: String {
+		if Formats.audioFormats.contains(fileExtension) || isVideo {
+			return "play"
+		} else if Formats.imageFormats.contains(fileExtension) {
+			return "photo"
+		} else if isPDF {
+			return "doc.richtext"
+		} else {
+			return "document"
 		}
 	}
 
-	private static func purgeTemporaryFiles() {
-		let staleBefore = Date().addingTimeInterval(-24 * 60 * 60)
+	private var isLoaded: Bool {
+		if case .loaded = phase {
+			return true
+		}
+		return false
+	}
 
-		guard
-			let entries = try? FileManager.default.contentsOfDirectory(
-				at: temporaryDirectory,
-				includingPropertiesForKeys: [.contentModificationDateKey]
-			)
-		else {
+	private func probe() async {
+		// Still on disk? Reuse it. This also covers a file that was cleared from
+		// Settings while this screen was open (e.g. iPad Split View).
+		if let localURL, FileManager.default.fileExists(atPath: localURL.path) {
+			phase = .loaded
 			return
 		}
 
-		for entry in entries {
-			let modified = try? entry.resourceValues(forKeys: [.contentModificationDateKey])
-				.contentModificationDate
-			if let modified, modified < staleBefore {
-				try? FileManager.default.removeItem(at: entry)
+		self.localURL = nil
+		self.image = nil
+		self.text = nil
+
+		phase = .loading
+
+		do {
+			let res = try await API.raw(
+				method: .head,
+				endpoint: "projects/\(projectId)/repository/files",
+				resource: filePath,
+				suffix: "/raw",
+				query: ["ref": refName]
+			)
+
+			let size = res.response?.value(forHTTPHeaderField: "X-Gitlab-Size")
+				.flatMap { Int64($0) }
+
+			// No size to show, so we can't ask — just download it.
+			guard let size, size >= Self.confirmThreshold else {
+				await loadFile()
+				return
 			}
+
+			phase = .ready(size: size)
+		} catch {
+			await loadFile()
+		}
+	}
+
+	private func loadFile() async {
+		if !isLoaded {
+			phase = .loading
+		}
+		let name = fileName
+
+		do {
+			let url = try await API.download(
+				to: { _, _ in
+					(
+						FileCache.destination(for: name),
+						[.createIntermediateDirectories, .removePreviousFile]
+					)
+				},
+				method: .get,
+				endpoint: "projects/\(projectId)/repository/files",
+				resource: filePath,
+				suffix: "/raw",
+				query: ["ref": refName],
+				onProgress: { received, total in
+					// Below the threshold a file arrives instantly, so don't flash a
+					// bar at it — and a refresh keeps the existing preview visible.
+					guard total >= Self.confirmThreshold, !self.isLoaded else {
+						return
+					}
+					self.phase = .downloading(received: received, total: total)
+				}
+			)
+
+			FileCache.purge()
+			self.localURL = url
+			self.resolvePreview(from: url)
+			self.phase = .loaded
+		} catch let error {
+			self.localURL = nil
+			self.image = nil
+			self.text = nil
+			self.phase = .failed(error)
+			Notify.status(.error)
+		}
+	}
+
+	private func resolvePreview(from url: URL) {
+		if isPDF || isVideo {
+			self.image = nil
+			self.text = nil
+		} else if Formats.imageFormats.contains(fileExtension) {
+			self.image = UIImage(contentsOfFile: url.path)
+			self.text = nil
+		} else {
+			self.image = nil
+			// `emojized()` is a regex over the whole file, so do it here too.
+			self.text = (try? String(contentsOf: url, encoding: .utf8))
+				.map { fileExtension == "md" ? $0.emojized() : $0 }
 		}
 	}
 
 	public var body: some View {
 		SwiftUI.Group {
-			if isPDF {
-				pdfPreview
-			} else {
-				ScrollView {
-					VStack(alignment: .leading) {
-						preview
-						Spacer()
+			if case .failed(let error) = phase {
+				FailedView(error)
+			} else if Formats.audioFormats.contains(fileExtension) {
+				unavailable("Can't preview this \(fileExtension) audio file", systemImage: "play")
+			} else if Formats.binaryFormats.contains(fileExtension) {
+				unavailable("Can't preview this \(fileExtension) file", systemImage: "doc.zipper")
+			} else if isLoaded, let localURL {
+				if isPDF {
+					PDFPreview(url: localURL)
+				} else {
+					ScrollView {
+						VStack(alignment: .leading) {
+							preview(localURL)
+							Spacer()
+						}
+						.padding(.horizontal)
+						.frame(maxWidth: .infinity)
+					}.refreshable {
+						await loadFile()
 					}
-					.padding(.horizontal)
-					.frame(maxWidth: .infinity)
-				}.refreshable {
-					await loadFile()
 				}
+			} else {
+				pending
 			}
 		}.task {
-			await loadFile()
+			await probe()
 		}.toolbar {
 			if let localURL {
 				ShareButton(localURL)
@@ -130,102 +214,74 @@ struct FileLoader: View {
 	}
 
 	@ViewBuilder
-	private var preview: some View {
-		if Formats.audioFormats.contains(fileExtension) {
-			unavailable("Can't preview this \(fileExtension) audio file", systemImage: "play")
-		} else if Formats.videoFormats.contains(fileExtension) {
-			videoPreview
+	private func preview(_ url: URL) -> some View {
+		if isVideo {
+			VideoPlayer(player: AVPlayer(url: url))
 		} else if Formats.imageFormats.contains(fileExtension) {
-			imagePreview
-		} else if isPDF {
-			pdfPreview
-		} else if Formats.binaryFormats.contains(fileExtension) {
-			unavailable("Can't preview this \(fileExtension) file", systemImage: "doc.zipper")
+			if let image {
+				Image(uiImage: image)
+					.resizable()
+					.scaledToFit()
+					.cornerRadius(10)
+			} else {
+				unavailable("Can't preview this \(fileExtension) file", systemImage: "photo")
+			}
 		} else {
 			textPreview
 		}
 	}
 
 	@ViewBuilder
-	private var imagePreview: some View {
-		if let file {
-			switch file {
-			case .success(let data):
-				if let image = UIImage(data: data) {
-					Image(uiImage: image)
-						.resizable()
-						.scaledToFit()
-						.cornerRadius(10)
-				} else {
-					unavailable("Can't preview this \(fileExtension) file", systemImage: "photo")
-				}
-			case .failure(let error):
-				FailedView(error)
-			}
-		} else {
-			LoadingView("Loading file", systemImage: "photo")
-		}
-	}
-
-	@ViewBuilder
-	private var videoPreview: some View {
-		if let localURL {
-			VideoPlayer(player: AVPlayer(url: localURL))
-		} else if let file {
-			switch file {
-			case .success:
-				unavailable("Can't preview this \(fileExtension) video file", systemImage: "play")
-			case .failure(let error):
-				FailedView(error)
-			}
-		} else {
-			LoadingView("Loading file", systemImage: "play")
-		}
-	}
-
-	@ViewBuilder
-	private var pdfPreview: some View {
-		if let file {
-			switch file {
-			case .success:
-				if let localURL {
-					PDFPreview(url: localURL)
-				} else {
-					unavailable("Can't preview this \(fileExtension) file", systemImage: "doc.richtext")
-				}
-			case .failure(let error):
-				FailedView(error)
-			}
-		} else {
-			LoadingView("Loading file", systemImage: "doc.richtext")
-		}
-	}
-
-	@ViewBuilder
 	private var textPreview: some View {
-		if let file {
-			switch file {
-			case .success(let data):
-				if let content = String(data: data, encoding: .utf8) {
-					if fileExtension == "md" {
-						Markdown(content.emojized())
-					} else {
-						CodeTextView(
-							content,
-							language: self.fileExtension,
-							colorScheme: self.colorScheme,
-							fontSize: 12
-						)
-					}
-				} else {
-					unavailable("Can't preview this \(fileExtension) file", systemImage: "document")
-				}
-			case .failure(let error):
-				FailedView(error)
+		if let text {
+			if fileExtension == "md" {
+				Markdown(text)
+			} else {
+				CodeTextView(
+					text,
+					language: self.fileExtension,
+					colorScheme: self.colorScheme,
+					fontSize: 12
+				)
 			}
 		} else {
-			LoadingView("Loading file", systemImage: "document")
+			unavailable("Can't preview this \(fileExtension) file", systemImage: "document")
 		}
+	}
+
+	@ViewBuilder
+	private var pending: some View {
+		VStack(spacing: 12) {
+			Image(systemName: icon)
+				.resizable()
+				.scaledToFit()
+				.foregroundStyle(.gray)
+				.frame(width: 50, height: 50)
+
+			switch phase {
+			case .ready(let size):
+				Text(size.formatted(.byteCount(style: .file)))
+					.font(.title2.bold())
+				Button {
+					Task {
+						await loadFile()
+					}
+				} label: {
+					Label("Download", systemImage: "arrow.down.circle")
+				}
+				.buttonStyle(.borderedProminent)
+			case .downloading(let received, let total):
+				ProgressView(value: Double(received) / Double(total))
+					.frame(maxWidth: 220)
+				Text("\(received.formatted(.byteCount(style: .file))) of \(total.formatted(.byteCount(style: .file)))")
+					.font(.callout)
+					.monospacedDigit()
+			default:
+				ProgressView()
+			}
+		}
+		.padding()
+		.frame(maxWidth: .infinity, minHeight: 100)
 	}
 
 	private func unavailable(_ message: String, systemImage: String) -> some View {
