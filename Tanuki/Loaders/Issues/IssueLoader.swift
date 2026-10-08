@@ -161,8 +161,15 @@ struct IssueLoader: View {
 							}
 
 							HStack {
-								PillView(String(issue.upvotes), icon: "hand.thumbsup")
-								PillView(String(issue.downvotes), icon: "hand.thumbsdown")
+								VotePillsView(
+									projectId: project.id.toIntId(),
+									iid: self.iid,
+									type: .issue,
+									upvotes: issue.upvotes,
+									downvotes: issue.downvotes
+								) {
+									await reloadIssue()
+								}
 							}
 							.modifier(LabelSpacingIfAvailable())
 							.font(.footnote)
@@ -267,6 +274,22 @@ struct IssueLoader: View {
 
 						if issue.userPermissions.updateIssue {
 							Section("Actions") {
+								if let projectId = project.id.toIntId() {
+									NavigationLink(
+										destination: EditTitleDescriptionView(
+											projectId: projectId,
+											iid: self.iid,
+											type: .issue,
+											initialTitle: issue.title,
+											initialDescription: issue.description ?? ""
+										) {
+											await reloadIssue()
+										}
+									) {
+										Label("Edit issue", systemImage: "pencil")
+									}
+								}
+
 								if issue.state == .opened {
 									AsyncButton("Close issue", systemImage: "smallcircle.circle") {
 										await self.changeState(.close)
