@@ -16,9 +16,6 @@ struct HomeView: View {
 	@State
 	private var path = NavigationPath()
 
-	@State
-	private var jumpDiagnostics: JumpDiagnostics?
-
 	private func loadStarredProjects() {
 		do {
 			let responses = try Network.shared.apollo.fetch(
@@ -78,14 +75,12 @@ struct HomeView: View {
 		}
 
 		guard let target = diagnostics.target else {
-			jumpDiagnostics = diagnostics
 			Notify.status(
 				.warning, diagnostics.summary, diagnostics.error?.message,
 				systemImage: "exclamationmark.triangle")
 			return
 		}
 
-		jumpDiagnostics = nil
 		path.append(target)
 	}
 
@@ -109,16 +104,6 @@ struct HomeView: View {
 
 	private var list: some View {
 		List {
-			if let jumpDiagnostics {
-				Section("Can't open that link") {
-					JumpFailureCard(jumpDiagnostics) {
-						withAnimation {
-							self.jumpDiagnostics = nil
-						}
-					}
-				}
-			}
-
 			Section("Your work") {
 				NavigationLink(
 					destination: UserIssuesLoader(),
