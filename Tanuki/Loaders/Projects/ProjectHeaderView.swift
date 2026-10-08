@@ -26,6 +26,21 @@ struct ProjectHeaderView: View {
 		}
 	}
 
+	private func fork() async {
+		guard let id = project.id.toIntId() else {
+			Notify.status(.error, "Forking project failed", systemImage: "xmark")
+			return
+		}
+		do {
+			_ = try await API.req(
+				type: RestAPIProject.self, method: .post,
+				endpoint: "projects/\(id)/fork")
+			Notify.status(.success, "Project forked", systemImage: "tuningfork")
+		} catch let error {
+			Notify.status(.error, "Forking project failed", error.localizedDescription, systemImage: "xmark")
+		}
+	}
+
 	public var body: some View {
 		VStack(alignment: .leading) {
 			HStack {
@@ -116,11 +131,12 @@ struct ProjectHeaderView: View {
 					.tint(.accentColor)
 					.buttonStyle(.bordered)
 
-					if project.userPermissions.forkProject,
-						let projectUrl = URL(string: "\(project.webUrl ?? "")/-/forks/new")
-					{
-						Link(destination: projectUrl) {
-							Label(String(project.forksCount), systemImage: "tuningfork")
+					if project.userPermissions.forkProject {
+						AsyncButton(
+							String(project.forksCount),
+							systemImage: "tuningfork"
+						) {
+							await fork()
 						}
 						.tint(.accentColor)
 						.buttonStyle(.bordered)
