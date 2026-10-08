@@ -66,6 +66,12 @@ struct RestAPIStatus: Codable {
 	let message: String?
 }
 
+// MARK: - Groups
+struct RestAPIGroup: Codable {
+	let id: Int
+	let fullPath: String?
+}
+
 // MARK: - Releases
 struct RestAPIRelease: Codable {
 	let name: String
