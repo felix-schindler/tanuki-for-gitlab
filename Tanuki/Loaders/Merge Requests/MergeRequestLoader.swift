@@ -213,8 +213,15 @@ struct MergeRequestLoader: View {
 							}
 
 							HStack {
-								PillView(String(mr.upvotes), icon: "hand.thumbsup")
-								PillView(String(mr.downvotes), icon: "hand.thumbsdown")
+								VotePillsView(
+									projectId: project.id.toIntId(),
+									iid: self.iid,
+									type: .mergeRequest,
+									upvotes: mr.upvotes,
+									downvotes: mr.downvotes
+								) {
+									await reloadMergeRequest()
+								}
 							}
 							.modifier(LabelSpacingIfAvailable())
 							.font(.footnote)
@@ -449,6 +456,20 @@ struct MergeRequestLoader: View {
 								}
 
 								if mr.userPermissions.updateMergeRequest {
+									NavigationLink(
+										destination: EditTitleDescriptionView(
+											projectId: projectId,
+											iid: self.iid,
+											type: .mergeRequest,
+											initialTitle: mr.title,
+											initialDescription: mr.description ?? ""
+										) {
+											await reloadMergeRequest()
+										}
+									) {
+										Label("Edit MR", systemImage: "pencil")
+									}
+
 									if mr.state == .opened {
 										AsyncButton(
 											action: {
