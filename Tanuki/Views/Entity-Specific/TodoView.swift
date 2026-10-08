@@ -16,13 +16,14 @@ struct TodoView: View {
 	}
 
 	private func markDone() async {
-		guard let id = todo.id.toIntId() else {
-			Notify.status(.error, "Failed to mark todo as done", systemImage: "xmark")
-			return
-		}
 		do {
-			_ = try await API.raw(method: .post, endpoint: "todos/\(id)/mark_as_done")
-			Notify.status(.success, "Todo marked as done", systemImage: "checkmark")
+			let result = try await Network.shared.apollo.perform(mutation: MarkTodoDoneMutation(id: todo.id))
+			if let errors = result.data?.todoMarkDone?.errors, errors.isNotEmpty {
+				Notify.status(
+					.error, "Failed to mark todo as done", errors.joined(separator: ", "), systemImage: "xmark")
+			} else {
+				Notify.status(.success, "Todo marked as done", systemImage: "checkmark")
+			}
 		} catch let error {
 			Notify.status(.error, "Failed to mark todo as done", error.localizedDescription, systemImage: "xmark")
 		}

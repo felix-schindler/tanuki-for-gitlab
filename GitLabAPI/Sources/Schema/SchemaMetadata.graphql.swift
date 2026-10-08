@@ -98,6 +98,7 @@ nonisolated public enum SchemaMetadata: ApolloAPI.SchemaMetadata {
     "TimelogConnection": GitLabAPI.Objects.TimelogConnection,
     "Todo": GitLabAPI.Objects.Todo,
     "TodoConnection": GitLabAPI.Objects.TodoConnection,
+    "TodoMarkDonePayload": GitLabAPI.Objects.TodoMarkDonePayload,
     "Tree": GitLabAPI.Objects.Tree,
     "TreeEntry": GitLabAPI.Objects.TreeEntry,
     "TreeEntryConnection": GitLabAPI.Objects.TreeEntryConnection,
