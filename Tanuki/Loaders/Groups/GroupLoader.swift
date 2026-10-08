@@ -191,6 +191,17 @@ struct GroupLoader: View {
 											queryType: .group
 										)
 									)
+									NavigationLink(
+										destination: EditGroupView(
+											groupId: groupId,
+											name: group.name ?? group.path,
+											description: group.description,
+											visibility: group.visibility ?? "private"
+										),
+										label: {
+											Text("Settings")
+										}
+									)
 								}
 								NavigationLink(
 									"Timelogs",

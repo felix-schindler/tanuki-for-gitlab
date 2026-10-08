@@ -258,6 +258,17 @@ struct ProjectLoader: View {
 											queryType: .project
 										)
 									)
+									NavigationLink(
+										destination: EditProjectView(
+											projectId: projectId,
+											name: project.name,
+											description: project.description,
+											visibility: project.visibility ?? "private"
+										),
+										label: {
+											Text("Settings")
+										}
+									)
 								},
 								label: {
 									Label("Manage", systemImage: "person.2")

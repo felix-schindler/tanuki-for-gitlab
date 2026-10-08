@@ -187,6 +187,13 @@ struct TreeLoader: View {
 			if folderPath == nil {
 				await loadBranches()
 			}
+		}.toolbar {
+			NavigationLink(
+				destination: NewFileView(
+					projectId: projectId, refName: refName, folderPath: folderPath)
+			) {
+				Label("New file", systemImage: "plus")
+			}.tint(.accentColor)
 		}.navigationTitle(folderPath ?? "Files")
 	}
 }

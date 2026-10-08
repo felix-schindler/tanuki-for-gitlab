@@ -74,6 +74,10 @@ struct BranchesLoader: View {
 			await loadBranches()
 		}.refreshable {
 			await loadBranches()
+		}.toolbar {
+			NavigationLink(destination: NewBranchView(projectId: projectId)) {
+				Label("New branch", systemImage: "plus")
+			}.tint(.accentColor)
 		}.navigationTitle("Branches")
 	}
 }

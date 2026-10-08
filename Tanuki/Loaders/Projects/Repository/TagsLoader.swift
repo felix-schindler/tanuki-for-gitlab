@@ -79,6 +79,10 @@ struct TagsLoader: View {
 			await loadTags()
 		}.refreshable {
 			await loadTags()
+		}.toolbar {
+			NavigationLink(destination: NewTagView(projectId: projectId)) {
+				Label("New tag", systemImage: "plus")
+			}.tint(.accentColor)
 		}.navigationTitle("Tags")
 	}
 }
