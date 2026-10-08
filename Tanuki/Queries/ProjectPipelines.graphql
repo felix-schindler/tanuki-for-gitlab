@@ -4,6 +4,7 @@ query ProjectPipelines($fullPath: ID!) {
       nodes {
         id
         iid
+        name
         user {
           avatarUrl
           name

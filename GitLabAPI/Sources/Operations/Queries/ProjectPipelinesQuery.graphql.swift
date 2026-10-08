@@ -8,7 +8,7 @@ nonisolated public struct ProjectPipelinesQuery: GraphQLQuery {
   public static let operationName: String = "ProjectPipelines"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ProjectPipelines($fullPath: ID!) { project(fullPath: $fullPath) { __typename pipelines { __typename nodes { __typename id iid user { __typename avatarUrl name username } ref commit { __typename shortId } source status cancelable createdAt } } } }"#
+      #"query ProjectPipelines($fullPath: ID!) { project(fullPath: $fullPath) { __typename pipelines { __typename nodes { __typename id iid name user { __typename avatarUrl name username } ref commit { __typename shortId } source status cancelable createdAt } } } }"#
     ))
 
   public var fullPath: ID
@@ -84,6 +84,7 @@ nonisolated public struct ProjectPipelinesQuery: GraphQLQuery {
             .field("__typename", String.self),
             .field("id", GitLabAPI.ID.self),
             .field("iid", String.self),
+            .field("name", String?.self),
             .field("user", User?.self),
             .field("ref", String?.self),
             .field("commit", Commit?.self),
@@ -100,6 +101,8 @@ nonisolated public struct ProjectPipelinesQuery: GraphQLQuery {
           public var id: GitLabAPI.ID { __data["id"] }
           /// Internal ID of the pipeline.
           public var iid: String { __data["iid"] }
+          /// Name of the pipeline.
+          public var name: String? { __data["name"] }
           /// Pipeline user.
           public var user: User? { __data["user"] }
           /// Reference to the branch from which the pipeline was triggered.

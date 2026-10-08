@@ -582,6 +582,17 @@ extension ProjectPipelinesQuery.Data.Project.Pipelines.Node: MaybeHasAuthor {
 	}
 }
 
+extension PipelineDetailQuery.Data.Project.Pipeline: MaybeHasAuthor {
+	var _author: MyAuthor? {
+		guard let authorData = user else { return nil }
+		return MyAuthor(
+			avatarUrl: authorData.avatarUrl,
+			name: authorData.name,
+			username: authorData.username
+		)
+	}
+}
+
 // MARK: - Milestones
 struct MyStats {
 	let closedIssuesCount: Int?

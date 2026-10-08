@@ -1,0 +1,47 @@
+query PipelineDetail($fullPath: ID!, $iid: ID!) {
+  project(fullPath: $fullPath) {
+    pipeline(iid: $iid) {
+      id
+      iid
+      name
+      status
+      ref
+      sha
+      source
+      createdAt
+      startedAt
+      finishedAt
+      duration
+      user {
+        avatarUrl
+        name
+        username
+      }
+      stages {
+        nodes {
+          name
+          status
+          jobs {
+            nodes {
+              id
+              name
+              status
+              duration
+              startedAt
+              finishedAt
+              failureMessage
+              allowFailure
+              artifacts {
+                nodes {
+                  name
+                  size
+                  fileType
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

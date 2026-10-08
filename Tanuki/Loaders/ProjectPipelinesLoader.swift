@@ -68,46 +68,12 @@ struct ProjectPipelinesLoader: View {
 					} else {
 						ForEach(pipelines, id: \.?.id) { maybePipeline in
 							if let pipeline = maybePipeline {
-								HStack {
-									VStack(alignment: .leading) {
-										ScrollView(.horizontal) {
-											HStack {
-												if let author = pipeline._author {
-													AuthorView(author)
-												}
-
-												PillView(
-													String(pipeline.iid),
-													icon: "number"
-												)
-
-												if let commitId = pipeline.commit?.shortId {
-													PillView(
-														commitId,
-														icon:
-															"text.line.first.and.arrowtriangle.forward"
-													)
-													.textSelection(.enabled)
-													.font(.system(.footnote, design: .monospaced))
-												}
-											}.font(.footnote)
-										}
-
-										Text(
-											Date.fromToString(pipeline.createdAt, timeStyle: .short)
-										)
-										.font(.footnote)
-
-										if let ref = pipeline.ref {
-											Text("Branch: \(ref)")
-										}
-
-										if let source = pipeline.source {
-											Text("Source: \(source)")
-										}
-									}
-									Spacer()
-									PipelineStatus(pipeline.status)
+								NavigationLink(
+									destination: PipelineLoader(
+										fullPath: self.fullPath, iid: pipeline.iid
+									)
+								) {
+									SmallPipelineView(pipeline)
 								}
 							}
 						}
@@ -123,6 +89,61 @@ struct ProjectPipelinesLoader: View {
 		}.refreshable {
 			await reloadPipelines()
 		}.navigationTitle("Pipelines")
+	}
+}
+
+struct SmallPipelineView: View {
+	private let pipeline: ProjectPipelinesQuery.Data.Project.Pipelines.Node
+
+	init(_ pipeline: ProjectPipelinesQuery.Data.Project.Pipelines.Node) {
+		self.pipeline = pipeline
+	}
+
+	var body: some View {
+		HStack {
+			VStack(alignment: .leading) {
+				HStack {
+					Text(pipeline.name ?? "#\(pipeline.iid)")
+						.font(.subheadline)
+						.fontWeight(.medium)
+						.lineLimit(1)
+					if pipeline.name != nil {
+						Text("#\(pipeline.iid)")
+							.font(.footnote)
+							.foregroundStyle(.secondary)
+							.monospacedDigit()
+					}
+					if let ref = pipeline.ref {
+						Text(ref)
+							.font(.subheadline)
+							.foregroundStyle(.secondary)
+							.lineLimit(1)
+					}
+				}
+
+				ScrollView(.horizontal) {
+					HStack {
+						if let author = pipeline._author {
+							AuthorView(author)
+						}
+						if let commitId = pipeline.commit?.shortId {
+							PillView(commitId, icon: "text.line.first.and.arrowtriangle.forward")
+								.textSelection(.enabled)
+								.font(.system(.footnote, design: .monospaced))
+						}
+						if let source = pipeline.source {
+							PillView(source)
+						}
+						Spacer()
+						Text(Date.fromToString(pipeline.createdAt, timeStyle: .short))
+							.font(.caption2)
+							.foregroundStyle(.secondary)
+					}.font(.footnote)
+				}
+			}
+			Spacer()
+			PipelineStatus(pipeline.status)
+		}
 	}
 }
 

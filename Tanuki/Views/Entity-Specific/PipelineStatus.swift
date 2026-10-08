@@ -50,6 +50,11 @@ struct PipelineStatus: View {
 		}
 	}
 
+	/// REST APIs return lowercase statuses (`"running"`); GraphQL uses uppercase enum cases.
+	init(_ status: String) {
+		self.init(GraphQLEnum<GitLabAPI.PipelineStatusEnum>(rawValue: status.uppercased()))
+	}
+
 	public var body: some View {
 		VStack {
 			RoundIconButton("Pipeline status", icon: icon) {
