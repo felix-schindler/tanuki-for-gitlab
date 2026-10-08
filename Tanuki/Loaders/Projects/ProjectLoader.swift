@@ -46,9 +46,6 @@ struct ProjectLoader: View {
 	@State
 	private var navigationDestination: NavDest? = nil
 
-	@State
-	private var archiveURL: URL? = nil
-
 	init(fullPath: String) {
 		self.fullPath = fullPath
 	}
@@ -140,8 +137,8 @@ struct ProjectLoader: View {
 				query: query
 			)
 			FileCache.purge()
-			self.archiveURL = url
 			Notify.status(.success, "Archive downloaded", systemImage: "checkmark")
+			ShareSheet.present(for: url)
 		} catch {
 			Notify.status(.error, "Download failed", error.localizedDescription, systemImage: "xmark")
 		}
@@ -473,11 +470,15 @@ struct ProjectLoader: View {
 
 						if let projectId = project.id.toIntId() {
 							Section {
-								if let archiveURL {
-									ShareButton(archiveURL)
-								}
+								// ponytail: bare-repo + LFS size is an upper bound, not the zip size.
+								let sizeLabel = [
+									project.statistics?.repositorySize,
+									project.statistics?.lfsObjectsSize,
+								].compactMap { $0 }.reduce(0, +)
 								AsyncButton(
-									"Download archive",
+									sizeLabel > 0
+										? "Download archive (~\(ByteFormatter.shared.format(sizeLabel)))"
+										: "Download archive",
 									systemImage: "archivebox"
 								) {
 									await downloadArchive(projectId, ref: project.repository?.rootRef)

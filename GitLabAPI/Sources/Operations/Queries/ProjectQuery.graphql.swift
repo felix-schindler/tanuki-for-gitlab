@@ -8,7 +8,7 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
   public static let operationName: String = "Project"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query Project($fullPath: ID!) { project(fullPath: $fullPath) { __typename id avatarUrl name visibility description topics starCount forksCount issuesEnabled openIssuesCount mergeRequestsEnabled wikiEnabled jobsEnabled openMergeRequestsCount webUrl httpUrlToRepo sshUrlToRepo createdAt archived namespace { __typename id name fullPath } statistics { __typename commitCount repositorySize } releases { __typename count } labels { __typename count } repository { __typename rootRef readme: blobs(paths: ["README.md", "README", "README.txt"], first: 1) { __typename nodes { __typename rawTextBlob } } license: blobs( paths: ["LICENSE", "LICENSE.txt", "LICENSE.md", "COPYING"] first: 1 ) { __typename nodes { __typename rawTextBlob } } contributing: blobs( paths: ["CONTRIBUTING", "CONTRIBUTING.txt", "CONTRIBUTING.md"] first: 1 ) { __typename nodes { __typename rawTextBlob } } tree { __typename lastCommit { __typename id title shortId authorName authoredDate webUrl signature { __typename verificationStatus } pipelines { __typename nodes { __typename status } } } } } languages { __typename name share color } userPermissions { __typename createIssue forkProject requestAccess } } }"#
+      #"query Project($fullPath: ID!) { project(fullPath: $fullPath) { __typename id avatarUrl name visibility description topics starCount forksCount issuesEnabled openIssuesCount mergeRequestsEnabled wikiEnabled jobsEnabled openMergeRequestsCount webUrl httpUrlToRepo sshUrlToRepo createdAt archived namespace { __typename id name fullPath } statistics { __typename commitCount repositorySize lfsObjectsSize } releases { __typename count } labels { __typename count } repository { __typename rootRef readme: blobs(paths: ["README.md", "README", "README.txt"], first: 1) { __typename nodes { __typename rawTextBlob } } license: blobs( paths: ["LICENSE", "LICENSE.txt", "LICENSE.md", "COPYING"] first: 1 ) { __typename nodes { __typename rawTextBlob } } contributing: blobs( paths: ["CONTRIBUTING", "CONTRIBUTING.txt", "CONTRIBUTING.md"] first: 1 ) { __typename nodes { __typename rawTextBlob } } tree { __typename lastCommit { __typename id title shortId authorName authoredDate webUrl signature { __typename verificationStatus } pipelines { __typename nodes { __typename status } } } } } languages { __typename name share color } userPermissions { __typename createIssue forkProject requestAccess } } }"#
     ))
 
   public var fullPath: ID
@@ -166,6 +166,7 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
           .field("__typename", String.self),
           .field("commitCount", Double.self),
           .field("repositorySize", Double.self),
+          .field("lfsObjectsSize", Double.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           ProjectQuery.Data.Project.Statistics.self
@@ -175,6 +176,8 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
         public var commitCount: Double { __data["commitCount"] }
         /// Repository size of the project in bytes.
         public var repositorySize: Double { __data["repositorySize"] }
+        /// Large File Storage (LFS) object size of the project in bytes.
+        public var lfsObjectsSize: Double { __data["lfsObjectsSize"] }
       }
 
       /// Project.Releases

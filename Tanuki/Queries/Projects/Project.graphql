@@ -27,6 +27,7 @@ query Project($fullPath: ID!) {
     statistics {
       commitCount
       repositorySize
+      lfsObjectsSize
     }
     releases {
       count
