@@ -38,14 +38,14 @@ Pushing the tag triggers `.github/workflows/release.yml` +
 | **Projects**                     |        |         |             |
 | Browsing                         | ✅     | ✅      | ✅          |
 | Search and Filtering             | ✅     | ✅      | ✅          |
-| Star and Fork                    | ❌     | ✅      | ✅          |
+| Star and Fork                    | Star ✅, Fork ❌ | ✅      | ✅          |
 | Wiki browsing                    | ❌     | ✅      | ✅          |
 | Share                            | ✅     | ✅      | ✅          |
 | Create Project                   | ✅     | ❌      | ✅          |
 | Project Settings                 | ❌     | ❌      | ✅          |
 | Project Download                 | ❌     | ❌      | ✅          |
-| CI/CD                            | ❌     | ❌      | ✅          |
-| Invite Member                    | ❌     | ❌      | ✅          |
+| CI/CD                            | ✅ (view only) | ❌      | ✅          |
+| Invite Member                    | ✅     | ❌      | ✅          |
 | Invite Group                     | ❌     | ❌      | ✅          |
 | Wiki Management                  | ❌     | ❌      | ✅          |
 | Create Snippet                   | ❌     | ❌      | ✅          |
@@ -58,17 +58,17 @@ Pushing the tag triggers `.github/workflows/release.yml` +
 | Import, Export Files             | ❌     | ❌      | ✅          |
 | **Merge Requests**               |        |         |             |
 | Browsing                         | ✅     | ✅      | ✅          |
-| Search and Filter                | ❌     | ✅      | ✅          |
+| Search and Filter                | ✅     | ✅      | ✅          |
 | Emoji Reaction                   | ❌     | ✅      | ✅          |
-| Create, Delete, Close, Edit      | ⚠️     | ❌      | ✅          |
+| Create, Delete, Close, Edit      | Close, Delete ✅; Create, Edit ❌ | ❌      | ✅          |
 | Merge Action                     | ✅     | ❌      | ✅          |
 | Mark as Draft                    | ❌     | ❌      | ✅          |
-| Add Comments (supports Markdown) | ❌     | ❌      | ✅          |
+| Add Comments (supports Markdown) | ✅     | ❌      | ✅          |
 | **Issues**                       |        |         |             |
 | Browsing                         | ✅     | ✅      | ✅          |
 | Search and Filter                | ✅     | ✅      | ✅          |
-| Create, Delete, Close, Edit      | ⚠️     | ❌      | ✅          |
-| Add Comments (supports Markdown) | ❌     | ❌      | ✅          |
+| Create, Delete, Close, Edit      | Create, Close, Delete ✅; Edit ❌ | ❌      | ✅          |
+| Add Comments (supports Markdown) | ✅     | ❌      | ✅          |
 | **Groups**                       |        |         |             |
 | Browsing                         | ✅     | ✅      | ✅          |
 | Create Group                     | ❌     | ❌      | ✅          |
@@ -81,6 +81,6 @@ Pushing the tag triggers `.github/workflows/release.yml` +
 | Email Management                 | ❌     | ✅      | ✅          |
 | Keys Management                  | ❌     | ✅      | ✅          |
 | Todo Management                  | ❌     | ❌      | ✅          |
-| Multi Account                    | ❌     | ❌      | ✅          |
+| Multi Account                    | ✅     | ❌      | ✅          |
 | View in Browser                  | ❌     | ❌      | ✅          |
 | Push Notifications               | ❌     | ❌      | ✅          |
