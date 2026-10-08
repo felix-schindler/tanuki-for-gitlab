@@ -11,6 +11,7 @@ query Project($fullPath: ID!) {
     issuesEnabled
     openIssuesCount
     mergeRequestsEnabled
+    wikiEnabled
     jobsEnabled
     openMergeRequestsCount
     webUrl
