@@ -2,6 +2,8 @@
 //  MergeRequestFilter.swift
 //  Tanuki
 //
+//  Created by Felix Schindler on 08.10.26.
+//
 
 import GitLabAPI
 import SwiftUI
