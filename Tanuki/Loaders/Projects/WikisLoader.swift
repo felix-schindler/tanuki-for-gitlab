@@ -1,0 +1,134 @@
+//
+//  WikisLoader.swift
+//  Tanuki
+//
+
+import SwiftUI
+
+struct WikiPage: Codable, Identifiable {
+	var id: String { slug }
+	let slug: String
+	let title: String
+	let format: String
+	let content: String?
+}
+
+struct WikisLoader: View {
+	private let projectId: Int
+
+	@State
+	private var pages: Result<[WikiPage], Error>? = nil
+
+	init(projectId: Int) {
+		self.projectId = projectId
+	}
+
+	private func loadPages() async {
+		do {
+			pages = .success(
+				try await API.get(
+					type: [WikiPage].self,
+					endpoint: "projects/\(projectId)/wikis"
+				))
+		} catch {
+			pages = .failure(error)
+			Notify.status(.error)
+		}
+	}
+
+	var body: some View {
+		List {
+			if let pages {
+				switch pages {
+				case .success(let pages):
+					if pages.isEmpty {
+						NoContentView(
+							"This project has no wiki pages",
+							systemImage: "book.closed")
+					} else {
+						ForEach(pages) { page in
+							NavigationLink(
+								destination: WikiPageLoader(
+									projectId: projectId,
+									slug: page.slug,
+									title: page.title
+								)
+							) {
+								Label(page.title.emojized(), systemImage: "doc.text")
+							}
+						}
+					}
+				case .failure(let error):
+					FailedView(error)
+				}
+			} else {
+				LoadingView("Loading Wiki", systemImage: "book.closed")
+			}
+		}.task {
+			await loadPages()
+		}.refreshable {
+			await loadPages()
+		}.navigationTitle("Wiki")
+	}
+}
+
+struct WikiPageLoader: View {
+	private let projectId: Int
+	private let slug: String
+	private let title: String
+
+	@State
+	private var page: Result<WikiPage, Error>? = nil
+
+	init(projectId: Int, slug: String, title: String? = nil) {
+		self.projectId = projectId
+		self.slug = slug
+		self.title = title ?? slug
+	}
+
+	private func loadPage() async {
+		do {
+			page = .success(
+				try await API.req(
+					type: WikiPage.self,
+					method: .get,
+					endpoint: "projects/\(projectId)/wikis",
+					resource: slug
+				))
+		} catch {
+			page = .failure(error)
+			Notify.status(.error)
+		}
+	}
+
+	var body: some View {
+		List {
+			if let page {
+				switch page {
+				case .success(let page):
+					if let content = page.content, content.isNotEmpty {
+						Markdown(content, baseURL: API.url)
+					} else {
+						NoContentView(
+							"This page is empty",
+							systemImage: "doc.text")
+					}
+				case .failure(let error):
+					FailedView(error)
+				}
+			} else {
+				LoadingView("Loading Page", systemImage: "doc.text")
+			}
+		}.task {
+			await loadPage()
+		}.refreshable {
+			await loadPage()
+		}.navigationTitle(title.emojized())
+	}
+}
+
+#Preview {
+	NavigationStack {
+		WikisLoader(projectId: 33_025_310)
+	}
+}

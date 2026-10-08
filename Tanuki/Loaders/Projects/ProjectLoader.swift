@@ -269,6 +269,11 @@ struct ProjectLoader: View {
 										"Tags",
 										destination: TagsLoader(projectId)
 									)
+
+									NavigationLink(
+										"Wiki",
+										destination: WikisLoader(projectId: projectId)
+									)
 								},
 								label: {
 									Label(
