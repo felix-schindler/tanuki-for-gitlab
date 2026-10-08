@@ -270,10 +270,12 @@ struct ProjectLoader: View {
 										destination: TagsLoader(projectId)
 									)
 
-									NavigationLink(
-										"Wiki",
-										destination: WikisLoader(projectId: projectId)
-									)
+									if project.wikiEnabled ?? true {
+										NavigationLink(
+											"Wiki",
+											destination: WikisLoader(projectId: projectId)
+										)
+									}
 								},
 								label: {
 									Label(
