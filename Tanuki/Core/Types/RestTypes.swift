@@ -66,6 +66,11 @@ struct RestAPIStatus: Codable {
 	let message: String?
 }
 
+struct RestAPIEmail: Codable {
+	let id: Int
+	let email: String
+}
+
 // MARK: - Groups
 struct RestAPIGroup: Codable {
 	let id: Int

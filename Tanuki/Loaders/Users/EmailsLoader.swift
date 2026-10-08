@@ -2,6 +2,8 @@
 //  EmailsLoader.swift
 //  Tanuki
 //
+//  Created by Felix Schindler on 08.10.26.
+//
 
 import GitLabAPI
 import SwiftUI
@@ -9,6 +11,9 @@ import SwiftUI
 struct EmailsLoader: View {
 	@State
 	private var emails: Result<[CurrentUserEmailsQuery.Data.CurrentUser.Emails.Node?], Error>? = nil
+
+	@State private var showAdd = false
+	@State private var newEmail = ""
 
 	private func loadEmails() async {
 		do {
@@ -48,6 +53,39 @@ struct EmailsLoader: View {
 		}
 	}
 
+	private func addEmail() async {
+		do {
+			_ = try await API.req(
+				type: RestAPIEmail.self,
+				method: .post,
+				endpoint: "user/emails",
+				body: ["email": newEmail],
+				contentType: .formUrlEncoded
+			)
+
+			newEmail = ""
+			showAdd = false
+			await reloadEmails()
+		} catch let error {
+			Notify.status(.error, "Couldn't add email", error.localizedDescription)
+		}
+	}
+
+	private func deleteEmail(
+		_ email: CurrentUserEmailsQuery.Data.CurrentUser.Emails.Node
+	) async {
+		do {
+			guard let id = email.id.toIntId() else {
+				return
+			}
+
+			try await API.delete(endpoint: "user/emails/\(id)")
+			await reloadEmails()
+		} catch let error {
+			Notify.status(.error, "Couldn't delete email", error.localizedDescription)
+		}
+	}
+
 	public var body: some View {
 		List {
 			if let emails {
@@ -66,11 +104,19 @@ struct EmailsLoader: View {
 										.textSelection(.enabled)
 									Spacer()
 									if email.confirmedAt != nil {
-                                        Image(systemName: "checkmark.seal.fill")
-                                            .foregroundStyle(.green)
+										Image(systemName: "checkmark.seal.fill")
+											.foregroundStyle(.green)
 									} else {
-                                        Image(systemName: "xmark.seal.fill")
-                                            .foregroundStyle(.red)
+										Image(systemName: "xmark.seal.fill")
+											.foregroundStyle(.red)
+									}
+								}.swipeActions(edge: .trailing, allowsFullSwipe: true) {
+									Button(role: .destructive) {
+										Task {
+											await deleteEmail(email)
+										}
+									} label: {
+										Label("Delete", systemImage: "trash")
 									}
 								}
 							}
@@ -86,6 +132,26 @@ struct EmailsLoader: View {
 			await loadEmails()
 		}.refreshable {
 			await reloadEmails()
+		}.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				Button("Add", systemImage: "plus") {
+					showAdd = true
+				}
+			}
+		}.sheet(isPresented: $showAdd) {
+			NavigationStack {
+				Form {
+					TextField("user@example.com", text: $newEmail)
+						.textInputAutocapitalization(.never)
+						.keyboardType(.emailAddress)
+				}.toolbar {
+					AsyncButton("Save", systemImage: "checkmark") {
+						await addEmail()
+					}
+                    .tint(.accentColor)
+                    .disabled(newEmail.isEmpty)
+				}.navigationTitle("New Email")
+			}
 		}.navigationTitle("Emails")
 	}
 }

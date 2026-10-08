@@ -10,6 +10,9 @@ import SwiftUI
 struct SshKey: Codable {
 	let id: Int
 	let title: String
+	let createdAt: Date
+	let lastUsedAt: Date?
+	let expiresAt: Date?
 	let key: String
 }
 
@@ -40,13 +43,31 @@ struct KeysLoader: View {
 						)
 					} else {
 						ForEach(keys, id: \.id) { key in
-							VStack(alignment: .leading) {
-								Text(key.title)
-									.font(.headline)
-								Text(key.key)
-									.font(.system(.footnote, design: .monospaced))
-									.textSelection(.enabled)
-							}
+							DisclosureGroup(
+								content: {
+									Text(key.key)
+										.font(.system(.footnote, design: .monospaced))
+										.textSelection(.enabled)
+								},
+								label: {
+									VStack(alignment: .leading) {
+										Text(key.title)
+											.font(.headline)
+										ScrollView(.horizontal) {
+											HStack {
+												PillView(key.createdAt.toString(), icon: "calendar.badge.plus")
+												if let lastUsedAt = key.lastUsedAt {
+													PillView("Last used \(lastUsedAt.toString())")
+												} else {
+													PillView("Never used")
+												}
+												if let expiresAt = key.expiresAt {
+													PillView(expiresAt.toString(), icon: "calendar.badge.clock")
+												}
+											}
+										}.font(.footnote)
+									}
+								})
 						}
 					}
 				case .failure(let error):

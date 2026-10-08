@@ -102,18 +102,6 @@ extension String {
 		return EmojiHelper.emojizedStringWithString(text: self)
 	}
 
-	func toIntId() -> Int? {
-		return Int(self.split(separator: "/").last ?? "")
-	}
-
-	func toStringId() -> String? {
-		if let last = self.split(separator: "/").last {
-			return String(last)
-		}
-
-		return nil
-	}
-
 	/// Writes the string to clipboard
 	func copyToClipboard() {
 		UIPasteboard.general.string = self
@@ -127,6 +115,20 @@ extension String {
 		}
 
 		return result
+	}
+}
+
+extension GitLabAPI.ID {
+	func toIntId() -> Int? {
+		return Int(self.split(separator: "/").last ?? "")
+	}
+
+	func toStringId() -> String? {
+		if let last = self.split(separator: "/").last {
+			return String(last)
+		}
+
+		return nil
 	}
 }
 
