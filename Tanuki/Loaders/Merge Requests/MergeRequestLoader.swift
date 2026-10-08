@@ -241,9 +241,7 @@ struct MergeRequestLoader: View {
 								}
 							}.font(.footnote)
 
-							if let description = mr.description?.emojized(),
-								description.isNotEmpty
-							{
+							if let description = mr.description, description.isNotEmpty {
 								Markdown(description)
 							}
 

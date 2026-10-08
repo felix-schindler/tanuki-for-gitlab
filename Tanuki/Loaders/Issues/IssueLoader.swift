@@ -154,9 +154,7 @@ struct IssueLoader: View {
 								.monospacedDigit()
 							}
 
-							if let description = issue.description?.emojized(),
-								description.isNotEmpty
-							{
+							if let description = issue.description, description.isNotEmpty {
 								Markdown(description)
 							}
 

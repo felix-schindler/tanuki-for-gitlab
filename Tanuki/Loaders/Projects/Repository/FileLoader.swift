@@ -172,9 +172,7 @@ struct FileLoader: View {
 			self.text = nil
 		} else {
 			self.image = nil
-			// `emojized()` is a regex over the whole file, so do it here too.
 			self.text = (try? String(contentsOf: url, encoding: .utf8))
-				.map { fileExtension == "md" ? $0.emojized() : $0 }
 		}
 	}
 

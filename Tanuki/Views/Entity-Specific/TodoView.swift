@@ -74,7 +74,7 @@ struct TodoView: View {
 				Text(Date.fromToString(todo.createdAt))
 			}.font(.footnote)
 
-			Markdown(todo.body.emojized())
+			Markdown(todo.body)
 
 			ScrollView(.horizontal) {
 				HStack {

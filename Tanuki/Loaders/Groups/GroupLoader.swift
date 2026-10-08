@@ -122,9 +122,7 @@ struct GroupLoader: View {
 							}.font(.footnote)
 						}
 
-						if let description = group.description?.emojized(),
-							description.isNotEmpty
-						{
+						if let description = group.description, description.isNotEmpty {
 							Markdown(description)
 						}
 					}

@@ -170,7 +170,7 @@ struct TimelogsLoader: View {
 
 									Text("\(log.timeSpent / 60) minutes")
 
-									if let summary = log.summary?.emojized(), summary.isNotEmpty {
+									if let summary = log.summary, summary.isNotEmpty {
 										Markdown(summary)
 									}
 								}

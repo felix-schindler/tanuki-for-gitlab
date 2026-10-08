@@ -94,7 +94,7 @@ struct NoteView: View {
 					}.font(.footnote)
 
 					Markdown(
-						note.body.emojized(),
+						note.body,
 						baseURL: API.url,
 						imageBaseURL: URL(
 							string: "\(API.url.absoluteString)/-/project/\(self.projectId)")

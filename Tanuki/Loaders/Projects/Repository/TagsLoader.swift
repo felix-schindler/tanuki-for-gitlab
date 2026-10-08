@@ -55,7 +55,7 @@ struct TagsLoader: View {
 									.fontWeight(.medium)
 
 								if tag.message.isNotEmpty {
-									Markdown(tag.message.emojized())
+									InlineMarkdown(tag.message)
 								}
 
 								VStack(alignment: .leading) {
@@ -64,7 +64,7 @@ struct TagsLoader: View {
 											.font(.system(.footnote, design: .monospaced))
 										Text(tag.commit.authoredDate.toString())
 									}
-									Text(tag.commit.title.emojized())
+									InlineMarkdown(tag.commit.title.emojized())
 								}.font(.footnote)
 							}
 						}

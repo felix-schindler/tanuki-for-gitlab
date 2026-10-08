@@ -56,9 +56,7 @@ struct ProjectHeaderView: View {
 				}
 			}
 
-			if let description = project.description?.emojized(),
-				description.isNotEmpty
-			{
+			if let description = project.description, description.isNotEmpty {
 				Markdown(description)
 			}
 

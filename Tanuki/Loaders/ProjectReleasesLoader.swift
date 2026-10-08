@@ -106,9 +106,7 @@ struct ProjectReleasesLoader: View {
 												}.font(.footnote)
 											}
 
-											if let description = release.description?.emojized(),
-												description.isNotEmpty
-											{
+											if let description = release.description, description.isNotEmpty {
 												Markdown(description, baseURL: API.url)
 											}
 										}

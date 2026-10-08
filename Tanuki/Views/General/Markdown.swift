@@ -18,7 +18,7 @@ struct Markdown: View {
 	private var supportHTML = false
 
 	init(_ content: String, baseURL: URL? = nil, imageBaseURL: URL? = nil) {
-		self.content = content
+		self.content = content.emojized()
 		self.baseURL = baseURL
 		self.imageBaseURL = imageBaseURL
 	}
@@ -27,7 +27,7 @@ struct Markdown: View {
 		if supportHTML {
 			HTMLMarkdown(content, imageBaseURL: imageBaseURL)
 		} else {
-			StructuredText(markdown: content.emojized(), baseURL: baseURL)
+			StructuredText(markdown: content, baseURL: baseURL)
 		}
 	}
 }
@@ -37,7 +37,7 @@ struct InlineMarkdown: View {
 	private let baseURL: URL?
 
 	init(_ content: String, baseURL: URL? = nil) {
-		self.content = content
+		self.content = content.emojized()
 		self.baseURL = baseURL
 	}
 

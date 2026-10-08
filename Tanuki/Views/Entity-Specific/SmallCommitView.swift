@@ -37,8 +37,8 @@ struct SmallCommitView: View {
 	private var main: some View {
 		HStack {
 			VStack(alignment: .leading) {
-				if let title = commit.title?.emojized(), title.isNotEmpty {
-					Markdown(title)
+				if let title = commit.title, title.isNotEmpty {
+					InlineMarkdown(title)
 				}
 
 				if commit.authorName != nil

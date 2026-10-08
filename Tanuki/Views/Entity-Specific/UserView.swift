@@ -94,7 +94,7 @@ struct UserView: View {
 				}
 			}
 
-			if let bio = user.bio?.emojized(), bio.isNotEmpty {
+			if let bio = user.bio, bio.isNotEmpty {
 				Markdown(bio)
 			}
 		}
