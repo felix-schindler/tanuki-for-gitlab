@@ -66,11 +66,11 @@ struct EmailsLoader: View {
 										.textSelection(.enabled)
 									Spacer()
 									if email.confirmedAt != nil {
-										PillView("confirmed", cornerRadius: 5)
-											.font(.footnote)
+                                        Image(systemName: "checkmark.seal.fill")
+                                            .foregroundStyle(.green)
 									} else {
-										PillView("unconfirmed", cornerRadius: 5)
-											.font(.footnote)
+                                        Image(systemName: "xmark.seal.fill")
+                                            .foregroundStyle(.red)
 									}
 								}
 							}
