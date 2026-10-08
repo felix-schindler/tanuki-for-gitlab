@@ -27,14 +27,37 @@ struct VotePillsView: View {
 	let downvotes: Int
 	var onVoted: () async -> Void = {}
 
+	private struct AwardEmoji: Codable {
+		let id: Int
+		let name: String
+		let user: UserSmall
+	}
+
 	private func vote(_ name: String) async {
 		guard let projectId else { return }
+		let endpoint = "projects/\(projectId)/\(type.path)/\(iid)/award_emoji"
 		do {
 			_ = try await API.raw(
 				method: .post,
-				endpoint: "projects/\(projectId)/\(type.path)/\(iid)/award_emoji",
+				endpoint: endpoint,
 				body: ["name": EncodableValue.string(name)]
 			)
+			await onVoted()
+		} catch {
+			await unvote(endpoint: endpoint, name: name, originalError: error)
+		}
+	}
+
+	private func unvote(endpoint: String, name: String, originalError: Error) async {
+		do {
+			let me = try await API.get(type: RestAPIUser.self, endpoint: "user")
+			let awards = try await API.get(
+				type: [AwardEmoji].self, endpoint: endpoint, query: ["per_page": "100"])
+			guard let mine = awards.first(where: { $0.name == name && $0.user.id == me.id }) else {
+				Notify.status(.error, "Failed to vote", originalError.localizedDescription)
+				return
+			}
+			try await API.delete(endpoint: "\(endpoint)/\(mine.id)")
 			await onVoted()
 		} catch {
 			Notify.status(.error, "Failed to vote", error.localizedDescription)
