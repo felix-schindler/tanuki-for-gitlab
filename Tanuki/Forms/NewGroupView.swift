@@ -42,7 +42,7 @@ struct NewGroupView: View {
 				endpoint: "groups",
 				body: body
 			)
-			Notify.status(.success, "Group \(group.name) created.")
+			Notify.status(.success, "Group \(group.name ?? "group") created.")
 			dismiss()
 		} catch {
 			Notify.status(.error, error.localizedDescription)

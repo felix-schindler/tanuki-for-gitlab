@@ -3,7 +3,6 @@
 //  Tanuki
 //
 
-import Alamofire
 import SwiftUI
 
 enum AwardableType {

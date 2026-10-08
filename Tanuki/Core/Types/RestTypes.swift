@@ -69,6 +69,7 @@ struct RestAPIStatus: Codable {
 // MARK: - Groups
 struct RestAPIGroup: Codable {
 	let id: Int
+	let name: String?
 	let fullPath: String?
 }
 
@@ -91,12 +92,6 @@ struct RestAPIIssue: Codable {
 struct RestAPIMergeRequest: Codable {
 	let iid: Int
 	let state: String
-}
-
-// MARK: - Groups
-struct RestAPIGroup: Codable {
-	let id: Int
-	let name: String
 }
 
 // MARK: - Snippets
