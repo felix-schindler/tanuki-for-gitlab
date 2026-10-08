@@ -1,0 +1,11 @@
+query CurrentUserEmails {
+  currentUser {
+    emails {
+      nodes {
+        id
+        email
+        confirmedAt
+      }
+    }
+  }
+}

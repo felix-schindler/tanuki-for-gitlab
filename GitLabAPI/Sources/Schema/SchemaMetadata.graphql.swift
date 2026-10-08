@@ -43,6 +43,8 @@ nonisolated public enum SchemaMetadata: ApolloAPI.SchemaMetadata {
     "DiffStats": GitLabAPI.Objects.DiffStats,
     "DiffStatsSummary": GitLabAPI.Objects.DiffStatsSummary,
     "Discussion": GitLabAPI.Objects.Discussion,
+    "Email": GitLabAPI.Objects.Email,
+    "EmailConnection": GitLabAPI.Objects.EmailConnection,
     "GpgSignature": GitLabAPI.Objects.GpgSignature,
     "Group": GitLabAPI.Objects.Group,
     "GroupConnection": GitLabAPI.Objects.GroupConnection,
