@@ -15,6 +15,7 @@ enum NavDest {
 		milestone,
 		release,
 		member,
+		groupShare,
 		label
 }
 
@@ -43,6 +44,9 @@ struct ProjectLoader: View {
 
 	@State
 	private var navigationDestination: NavDest? = nil
+
+	@State
+	private var archiveURL: URL? = nil
 
 	init(fullPath: String) {
 		self.fullPath = fullPath
@@ -113,6 +117,32 @@ struct ProjectLoader: View {
 			Notify.status(.success, "Access request sent", systemImage: "checkmark")
 		} catch {
 			Notify.status(.error, "Access request failed", error.localizedDescription, systemImage: "xmark")
+		}
+	}
+
+	private func downloadArchive(_ projectId: Int, ref: String?) async {
+		do {
+			var query: [String: String] = [:]
+			if let ref {
+				query["sha"] = ref
+			}
+			let fileName = "\(self.fullPath.components(separatedBy: "/").last ?? "archive").zip"
+			let url = try await API.download(
+				to: { _, _ in
+					(
+						FileCache.destination(for: fileName),
+						[.createIntermediateDirectories, .removePreviousFile]
+					)
+				},
+				method: .get,
+				endpoint: "projects/\(projectId)/repository/archive.zip",
+				query: query
+			)
+			FileCache.purge()
+			self.archiveURL = url
+			Notify.status(.success, "Archive downloaded", systemImage: "checkmark")
+		} catch {
+			Notify.status(.error, "Download failed", error.localizedDescription, systemImage: "xmark")
 		}
 	}
 
@@ -421,6 +451,20 @@ struct ProjectLoader: View {
 								}
 							}
 						}
+
+						if let projectId = project.id.toIntId() {
+							Section {
+								if let archiveURL {
+									ShareButton(archiveURL)
+								}
+								AsyncButton(
+									"Download archive",
+									systemImage: "archivebox"
+								) {
+									await downloadArchive(projectId, ref: project.repository?.rootRef)
+								}
+							}
+						}
 					}
 
 					Menu("Create", systemImage: "plus") {
@@ -446,6 +490,11 @@ struct ProjectLoader: View {
 							navigationDestination = .member
 						}
 
+						Button("Share with Group", systemImage: "person.2.badge.plus") {
+							navigationActive = true
+							navigationDestination = .groupShare
+						}
+
 						Button("Create Label", systemImage: "tag") {
 							navigationActive = true
 							navigationDestination = .label
@@ -467,6 +516,8 @@ struct ProjectLoader: View {
 					NewReleaseView(id: projectId, fullPath: self.fullPath)
 				case .member:
 					NewMemberView(id: projectId, groupId: 0)
+				case .groupShare:
+					NewGroupShareView(id: projectId)
 				case .label:
 					NewLabelView(id: projectId, groupId: 0)
 				}
