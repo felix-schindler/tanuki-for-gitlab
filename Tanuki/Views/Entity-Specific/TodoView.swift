@@ -15,6 +15,19 @@ struct TodoView: View {
 		self.todo = todo
 	}
 
+	private func markDone() async {
+		guard let id = todo.id.toIntId() else {
+			Notify.status(.error, "Failed to mark todo as done", systemImage: "xmark")
+			return
+		}
+		do {
+			_ = try await API.raw(method: .post, endpoint: "todos/\(id)/mark_as_done")
+			Notify.status(.success, "Todo marked as done", systemImage: "checkmark")
+		} catch let error {
+			Notify.status(.error, "Failed to mark todo as done", error.localizedDescription, systemImage: "xmark")
+		}
+	}
+
 	public var body: some View {
 		if let fullPath = todo._project?.fullPath,
 			let iid = todo._webUrl?.toIntId()
@@ -85,6 +98,13 @@ struct TodoView: View {
 				}
 			}.font(.footnote)
 		}.swipeActions {
+			if todo.state != .done {
+				Button("Mark done", systemImage: "checkmark") {
+					Task {
+						await markDone()
+					}
+				}.tint(.green)
+			}
 			if let webUrl = todo._webUrl,
 				let url = URL(string: webUrl)
 			{
