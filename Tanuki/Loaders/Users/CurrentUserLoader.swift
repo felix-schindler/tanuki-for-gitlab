@@ -57,6 +57,15 @@ struct CurrentUserLoader: View {
 				switch user {
 				case .success(let user):
 					UserView(user, isSelf: true)
+
+					Section("Account") {
+						NavigationLink(destination: KeysLoader()) {
+							Label("SSH keys", systemImage: "key")
+						}
+						NavigationLink(destination: EmailsLoader()) {
+							Label("Email addresses", systemImage: "envelope")
+						}
+					}
 				case .failure(let error):
 					FailedView(error)
 				}
