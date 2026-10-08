@@ -18,6 +18,9 @@ struct GroupsLoader: View {
 	@State
 	private var loadTask: Task<Void, Never>?
 
+	@State
+	private var createGroup = false
+
 	// MARK: - Filter
 	public private(set) var parentPath: String? = nil
 	@State public private(set) var search: String? = nil
@@ -111,9 +114,18 @@ struct GroupsLoader: View {
 		}.refreshable {
 			await reloadGroups()
 		}.toolbar {
-			Button("Filter", systemImage: "line.3.horizontal.decrease") {
-				showFilters = true
+			ToolbarItem(placement: .topBarTrailing) {
+				Button("Filter", systemImage: "line.3.horizontal.decrease") {
+					showFilters = true
+				}
 			}
+			ToolbarItem(placement: .topBarTrailing) {
+				Button("New group", systemImage: "plus") {
+					createGroup = true
+				}
+			}
+		}.navigationDestination(isPresented: $createGroup) {
+			NewGroupView()
 		}.sheet(isPresented: $showFilters, onDismiss: { showFilters = false }) {
 			NavigationStack {
 				Form {

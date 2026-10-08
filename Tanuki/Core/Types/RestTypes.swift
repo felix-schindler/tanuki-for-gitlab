@@ -86,3 +86,15 @@ struct RestAPIMergeRequest: Codable {
 	let iid: Int
 	let state: String
 }
+
+// MARK: - Groups
+struct RestAPIGroup: Codable {
+	let id: Int
+	let name: String
+}
+
+// MARK: - Snippets
+struct RestAPISnippet: Codable {
+	let id: Int
+	let title: String
+}
