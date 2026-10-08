@@ -68,18 +68,15 @@ struct VotePillsView: View {
 
 	var body: some View {
 		HStack {
-			Button {
-				Task { await vote("thumbsup") }
-			} label: {
-				PillView(String(upvotes), icon: "hand.thumbsup")
-			}
-			Button {
-				Task { await vote("thumbsdown") }
-			} label: {
-				PillView(String(downvotes), icon: "hand.thumbsdown")
-			}
+            AsyncButton("\(upvotes)", systemImage: "hand.thumbsup") {
+                await vote("thumbsup")
+            }
+            AsyncButton("\(downvotes)", systemImage: "hand.thumbsdown") {
+                await vote("thumbsdown")
+            }
 		}
-		.buttonStyle(.plain)
+        .controlSize(.small)
+        .buttonStyle(.bordered)
 		.disabled(projectId == nil)
 	}
 }
