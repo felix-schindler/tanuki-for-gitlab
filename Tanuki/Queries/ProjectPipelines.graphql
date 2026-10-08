@@ -16,7 +16,6 @@ query ProjectPipelines($fullPath: ID!) {
         }
         source
         status
-        cancelable
         createdAt
       }
     }

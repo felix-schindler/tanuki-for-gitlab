@@ -119,7 +119,7 @@ struct CommitsLoader: View {
 									label: {
 										HStack {
 											VStack(alignment: .leading) {
-												Text(commit.title.emojized())
+												InlineMarkdown(commit.title)
 													.fontWeight(.medium)
 
 												VStack(alignment: .leading) {

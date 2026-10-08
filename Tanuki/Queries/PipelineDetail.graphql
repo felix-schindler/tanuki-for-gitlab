@@ -12,6 +12,8 @@ query PipelineDetail($fullPath: ID!, $iid: ID!) {
       startedAt
       finishedAt
       duration
+      cancelable
+      retryable
       user {
         avatarUrl
         name
@@ -20,7 +22,6 @@ query PipelineDetail($fullPath: ID!, $iid: ID!) {
       stages {
         nodes {
           name
-          status
           jobs {
             nodes {
               id
@@ -28,14 +29,16 @@ query PipelineDetail($fullPath: ID!, $iid: ID!) {
               status
               duration
               startedAt
-              finishedAt
               failureMessage
               allowFailure
+              cancelable
+              retryable
+              playable
               artifacts {
                 nodes {
+                  id
                   name
                   size
-                  fileType
                 }
               }
             }

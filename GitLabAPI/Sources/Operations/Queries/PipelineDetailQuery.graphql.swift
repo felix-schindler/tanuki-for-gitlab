@@ -8,7 +8,7 @@ nonisolated public struct PipelineDetailQuery: GraphQLQuery {
   public static let operationName: String = "PipelineDetail"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query PipelineDetail($fullPath: ID!, $iid: ID!) { project(fullPath: $fullPath) { __typename pipeline(iid: $iid) { __typename id iid name status ref sha source createdAt startedAt finishedAt duration user { __typename avatarUrl name username } stages { __typename nodes { __typename name status jobs { __typename nodes { __typename id name status duration startedAt finishedAt failureMessage allowFailure artifacts { __typename nodes { __typename name size fileType } } } } } } } } }"#
+      #"query PipelineDetail($fullPath: ID!, $iid: ID!) { project(fullPath: $fullPath) { __typename pipeline(iid: $iid) { __typename id iid name status ref sha source createdAt startedAt finishedAt duration cancelable retryable user { __typename avatarUrl name username } stages { __typename nodes { __typename name jobs { __typename nodes { __typename id name status duration startedAt failureMessage allowFailure cancelable retryable playable artifacts { __typename nodes { __typename id name size } } } } } } } } }"#
     ))
 
   public var fullPath: ID
@@ -82,6 +82,8 @@ nonisolated public struct PipelineDetailQuery: GraphQLQuery {
           .field("startedAt", GitLabAPI.Time?.self),
           .field("finishedAt", GitLabAPI.Time?.self),
           .field("duration", Int?.self),
+          .field("cancelable", Bool.self),
+          .field("retryable", Bool.self),
           .field("user", User?.self),
           .field("stages", Stages?.self),
         ] }
@@ -111,6 +113,10 @@ nonisolated public struct PipelineDetailQuery: GraphQLQuery {
         public var finishedAt: GitLabAPI.Time? { __data["finishedAt"] }
         /// Duration of the pipeline in seconds.
         public var duration: Int? { __data["duration"] }
+        /// Specifies if a pipeline can be canceled.
+        public var cancelable: Bool { __data["cancelable"] }
+        /// Specifies if a pipeline's jobs can be retried.
+        public var retryable: Bool { __data["retryable"] }
         /// Pipeline user.
         public var user: User? { __data["user"] }
         /// Stages of the pipeline.
@@ -172,7 +178,6 @@ nonisolated public struct PipelineDetailQuery: GraphQLQuery {
             @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
               .field("__typename", String.self),
               .field("name", String?.self),
-              .field("status", String?.self),
               .field("jobs", Jobs?.self),
             ] }
             @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
@@ -181,8 +186,6 @@ nonisolated public struct PipelineDetailQuery: GraphQLQuery {
 
             /// Name of the stage.
             public var name: String? { __data["name"] }
-            /// Status of the pipeline stage.
-            public var status: String? { __data["status"] }
             /// Jobs for the stage.
             public var jobs: Jobs? { __data["jobs"] }
 
@@ -220,9 +223,11 @@ nonisolated public struct PipelineDetailQuery: GraphQLQuery {
                   .field("status", GraphQLEnum<GitLabAPI.CiJobStatus>?.self),
                   .field("duration", Int?.self),
                   .field("startedAt", GitLabAPI.Time?.self),
-                  .field("finishedAt", GitLabAPI.Time?.self),
                   .field("failureMessage", String?.self),
                   .field("allowFailure", Bool.self),
+                  .field("cancelable", Bool.self),
+                  .field("retryable", Bool.self),
+                  .field("playable", Bool.self),
                   .field("artifacts", Artifacts?.self),
                 ] }
                 @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
@@ -239,12 +244,16 @@ nonisolated public struct PipelineDetailQuery: GraphQLQuery {
                 public var duration: Int? { __data["duration"] }
                 /// When the job was started.
                 public var startedAt: GitLabAPI.Time? { __data["startedAt"] }
-                /// When a job has finished running.
-                public var finishedAt: GitLabAPI.Time? { __data["finishedAt"] }
                 /// Message on why the job failed.
                 public var failureMessage: String? { __data["failureMessage"] }
                 /// Whether the job is allowed to fail.
                 public var allowFailure: Bool { __data["allowFailure"] }
+                /// Indicates the job can be canceled.
+                public var cancelable: Bool { __data["cancelable"] }
+                /// Indicates the job can be retried.
+                public var retryable: Bool { __data["retryable"] }
+                /// Indicates the job can be played.
+                public var playable: Bool { __data["playable"] }
                 /// Artifacts generated by the job.
                 public var artifacts: Artifacts? { __data["artifacts"] }
 
@@ -277,20 +286,20 @@ nonisolated public struct PipelineDetailQuery: GraphQLQuery {
                     @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.CiJobArtifact }
                     @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
                       .field("__typename", String.self),
+                      .field("id", GitLabAPI.CiJobArtifactID.self),
                       .field("name", String?.self),
                       .field("size", GitLabAPI.BigInt.self),
-                      .field("fileType", GraphQLEnum<GitLabAPI.JobArtifactFileType>?.self),
                     ] }
                     @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
                       PipelineDetailQuery.Data.Project.Pipeline.Stages.Node.Jobs.Node.Artifacts.Node.self
                     ] }
 
+                    /// ID of the artifact.
+                    public var id: GitLabAPI.CiJobArtifactID { __data["id"] }
                     /// File name of the artifact.
                     public var name: String? { __data["name"] }
                     /// Size of the artifact in bytes.
                     public var size: GitLabAPI.BigInt { __data["size"] }
-                    /// File type of the artifact.
-                    public var fileType: GraphQLEnum<GitLabAPI.JobArtifactFileType>? { __data["fileType"] }
                   }
                 }
               }

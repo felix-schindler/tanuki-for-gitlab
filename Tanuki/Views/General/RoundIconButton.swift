@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct CloseButton: View {
 	private var action: () -> Void
@@ -32,6 +33,24 @@ struct ShareButton: View {
 		ShareLink(item: url) {
 			Label("Share", systemImage: "square.and.arrow.up")
 		}
+	}
+}
+
+/// Presents the downloaded file immediately (ShareLink can't trigger programmatically).
+enum ShareSheet {
+	@MainActor
+	static func present(for url: URL) {
+		guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+			let root = windowScene.windows.first?.rootViewController
+		else { return }
+		let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+		if let popover = vc.popoverPresentationController {
+			popover.sourceView = root.view
+			popover.sourceRect = CGRect(
+				x: root.view.bounds.midX, y: root.view.bounds.midY, width: 0, height: 0)
+			popover.permittedArrowDirections = []
+		}
+		root.present(vc, animated: true)
 	}
 }
 

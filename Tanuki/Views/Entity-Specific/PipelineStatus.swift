@@ -19,40 +19,45 @@ struct PipelineStatus: View {
 	init(_ state: GraphQLEnum<GitLabAPI.PipelineStatusEnum>) {
 		self.state = state
 
-		switch state {
-		case .created:
-			self.icon = "plus.circle"
-			self.color = Color.orange
-		case .waitingForResource, .waitingForCallback:
-			self.icon = "pause.circle"
-			self.color = Color.orange
-		case .success:
-			self.icon = "checkmark.circle"
-			self.color = Color.green
-		case .failed:
-			self.icon = "minus.circle"
-			self.color = Color.red
-		case .canceled:
-			self.icon = "slash.circle"
-			self.color = Color.gray
-		case .skipped:
-			self.icon = "chevron.right.circle"
-			self.color = Color.gray
-		case .manual:
-			self.icon = "person.crop.circle"
-			self.color = Color.primary
-		case .scheduled:
-			self.icon = "hourglass.circle"
-			self.color = Color.primary
-		default:
-			self.icon = "arrow.2.circlepath.circle"
-			self.color = Color.orange
-		}
+		let style = Self.style(for: state)
+		self.icon = style.icon
+		self.color = style.color
 	}
 
 	/// REST APIs return lowercase statuses (`"running"`); GraphQL uses uppercase enum cases.
 	init(_ status: String) {
 		self.init(GraphQLEnum<GitLabAPI.PipelineStatusEnum>(rawValue: status.uppercased()))
+	}
+
+	/// Shared icon/color mapping so list rows and pills can reuse it without the button.
+	static func style(for state: GraphQLEnum<GitLabAPI.PipelineStatusEnum>) -> (
+		icon: String, color: SwiftUI.Color
+	) {
+		switch state {
+		case .created:
+			("plus.circle", .orange)
+		case .waitingForResource, .waitingForCallback:
+			("pause.circle", .orange)
+		case .success:
+			("checkmark.circle", .green)
+		case .failed:
+			("minus.circle", .red)
+		case .canceled:
+			("slash.circle", .gray)
+		case .skipped:
+			("chevron.right.circle", .gray)
+		case .manual:
+			("person.crop.circle", .primary)
+		case .scheduled:
+			("hourglass.circle", .primary)
+		default:
+			("arrow.2.circlepath.circle", .orange)
+		}
+	}
+
+	/// `"WAITING_FOR_RESOURCE"` → `"Waiting For Resource"`.
+	static func label(for rawValue: String) -> String {
+		rawValue.split(separator: "_").joined(separator: " ").lowercased().capitalized
 	}
 
 	public var body: some View {

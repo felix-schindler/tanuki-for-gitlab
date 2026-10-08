@@ -8,7 +8,7 @@ nonisolated public struct ProjectPipelinesQuery: GraphQLQuery {
   public static let operationName: String = "ProjectPipelines"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ProjectPipelines($fullPath: ID!) { project(fullPath: $fullPath) { __typename pipelines { __typename nodes { __typename id iid name user { __typename avatarUrl name username } ref commit { __typename shortId } source status cancelable createdAt } } } }"#
+      #"query ProjectPipelines($fullPath: ID!) { project(fullPath: $fullPath) { __typename pipelines { __typename nodes { __typename id iid name user { __typename avatarUrl name username } ref commit { __typename shortId } source status createdAt } } } }"#
     ))
 
   public var fullPath: ID
@@ -90,7 +90,6 @@ nonisolated public struct ProjectPipelinesQuery: GraphQLQuery {
             .field("commit", Commit?.self),
             .field("source", String?.self),
             .field("status", GraphQLEnum<GitLabAPI.PipelineStatusEnum>.self),
-            .field("cancelable", Bool.self),
             .field("createdAt", GitLabAPI.Time.self),
           ] }
           @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
@@ -113,8 +112,6 @@ nonisolated public struct ProjectPipelinesQuery: GraphQLQuery {
           public var source: String? { __data["source"] }
           /// Status of the pipeline (CREATED, WAITING_FOR_RESOURCE, PREPARING, WAITING_FOR_CALLBACK, PENDING, RUNNING, FAILED, SUCCESS, CANCELED, CANCELING, SKIPPED, MANUAL, SCHEDULED)
           public var status: GraphQLEnum<GitLabAPI.PipelineStatusEnum> { __data["status"] }
-          /// Specifies if a pipeline can be canceled.
-          public var cancelable: Bool { __data["cancelable"] }
           /// Timestamp of the pipeline's creation.
           public var createdAt: GitLabAPI.Time { __data["createdAt"] }
 
