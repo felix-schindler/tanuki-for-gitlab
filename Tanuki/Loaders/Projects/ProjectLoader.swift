@@ -12,6 +12,7 @@ import SwiftUI
 
 enum NavDest {
 	case issue,
+		mergeRequest,
 		milestone,
 		release,
 		member,
@@ -487,6 +488,13 @@ struct ProjectLoader: View {
 							navigationDestination = .milestone
 						}
 
+						if project.mergeRequestsEnabled ?? true {
+							Button("Create Merge Request", systemImage: "arrow.triangle.branch") {
+								navigationActive = true
+								navigationDestination = .mergeRequest
+							}
+						}
+
 						Button("Create Release", systemImage: "flag") {
 							navigationActive = true
 							navigationDestination = .release
@@ -517,6 +525,8 @@ struct ProjectLoader: View {
 				switch navigationDestination {
 				case .issue:
 					NewIssueView(id: projectId, fullPath: self.fullPath)
+				case .mergeRequest:
+					NewMergeRequestView(id: projectId, targetBranch: project.repository?.rootRef ?? "main")
 				case .milestone:
 					NewMilestoneView(id: projectId, groupId: 0)
 				case .release:

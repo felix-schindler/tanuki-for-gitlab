@@ -17,6 +17,9 @@ struct GroupLoader: View {
 	@State
 	private var navigationActive = false
 
+	@State
+	private var createSubgroup = false
+
 	init(fullPath: String) {
 		self.fullPath = fullPath
 	}
@@ -268,6 +271,10 @@ struct GroupLoader: View {
 								}
 							}
 
+							Button("Create subgroup", systemImage: "scale.3d") {
+								createSubgroup = true
+							}
+
 							if group.requestAccessEnabled ?? false,
 								let groupId = group.id?.toIntId()
 							{
@@ -287,6 +294,14 @@ struct GroupLoader: View {
 				let groupId = group.id?.toIntId()
 			{
 				NewProjectView(groupId)
+			} else {
+				FailedView("Form couldn't be opened because the namespace ID is not defined")
+			}
+		}.navigationDestination(isPresented: $createSubgroup) {
+			if let group, case .success(let group) = group,
+				let groupId = group.id?.toIntId()
+			{
+				NewGroupView(parentId: groupId)
 			} else {
 				FailedView("Form couldn't be opened because the namespace ID is not defined")
 			}

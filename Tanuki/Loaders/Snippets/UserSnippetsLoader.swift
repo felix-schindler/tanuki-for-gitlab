@@ -14,6 +14,9 @@ struct UserSnippetsLoader: View {
 	@State
 	private var snippets: Result<[Snippet?], Error>? = nil
 
+	@State
+	private var createSnippet = false
+
 	init(username: String? = nil) {
 		self.username = username
 	}
@@ -151,6 +154,14 @@ struct UserSnippetsLoader: View {
 			loadSnippets()
 		}.refreshable {
 			await reloadSnippets()
+		}.toolbar {
+			if username == nil {
+				Button("New snippet", systemImage: "plus") {
+					createSnippet = true
+				}
+			}
+		}.navigationDestination(isPresented: $createSnippet) {
+			NewSnippetView()
 		}.navigationTitle("Snippets")
 	}
 }
