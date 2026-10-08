@@ -121,6 +121,41 @@ struct MergeRequestLoader: View {
 		}
 	}
 
+	private static let draftPrefixes = ["draft: ", "[draft] ", "(draft) "]
+
+	private static func isDraft(_ title: String) -> Bool {
+		let lower = title.lowercased()
+		return draftPrefixes.contains { lower.hasPrefix($0) }
+	}
+
+	private static func readyTitle(_ title: String) -> String {
+		var result = title
+		while let prefix = draftPrefixes.first(where: { result.lowercased().hasPrefix($0) }) {
+			result = String(result.dropFirst(prefix.count)).trimmingCharacters(in: .whitespaces)
+		}
+		return result
+	}
+
+	// GitLab derives draft status from the title prefix, so toggling it is the
+	// same PUT-title pattern as close/reopen — no schema change needed.
+	private func changeDraft(_ projectId: Int, title: String, toDraft: Bool) async {
+		let body: [String: EncodableValue] = [
+			"title": .string(toDraft ? "Draft: \(title)" : Self.readyTitle(title))
+		]
+
+		do {
+			_ = try await API.req(
+				type: RestAPIMergeRequest.self,
+				method: .put,
+				endpoint: "projects/\(projectId)/merge_requests/\(self.iid)",
+				body: body
+			)
+			await reloadMergeRequest()
+		} catch let error {
+			Notify.status(.error, "Failed to change draft state", error.localizedDescription)
+		}
+	}
+
 	private func remove(_ projectId: Int) async {
 		do {
 			_ = try await API.delete(endpoint: "projects/\(projectId)/merge_requests/\(self.iid)")
@@ -450,6 +485,15 @@ struct MergeRequestLoader: View {
 
 								if mr.userPermissions.updateMergeRequest {
 									if mr.state == .opened {
+										AsyncButton(
+											Self.isDraft(mr.title) ? "Mark as ready" : "Mark as draft",
+											systemImage: Self.isDraft(mr.title) ? "flag.slash" : "flag"
+										) {
+											await changeDraft(
+												projectId, title: mr.title,
+												toDraft: !Self.isDraft(mr.title))
+										}.tint(Self.isDraft(mr.title) ? .green : .orange)
+
 										AsyncButton(
 											action: {
 												await changeState(projectId, state: "close")
