@@ -390,13 +390,18 @@ class API {
 		let encoding: ParameterEncoding =
 			(contentType == .json) ? JSONEncoding.default : URLEncoding.default
 
+		// GitLab answers idempotent writes (star/unstar, delete fork) with 304 and an
+		// empty body, which Alamofire rejects as a serialization failure before callers
+		// ever see the status code.
+		let emptyResponseCodes = DataResponseSerializer.defaultEmptyResponseCodes.union([304])
+
 		let response = await session.request(
 			url,
 			method: method,
 			parameters: parameters,
 			encoding: encoding,
 			headers: headers
-		).serializingData().response
+		).serializingData(emptyResponseCodes: emptyResponseCodes).response
 
 		return response
 	}
