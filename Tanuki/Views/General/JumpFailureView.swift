@@ -59,7 +59,7 @@ struct JumpFailureView: View {
 			} label: {
 				Label(copied ? "Details copied" : "Copy details", systemImage: "doc.on.doc")
 			}
-			.buttonStyle(.bordered)
+			.adaptiveButtonStyle()
 			.font(.footnote)
 		}
 		.padding(.vertical, 4)

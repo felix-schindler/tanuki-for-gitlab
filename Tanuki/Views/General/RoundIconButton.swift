@@ -71,7 +71,7 @@ struct RoundIconButton: View {
 	public var body: some View {
 		Button(label, systemImage: iconName, action: action)
 			.frame(minWidth: 30, minHeight: 30)
-			.buttonStyle(.bordered)
+			.adaptiveButtonStyle()
 			.buttonBorderShape(.circle)
 			.labelStyle(.iconOnly)
 	}

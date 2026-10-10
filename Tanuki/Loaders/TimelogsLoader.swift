@@ -116,8 +116,12 @@ struct TimelogsLoader: View {
 											NavigationLink(
 												destination: ProjectLoader(fullPath: log._project.fullPath),
 												label: {
-													PillView(log._project.nameWithNamespace, icon: "app.gift.fill")
-												})
+													Label(log._project.nameWithNamespace, systemImage: "app.gift.fill")
+												}
+											)
+											.controlSize(.mini)
+											.buttonBorderShape(.capsule)
+											.adaptiveButtonStyle()
 
 											AuthorView(log._user)
 
@@ -132,14 +136,12 @@ struct TimelogsLoader: View {
 														iid: issueIid
 													),
 													label: {
-														PillView(
-															"#\(issueIid)",
-															icon: "smallcircle.circle",
-															bgColor: .green,
-															fgColor: .white,
-															cornerRadius: 5
-														)
-													})
+														Label("#\(issueIid)", systemImage: "smallcircle.circle")
+													}
+												)
+												.controlSize(.mini)
+												.buttonBorderShape(.capsule)
+												.adaptiveButtonStyle()
 											}
 
 											if let mergeIid = log._mergeRequest?.iid {
@@ -149,19 +151,18 @@ struct TimelogsLoader: View {
 														iid: mergeIid
 													),
 													label: {
-														PillView(
-															"!\(mergeIid)",
-															icon: "arrow.triangle.pull",
-															bgColor: .blue,
-															fgColor: .white,
-															cornerRadius: 5
-														)
-													})
+														Label("!\(mergeIid)", systemImage: "arrow.triangle.pull")
+													}
+												)
+												.controlSize(.mini)
+												.buttonBorderShape(.capsule)
+												.adaptiveButtonStyle()
 											}
 										}.font(.footnote)
 									}
 
-									Text("\(log.timeSpent / 60) minutes")
+									PillView("\(log.timeSpent / 60) minutes", icon: "clock")
+										.font(.footnote)
 
 									if let summary = log.summary, summary.isNotEmpty {
 										Markdown(summary)

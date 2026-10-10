@@ -62,15 +62,12 @@ struct UserView: View {
 								Link(
 									destination: url,
 									label: {
-										PillView(
-											user.location!,
-											icon: "mappin.and.ellipse",
-											bgColor: .accentColor,
-											fgColor: .white,
-											cornerRadius: 5
-										)
+										Label(user.location!, systemImage: "mappin.and.ellipse")
 									}
 								)
+								.controlSize(.mini)
+								.buttonBorderShape(.capsule)
+								.adaptiveButtonStyle()
 							} else {
 								PillView(
 									user.location!, icon: "mappin.and.ellipse",

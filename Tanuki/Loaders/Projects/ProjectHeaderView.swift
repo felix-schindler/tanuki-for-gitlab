@@ -116,7 +116,7 @@ struct ProjectHeaderView: View {
 								}
 							)
 							.tint(.accentColor)
-							.buttonStyle(.borderedProminent)
+							.adaptiveButtonStyleProminent()
 						} else if namespace.id.contains("Group") {
 							NavigationLink(
 								destination: GroupLoader(fullPath: namespace.fullPath),
@@ -128,7 +128,7 @@ struct ProjectHeaderView: View {
 								}
 							)
 							.tint(.accentColor)
-							.buttonStyle(.borderedProminent)
+							.adaptiveButtonStyleProminent()
 						} else {
 							PillView(namespace.name)
 						}
@@ -141,7 +141,7 @@ struct ProjectHeaderView: View {
 						await star()
 					}
 					.tint(.accentColor)
-					.buttonStyle(.bordered)
+					.adaptiveButtonStyle()
 
 					if project.userPermissions.forkProject {
 						AsyncButton(
@@ -151,7 +151,7 @@ struct ProjectHeaderView: View {
 							await fork()
 						}
 						.tint(.accentColor)
-						.buttonStyle(.bordered)
+						.adaptiveButtonStyle()
 					} else {
 						PillView(
 							String(project.forksCount),
@@ -160,7 +160,7 @@ struct ProjectHeaderView: View {
 					}
 				}
 				.tint(.primary)
-				.buttonStyle(.bordered)
+				.adaptiveButtonStyle()
 				.controlSize(.small)
 			}
 

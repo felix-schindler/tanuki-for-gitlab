@@ -267,7 +267,7 @@ struct FileLoader: View {
 				} label: {
 					Label("Download", systemImage: "arrow.down.circle")
 				}
-				.buttonStyle(.borderedProminent)
+				.adaptiveButtonStyleProminent()
 			case .downloading(let received, let total):
 				ProgressView(value: Double(received) / Double(total))
 					.frame(maxWidth: 220)

@@ -90,8 +90,12 @@ struct TodoView: View {
 						NavigationLink(
 							destination: GroupLoader(fullPath: groupPath),
 							label: {
-								PillView(groupPath)
-							})
+								Text(groupPath)
+							}
+						)
+						.controlSize(.mini)
+						.buttonBorderShape(.capsule)
+						.adaptiveButtonStyle()
 					}
 				}
 			}.font(.footnote)

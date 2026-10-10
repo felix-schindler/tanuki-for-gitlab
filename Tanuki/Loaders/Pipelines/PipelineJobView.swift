@@ -69,9 +69,9 @@ struct PipelineJobView: View {
 
 	var body: some View {
 		DisclosureGroup {
-            let artifacts = job.artifacts?.nodes?.compactMap { $0 } ?? []
+			let artifacts = job.artifacts?.nodes?.compactMap { $0 } ?? []
 
-            VStack(alignment: .leading) {
+			VStack(alignment: .leading) {
 				if let failureMessage = job.failureMessage, failureMessage.isNotEmpty {
 					Text(failureMessage)
 						.font(.footnote)
@@ -118,44 +118,44 @@ struct PipelineJobView: View {
 							}
 						}
 					}
-					.buttonStyle(.bordered)
+					.adaptiveButtonStyle()
 					.controlSize(.small)
 				}
 			}
-            
-            if artifacts.isNotEmpty {
-                DisclosureGroup("Artifacts (\(artifacts.count))") {
-                    ForEach(artifacts, id: \.id) { artifact in
-                        HStack {
-                            if downloadingArtifactId == artifact.id {
-                                ProgressView()
-                                    .controlSize(.small)
-                            } else {
-                                Image(systemName: "square.and.arrow.down")
-                            }
-                            Text(
-                                "\(artifact.name ?? "") (\(ByteFormatter.shared.format(Int64(artifact.size) ?? 0)))"
-                            )
-                            Spacer()
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            Task {
-                                await downloadArtifacts(id: artifact.id)
-                            }
-                        }
-                    }
-                }
-                .alert(
-                    "Download failed", isPresented: $showDownloadError,
-                    actions: {
-                        Button("OK") { downloadError = nil }
-                    },
-                    message: {
-                        Text(downloadError?.localizedDescription ?? "")
-                    }
-                )
-            }
+
+			if artifacts.isNotEmpty {
+				DisclosureGroup("Artifacts (\(artifacts.count))") {
+					ForEach(artifacts, id: \.id) { artifact in
+						HStack {
+							if downloadingArtifactId == artifact.id {
+								ProgressView()
+									.controlSize(.small)
+							} else {
+								Image(systemName: "square.and.arrow.down")
+							}
+							Text(
+								"\(artifact.name ?? "") (\(ByteFormatter.shared.format(Int64(artifact.size) ?? 0)))"
+							)
+							Spacer()
+						}
+						.contentShape(Rectangle())
+						.onTapGesture {
+							Task {
+								await downloadArtifacts(id: artifact.id)
+							}
+						}
+					}
+				}
+				.alert(
+					"Download failed", isPresented: $showDownloadError,
+					actions: {
+						Button("OK") { downloadError = nil }
+					},
+					message: {
+						Text(downloadError?.localizedDescription ?? "")
+					}
+				)
+			}
 		} label: {
 			HStack {
 				PipelineStatus(statusName)

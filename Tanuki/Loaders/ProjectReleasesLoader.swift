@@ -128,7 +128,11 @@ struct ProjectReleasesLoader: View {
 																{
 																	Link(
 																		link.name ?? "Link",
-																		destination: url)
+																		destination: url
+																	)
+																	.controlSize(.mini)
+																	.buttonBorderShape(.capsule)
+																	.adaptiveButtonStyle()
 																}
 															}
 														}
@@ -142,7 +146,11 @@ struct ProjectReleasesLoader: View {
 															{
 																Link(
 																	"Source code (\(maybeSource?.format ?? "unknown"))",
-																	destination: url)
+																	destination: url
+																)
+																.controlSize(.mini)
+																.buttonBorderShape(.capsule)
+																.adaptiveButtonStyle()
 															}
 														}
 													}

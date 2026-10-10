@@ -106,14 +106,15 @@ struct GroupLoader: View {
 										destination: GroupLoader(
 											fullPath: parent.fullPath),
 										label: {
-											PillView(
+											Label(
 												parent.name ?? parent.fullPath,
-												icon:
-													"figure.and.child.holdinghands",
-												cornerRadius: 5
+												systemImage: "figure.and.child.holdinghands"
 											)
 										}
 									)
+									.controlSize(.mini)
+									.buttonBorderShape(.capsule)
+									.adaptiveButtonStyle()
 								}
 
 								if group.name != group.fullName {

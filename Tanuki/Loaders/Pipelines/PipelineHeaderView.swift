@@ -107,7 +107,7 @@ struct PipelineHeaderView: View {
 						}
 					}
 					.tint(.primary)
-					.buttonStyle(.bordered)
+					.adaptiveButtonStyle()
 					.controlSize(.small)
 				}
 			}

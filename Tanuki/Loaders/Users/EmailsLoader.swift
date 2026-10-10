@@ -148,8 +148,8 @@ struct EmailsLoader: View {
 					AsyncButton("Save", systemImage: "checkmark") {
 						await addEmail()
 					}
-                    .tint(.accentColor)
-                    .disabled(newEmail.isEmpty)
+					.tint(.accentColor)
+					.disabled(newEmail.isEmpty)
 				}.navigationTitle("New Email")
 			}
 		}.navigationTitle("Emails")

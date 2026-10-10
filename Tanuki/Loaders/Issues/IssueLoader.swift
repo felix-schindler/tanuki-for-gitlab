@@ -361,7 +361,7 @@ struct IssueLoader: View {
 					.tint(IssueStateHelper.getColorByState(issue.state))
 					.labelStyle(.titleAndIcon)
 					.buttonBorderShape(.roundedRectangle)
-					.buttonStyle(.borderedProminent)
+					.adaptiveButtonStyleProminent()
 					.controlSize(.mini)
 
 					if let url = URL(string: issue.webUrl) {
