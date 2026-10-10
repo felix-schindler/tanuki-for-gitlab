@@ -59,7 +59,7 @@ struct FeedbackView: View {
 				}
 				Toggle("I have read and accept the privacy information", isOn: $accepted)
 			}.toolbar {
-				AsyncButton("Submit", systemImage: "checkmark") {
+				AsyncButton("Submit", lucide: .check) {
 					await submit()
 				}
 				.disabled(!accepted)

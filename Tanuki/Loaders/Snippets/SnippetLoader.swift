@@ -134,7 +134,7 @@ struct SnippetLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Snippet", systemImage: "scissors")
+				LoadingView("Loading Snippet", lucide: .scissors)
 			}
 		}.task {
 			loadSnippet()
@@ -151,11 +151,11 @@ struct SnippetLoader: View {
 						(snippet.httpUrlToRepo != nil || snippet.sshUrlToRepo != nil)
 
 					if showCloneSection {
-						Menu("More", systemImage: "ellipsis") {
+						Menu("More", lucide: .ellipsis) {
 							if let httpUrl = snippet.httpUrlToRepo {
 								Button(
 									"Copy HTTP url",
-									systemImage: "doc.on.doc"
+									lucide: .copy
 								) {
 									httpUrl.copyToClipboard()
 									Notify.status(
@@ -166,7 +166,7 @@ struct SnippetLoader: View {
 							if let sshUrl = snippet.sshUrlToRepo {
 								Button(
 									"Copy SSH url",
-									systemImage: "doc.on.doc"
+									lucide: .copy
 								) {
 									sshUrl.copyToClipboard()
 									Notify.status(

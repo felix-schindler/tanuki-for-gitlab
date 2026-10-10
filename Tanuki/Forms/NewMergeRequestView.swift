@@ -74,7 +74,7 @@ struct NewMergeRequestView: View {
 			}
 			Toggle("Remove source branch on merge", isOn: $removeSourceBranch)
 		}.toolbar {
-			AsyncButton("Create merge request", systemImage: "checkmark") {
+			AsyncButton("Create merge request", lucide: .check) {
 				await createMergeRequest()
 			}.tint(.accentColor)
 		}

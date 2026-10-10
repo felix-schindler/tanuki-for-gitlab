@@ -42,25 +42,13 @@ struct SmallGroupView: View {
 						}
 
 						HStack(spacing: 10) {
-							HStack(spacing: 2) {
-								Image(
-									systemName: "person.2")
-								Text(
-									String(
-										group
-											.groupMembersCount
-									))
-							}
+							Label(
+								String(group.groupMembersCount), lucide: .users,
+								size: 17)
 
-							HStack(spacing: 2) {
-								Image(
-									systemName:
-										"app.gift.fill")
-								Text(
-									String(
-										group.projectsCount)
-								)
-							}
+							Label(
+								String(group.projectsCount), lucide: .layers,
+								size: 17)
 						}.font(.footnote)
 					}
 

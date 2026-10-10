@@ -94,7 +94,7 @@ struct EmailsLoader: View {
 					if emails.isEmpty {
 						NoContentView(
 							"You'll see your email addresses after you added them",
-							systemImage: "envelope"
+							lucide: .mail
 						)
 					} else {
 						ForEach(emails, id: \.self?.id) { email in
@@ -104,11 +104,9 @@ struct EmailsLoader: View {
 										.textSelection(.enabled)
 									Spacer()
 									if email.confirmedAt != nil {
-										Image(systemName: "checkmark.seal.fill")
-											.foregroundStyle(.green)
+										LucideLabelIcon(.badgeCheck, color: .green)
 									} else {
-										Image(systemName: "xmark.seal.fill")
-											.foregroundStyle(.red)
+										LucideLabelIcon(.badgeX, color: .red)
 									}
 								}.swipeActions(edge: .trailing, allowsFullSwipe: true) {
 									Button(role: .destructive) {
@@ -116,7 +114,7 @@ struct EmailsLoader: View {
 											await deleteEmail(email)
 										}
 									} label: {
-										Label("Delete", systemImage: "trash")
+										Label("Delete", lucide: .trash)
 									}
 								}
 							}
@@ -126,7 +124,7 @@ struct EmailsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Emails", systemImage: "envelope")
+				LoadingView("Loading Emails", lucide: .mail)
 			}
 		}.task {
 			await loadEmails()
@@ -134,7 +132,7 @@ struct EmailsLoader: View {
 			await reloadEmails()
 		}.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
-				Button("Add", systemImage: "plus") {
+				Button("Add", lucide: .plus) {
 					showAdd = true
 				}
 			}
@@ -145,11 +143,11 @@ struct EmailsLoader: View {
 						.textInputAutocapitalization(.never)
 						.keyboardType(.emailAddress)
 				}.toolbar {
-					AsyncButton("Save", systemImage: "checkmark") {
+					AsyncButton("Save", lucide: .check) {
 						await addEmail()
 					}
-                    .tint(.accentColor)
-                    .disabled(newEmail.isEmpty)
+					.tint(.accentColor)
+					.disabled(newEmail.isEmpty)
 				}.navigationTitle("New Email")
 			}
 		}.navigationTitle("Emails")

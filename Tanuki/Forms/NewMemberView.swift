@@ -91,7 +91,7 @@ struct NewMemberView: View {
 				}
 			}
 		}.toolbar {
-			AsyncButton("Add member", systemImage: "checkmark") {
+			AsyncButton("Add member", lucide: .check) {
 				await addMember()
 			}.tint(.accentColor)
 		}.navigationTitle("New Member")

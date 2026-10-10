@@ -64,7 +64,7 @@ struct CustomEmojisLoader: View {
 				case .success(let emojis):
 					if emojis.isEmpty {
 						NoContentView(
-							"There are no custom emojis", systemImage: "face.smiling")
+							"There are no custom emojis", lucide: .faceSlightlySmiling)
 					} else {
 						ForEach(emojis, id: \.?.id) { maybeEmoji in
 							if let emoji = maybeEmoji {
@@ -74,10 +74,11 @@ struct CustomEmojisLoader: View {
 									}
 									VStack(alignment: .leading) {
 										Text(emoji.name)
-										HStack(spacing: 2) {
-											Image(systemName: "clock")
-											Text(Date.fromToString(emoji.createdAt))
-										}.font(.footnote)
+										Label(
+											Date.fromToString(emoji.createdAt),
+											lucide: .clock, size: 17
+										)
+										.font(.footnote)
 									}
 								}
 							}
@@ -87,7 +88,7 @@ struct CustomEmojisLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading custom emojis", systemImage: "face.smiling")
+				LoadingView("Loading custom emojis", lucide: .faceSlightlySmiling)
 			}
 		}.task {
 			loadEmojis()

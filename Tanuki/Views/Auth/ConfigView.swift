@@ -22,14 +22,14 @@ struct ConfigView: View {
 		VStack {
 			Spacer()
 
-			Label("GitLab URL", systemImage: "link")
+			Label("GitLab URL", lucide: .link)
 				.font(.headline)
 			TextField("gitlab.com", text: self.$newHost)
 				.keyboardType(.URL)
 				.textInputAutocapitalization(.never)
 				.autocorrectionDisabled()
 
-			Label("Personal Access Token", systemImage: "key")
+			Label("Personal Access Token", lucide: .key)
 				.padding(.top)
 				.font(.headline)
 			TextField("glpat-4Rzq-VKwapmWqj4MfBsi", text: self.$newToken)
@@ -37,7 +37,7 @@ struct ConfigView: View {
 				.autocorrectionDisabled()
 
 			VStack {
-				Label("Requirements", systemImage: "checkmark.square")
+				Label("Requirements", lucide: .squareCheckBig)
 					.font(.headline)
 				Text("Access to the REST-API v4 and GraphQL API")
 
@@ -45,8 +45,8 @@ struct ConfigView: View {
 					.font(.subheadline)
 					.padding(.top, 1)
 				VStack(alignment: .leading) {
-					Label("`api`", systemImage: "checkmark.circle")
-					Label("`read_repository`", systemImage: "checkmark.circle")
+					Label("`api`", lucide: .circleCheck)
+					Label("`read_repository`", lucide: .circleCheck)
 				}.font(.footnote)
 			}
 			.padding(.top)
@@ -87,7 +87,7 @@ struct ConfigView: View {
 					}
 				},
 				label: {
-					Label("Save config", systemImage: "checkmark")
+					Label("Save config", lucide: .check)
 						.frame(maxWidth: .infinity)
 				}
 			)

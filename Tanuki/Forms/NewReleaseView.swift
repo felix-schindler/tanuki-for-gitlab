@@ -200,7 +200,7 @@ struct NewReleaseView: View {
 									}
 								} label: {
 									if selectedMilestones.contains(milestone.title) {
-										Label(milestone.title, systemImage: "checkmark")
+										Label(milestone.title, lucide: .check)
 									} else {
 										Text(milestone.title)
 									}
@@ -233,7 +233,7 @@ struct NewReleaseView: View {
 					.frame(minHeight: 100)
 			}
 		}.toolbar {
-			AsyncButton("Create new release", systemImage: "checkmark") {
+			AsyncButton("Create new release", lucide: .check) {
 				await createNewRelease()
 			}.tint(.accentColor)
 		}.task {

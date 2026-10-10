@@ -102,7 +102,7 @@ struct LabelsLoader: View {
 				switch labels {
 				case .success(let labels):
 					if labels.isEmpty {
-						NoContentView("There are no labels", systemImage: "tag")
+						NoContentView("There are no labels", lucide: .tag)
 					} else {
 						ForEach(labels, id: \.?.id) { maybeLabel in
 							if let label = maybeLabel {
@@ -126,7 +126,7 @@ struct LabelsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Labels", systemImage: "tag")
+				LoadingView("Loading Labels", lucide: .tag)
 			}
 		}.task {
 			loadLabels()
@@ -143,7 +143,7 @@ struct LabelsLoader: View {
 						}
 					},
 					label: {
-						Label("New label", systemImage: "plus")
+						Label("New label", lucide: .plus)
 					}
 				).tint(.accentColor)
 			}

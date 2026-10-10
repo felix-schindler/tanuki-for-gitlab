@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		DC0A6A552B8D148000C53D56 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = DC0A6A542B8D148000C53D56 /* CachedAsyncImage */; };
+		427F13AF8ED9432DAEF378CD /* Lucide in Frameworks */ = {isa = PBXBuildFile; productRef = C9B9437BA6064572A31E1765 /* Lucide */; };
 		DC2511E22E7F4C7E0021371C /* Tanuki Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = DC2511D82E7F4C7D0021371C /* Tanuki Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DC3A24542B8C3F5800DB0E3F /* NVMColor in Frameworks */ = {isa = PBXBuildFile; productRef = DC3A24532B8C3F5800DB0E3F /* NVMColor */; };
 		DC42A2112C62D36E00B1EA85 /* HighlightedTextEditor in Frameworks */ = {isa = PBXBuildFile; productRef = DC42A2102C62D36E00B1EA85 /* HighlightedTextEditor */; };
@@ -107,6 +108,7 @@
 				DC5AD7D32E697E4B0031FC7B /* ApolloSQLite in Frameworks */,
 				DCAE856B2FA0D20000F64C2B /* Textual in Frameworks */,
 				DCAE856C2FA0D20000F64C2B /* MarkdownView in Frameworks */,
+				427F13AF8ED9432DAEF378CD /* Lucide in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -203,6 +205,7 @@
 				DC5AD7D22E697E4B0031FC7B /* ApolloSQLite */,
 				DC5AD7DC2E69D6E50031FC7B /* Toast */,
 				DCD2F7022F8AF9740049850E /* Alamofire */,
+				C9B9437BA6064572A31E1765 /* Lucide */,
 			);
 			productName = Tanuki;
 			productReference = DC2704F52B8BC0F9003DAA84 /* Tanuki.app */;
@@ -247,6 +250,7 @@
 				DC5AD7CD2E697E4B0031FC7B /* XCRemoteSwiftPackageReference "apollo-ios" */,
 				DC5AD7DB2E69D6E50031FC7B /* XCRemoteSwiftPackageReference "toast-swift" */,
 				DCD2F7012F8AF9740049850E /* XCRemoteSwiftPackageReference "Alamofire" */,
+				68074238125F4BC993C08A78 /* XCRemoteSwiftPackageReference "lucide-swift" */,
 			);
 			productRefGroup = DC2704F62B8BC0F9003DAA84 /* Products */;
 			projectDirPath = "";
@@ -693,6 +697,14 @@
 				minimumVersion = 5.12.2;
 			};
 		};
+		68074238125F4BC993C08A78 /* XCRemoteSwiftPackageReference "lucide-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/bring-shrubbery/lucide-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.16.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -784,6 +796,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DCD2F7012F8AF9740049850E /* XCRemoteSwiftPackageReference "Alamofire" */;
 			productName = Alamofire;
+		};
+		C9B9437BA6064572A31E1765 /* Lucide */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 68074238125F4BC993C08A78 /* XCRemoteSwiftPackageReference "lucide-swift" */;
+			productName = Lucide;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

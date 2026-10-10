@@ -143,7 +143,7 @@ struct IssueLoader: View {
 									if let dueDate = issue.dueDate {
 										PillView(
 											Date.fromToString(dueDate),
-											icon: "alarm",
+											icon: .alarmClock,
 											bgColor: .blue,
 											fgColor: .white,
 											cornerRadius: 5
@@ -214,7 +214,7 @@ struct IssueLoader: View {
 											}
 										},
 										icon: {
-											Image(systemName: "person.crop.circle")
+											LucideLabelIcon(.circleUserRound)
 										})
 								}
 							)
@@ -237,7 +237,7 @@ struct IssueLoader: View {
 										}
 									},
 									icon: {
-										Image(systemName: "tag")
+										LucideLabelIcon(.tag)
 									}
 								)
 							}
@@ -245,7 +245,7 @@ struct IssueLoader: View {
 							if let milestone = issue.milestone {
 								Label(
 									milestone.title.emojized(),
-									systemImage: "diamond"
+									lucide: .milestone
 								)
 							}
 
@@ -265,7 +265,7 @@ struct IssueLoader: View {
 										}
 									},
 									icon: {
-										Image(systemName: "hourglass")
+										LucideLabelIcon(.hourglass)
 									})
 							}
 						}
@@ -284,22 +284,22 @@ struct IssueLoader: View {
 											await reloadIssue()
 										}
 									) {
-										Label("Edit issue", systemImage: "pencil")
+										Label("Edit issue", lucide: .pencil)
 									}
 								}
 
 								if issue.state == .opened {
-									AsyncButton("Close issue", systemImage: "smallcircle.circle") {
+									AsyncButton("Close issue", lucide: .circleDot) {
 										await self.changeState(.close)
 									}.tint(.blue)
 								} else if issue.state == .closed {
-									AsyncButton("Reopen issue", systemImage: "arrow.triangle.swap") {
+									AsyncButton("Reopen issue", lucide: .rotateCw) {
 										await self.changeState(.reopen)
 									}.tint(.green)
 								}
 
 								if let projectId = project.id.toIntId() {
-									Button("Delete issue", systemImage: "trash", role: .destructive) {
+									Button("Delete issue", lucide: .trash, role: .destructive) {
 										self.showDeleteConfirm = true
 									}.confirmationDialog(
 										"Are you sure you want to delete issue #\(self.iid)?",
@@ -336,14 +336,14 @@ struct IssueLoader: View {
 						}
 					} else {
 						NoContentView(
-							"Issue was not found", systemImage: "smallcircle.circle")
+							"Issue was not found", lucide: .circleDot)
 					}
 				case .failure(let error):
 					FailedView(error)
 				}
 			} else {
 				LoadingView(
-					"Loading Issue #\(self.iid)", systemImage: "smallcircle.circle", color: .green)
+					"Loading Issue #\(self.iid)", lucide: .circleDot, color: .green)
 			}
 		}.task {
 			loadIssue()
@@ -356,7 +356,7 @@ struct IssueLoader: View {
 				HStack {
 					Button(
 						issue.state.rawValue.capitalized,
-						systemImage: IssueStateHelper.getIconByState(issue.state),
+						lucide: IssueStateHelper.getIconByState(issue.state),
 					) {}
 					.tint(IssueStateHelper.getColorByState(issue.state))
 					.labelStyle(.titleAndIcon)

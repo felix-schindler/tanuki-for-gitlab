@@ -64,7 +64,7 @@ struct ProjectReleasesLoader: View {
 				switch releases {
 				case .success(let releases):
 					if releases.isEmpty {
-						NoContentView("There are no releases", systemImage: "flag")
+						NoContentView("There are no releases", lucide: .rocket)
 					} else {
 						ForEach(releases, id: \.?.id) { maybeRelease in
 							if let release = maybeRelease {
@@ -78,7 +78,7 @@ struct ProjectReleasesLoader: View {
 													}
 
 													if let tagName = release.tagName {
-														PillView(tagName, icon: "tag")
+														PillView(tagName, icon: .tag)
 													}
 
 													if let milestones = release.milestones?.nodes {
@@ -87,7 +87,7 @@ struct ProjectReleasesLoader: View {
 															if let milestone = maybeMilestone {
 																PillView(
 																	milestone.title.emojized(),
-																	icon: "diamond"
+																	icon: .milestone
 																)
 															}
 														}
@@ -97,7 +97,7 @@ struct ProjectReleasesLoader: View {
 														PillView(
 															commit,
 															icon:
-																"text.line.first.and.arrowtriangle.forward"
+																.gitCommitHorizontal
 														)
 														.textSelection(.enabled)
 														.font(
@@ -165,7 +165,7 @@ struct ProjectReleasesLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Releases", systemImage: "flag")
+				LoadingView("Loading Releases", lucide: .rocket)
 			}
 		}.task {
 			loadReleases()
@@ -176,7 +176,7 @@ struct ProjectReleasesLoader: View {
 				NavigationLink(
 					destination: NewReleaseView(id: projectId, fullPath: self.fullPath),
 					label: {
-						Label("Create new release", systemImage: "plus")
+						Label("Create new release", lucide: .plus)
 					}
 				).tint(.accentColor)
 			}

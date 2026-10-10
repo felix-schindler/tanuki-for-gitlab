@@ -12,7 +12,7 @@ struct AppStoreReview: View {
 	@Environment(\.requestReview) var requestReview
 
 	public var body: some View {
-		Button("App Store Review", systemImage: "star") {
+		Button("App Store Review", lucide: .star) {
 			requestReview()
 		}
 	}

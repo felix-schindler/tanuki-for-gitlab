@@ -94,11 +94,11 @@ struct ProjectMergeLoader: View {
 					{
 						NoContentView(
 							"Merge requests are not enabled for this project",
-							image: "git-mr.symbols"
+							lucide: .gitPullRequest
 						)
 					} else if let mrs = project.mergeRequests?.nodes {
 						if mrs.count == 0 {
-							NoContentView("There are no merge requests", image: "git-mr.symbols")
+							NoContentView("There are no merge requests", lucide: .gitPullRequest)
 						} else {
 							ForEach(mrs, id: \.?.iid) { mr in
 								if let mr {
@@ -111,21 +111,21 @@ struct ProjectMergeLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Merge Requests", image: "git-mr.symbols", color: .blue)
+				LoadingView("Loading Merge Requests", lucide: .gitPullRequest, color: .blue)
 			}
 		}.task {
 			loadMergeRequests()
 		}.refreshable {
 			await reloadMergeRequests()
 		}.toolbar {
-			Button("Filter", systemImage: "line.3.horizontal.decrease") {
+			Button("Filter", lucide: .listFilter) {
 				showFilters = true
 			}
 		}.sheet(isPresented: $showFilters, onDismiss: { self.showFilters = false }) {
 			NavigationStack {
 				MergeRequestFilterView(filter: $filter)
 					.toolbar {
-						AsyncButton("Apply filter", systemImage: "checkmark") {
+						AsyncButton("Apply filter", lucide: .check) {
 							await reloadMergeRequests()
 							showFilters = false
 						}

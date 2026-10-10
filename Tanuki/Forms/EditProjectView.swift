@@ -56,15 +56,15 @@ struct EditProjectView: View {
 			TextField("Description (optional)", text: $description, axis: .vertical)
 
 			Picker("Visibility Level", selection: $visibility) {
-				Label("Private", systemImage: "lock")
+				Label("Private", lucide: .lock)
 					.tag(ProjectVisibility.private)
-				Label("Public", systemImage: "globe")
+				Label("Public", lucide: .globe)
 					.tag(ProjectVisibility.public)
-				Label("Internal", systemImage: "shield.lefthalf.filled")
+				Label("Internal", lucide: .shieldHalf)
 					.tag(ProjectVisibility.internal)
 			}
 		}.toolbar {
-			AsyncButton("Save", systemImage: "checkmark") {
+			AsyncButton("Save", lucide: .check) {
 				await saveProject()
 			}.tint(.accentColor)
 		}

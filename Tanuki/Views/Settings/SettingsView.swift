@@ -15,11 +15,7 @@ struct SettingsView: View {
 		List {
 			Section {
 				VStack(alignment: .leading) {
-					Image(systemName: "gear")
-						.resizable()
-						.scaledToFill()
-						.foregroundStyle(.white)
-						.frame(width: 50, height: 50)
+					LucideLabelIcon(.settings, color: .white, size: 50)
 						.padding(5)
 						.background(.gray)
 						.clipShape(RoundedRectangle(cornerRadius: 15.0))
@@ -35,23 +31,14 @@ struct SettingsView: View {
 
 			Section {
 				NavigationLink(destination: CacheView()) {
-					Label("Cache", systemImage: "internaldrive")
+					Label("Cache", lucide: .hardDrive)
 				}
 				NavigationLink(destination: CookiesView()) {
-					Label(
-						title: { Text("Cookies") },
-						icon: {
-							Image("cookie.symbols")
-								.resizable()
-								.scaledToFit()
-						})
+					Label("Cookies", lucide: .cookie)
 				}
 				NavigationLink(destination: InstancesView()) {
-					Label("Instances", systemImage: "server.rack")
+					Label("Instances", lucide: .server)
 				}
-				// NavigationLink(destination: ClipboardAccess()) {
-				// 	Label("Clipboard URL", systemImage: "arrow.right.page.on.clipboard")
-				// }
 			}
 
 			Section("Markdown") {
@@ -65,20 +52,20 @@ struct SettingsView: View {
 
 			Section {
 				NavigationLink(destination: FeedbackView()) {
-					Label("Feedback", systemImage: "exclamationmark.bubble")
+					Label("Feedback", lucide: .messageCircle)
 				}
 				AppStoreReview()
 			}
 
 			Section {
 				Link(destination: URL(string: "https://schindlerfelix.de/projects/tanuki/privacy")!) {
-					Label("Privacy Policy", systemImage: "hand.raised")
+					Label("Privacy Policy", lucide: .hand)
 				}
 				Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
-					Label("Terms of Use (EULA)", systemImage: "doc.text")
+					Label("Terms of Use (EULA)", lucide: .fileText)
 				}
 				Link(destination: URL(string: "https://github.com/felix-schindler/tanuki-ios")!) {
-					Label("Source Code on GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
+					Label("Source Code on GitHub", lucide: .codeXml)
 				}
 			}
 		}

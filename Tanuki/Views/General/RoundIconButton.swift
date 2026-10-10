@@ -5,6 +5,7 @@
 //  Created by Felix Schindler on 26.02.24.
 //
 
+import Lucide
 import SwiftUI
 import UIKit
 
@@ -16,7 +17,7 @@ struct CloseButton: View {
 	}
 
 	public var body: some View {
-		RoundIconButton("Close", icon: "xmark", action: action)
+		RoundIconButton("Close", icon: .x, action: action)
 			.font(.system(size: 16, weight: .bold))
 			.tint(.secondary)
 	}
@@ -31,7 +32,7 @@ struct ShareButton: View {
 
 	public var body: some View {
 		ShareLink(item: url) {
-			Label("Share", systemImage: "square.and.arrow.up")
+			Label("Share", lucide: .squareArrowOutUpRight)
 		}
 	}
 }
@@ -56,20 +57,22 @@ enum ShareSheet {
 
 struct RoundIconButton: View {
 	private let label: String
-	private let iconName: String
+	private let icon: LucideIcon
+	private let role: ButtonRole?
 	private let action: () -> Void
 
 	init(
-		_ label: String, icon: String, role: ButtonRole? = nil,
+		_ label: String, icon: LucideIcon, role: ButtonRole? = nil,
 		action: @escaping () -> Void
 	) {
 		self.label = label
-		self.iconName = icon
+		self.icon = icon
+		self.role = role
 		self.action = action
 	}
 
 	public var body: some View {
-		Button(label, systemImage: iconName, action: action)
+		Button(label, lucide: icon, role: role, action: action)
 			.frame(minWidth: 30, minHeight: 30)
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.circle)
@@ -86,16 +89,16 @@ struct RoundIconButton: View {
 				URL(string: "https://gitlab.com/felix-schindler/gitlab-ios")!)
 		}
 		VStack {
-			RoundIconButton("Up", icon: "arrow.up", action: {})
+			RoundIconButton("Up", icon: .arrowUp, action: {})
 			RoundIconButton(
-				"Filters", icon: "line.3.horizontal.decrease", action: {})
-			RoundIconButton("Add", icon: "plus") {
+				"Filters", icon: .listFilter, action: {})
+			RoundIconButton("Add", icon: .plus) {
 			}
-			RoundIconButton("Events", icon: "bell", action: {})
+			RoundIconButton("Events", icon: .bell, action: {})
 			CloseButton({})
-			RoundIconButton("Cancel", icon: "xmark", action: {})
+			RoundIconButton("Cancel", icon: .x, action: {})
 				.tint(.secondary)
-			RoundIconButton("Cancel", icon: "xmark", action: {})
+			RoundIconButton("Cancel", icon: .x, action: {})
 				.tint(.red)
 		}
 	}

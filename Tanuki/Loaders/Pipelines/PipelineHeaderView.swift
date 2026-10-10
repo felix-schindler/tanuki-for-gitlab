@@ -96,12 +96,12 @@ struct PipelineHeaderView: View {
 				ScrollView(.horizontal) {
 					HStack {
 						if pipeline.retryable {
-							AsyncButton("Retry", systemImage: "arrow.clockwise") {
+							AsyncButton("Retry", lucide: .rotateCw) {
 								await pipelineAction("retry")
 							}
 						}
 						if pipeline.cancelable {
-							AsyncButton("Cancel", systemImage: "xmark") {
+							AsyncButton("Cancel", lucide: .x) {
 								await pipelineAction("cancel")
 							}
 						}

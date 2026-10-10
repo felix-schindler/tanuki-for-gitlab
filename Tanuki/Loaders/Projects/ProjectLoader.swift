@@ -155,7 +155,7 @@ struct ProjectLoader: View {
 
 					if project.archived == true {
 						Section {
-							Label("This project has been archived", systemImage: "archivebox.fill")
+							Label("This project has been archived", lucide: .archive)
 						}
 					}
 
@@ -183,8 +183,7 @@ struct ProjectLoader: View {
 											}
 										},
 										icon: {
-											Image(systemName: "smallcircle.circle")
-												.foregroundStyle(.green)
+											LucideLabelIcon(.circleDot, color: .green)
 										})
 								}
 							)
@@ -205,10 +204,7 @@ struct ProjectLoader: View {
 											}
 										},
 										icon: {
-											Image("git-mr.symbols")
-												.resizable()
-												.scaledToFit()
-												.foregroundStyle(.blue)
+											LucideLabelIcon(.gitPullRequest, color: .blue)
 										}
 									)
 								}
@@ -268,7 +264,7 @@ struct ProjectLoader: View {
 									)
 								},
 								label: {
-									Label("Manage", systemImage: "person.2")
+									Label("Manage", lucide: .users)
 								}
 							)
 						}
@@ -317,10 +313,7 @@ struct ProjectLoader: View {
 									}
 								},
 								label: {
-									Label(
-										"Code",
-										systemImage: "chevron.left.forwardslash.chevron.right"
-									)
+									Label("Code", lucide: .codeXml)
 								}
 							)
 						}
@@ -346,7 +339,7 @@ struct ProjectLoader: View {
 								)
 							},
 							label: {
-								Label("Build", systemImage: "flag")
+								Label("Build", lucide: .workflow)
 							})
 					}
 
@@ -405,7 +398,7 @@ struct ProjectLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Project \(self.fullPath)", systemImage: "app.gift.fill")
+				LoadingView("Loading Project \(self.fullPath)", lucide: .layers)
 			}
 		}.task {
 			loadProject()
@@ -414,7 +407,7 @@ struct ProjectLoader: View {
 		}.toolbar {
 			if let project, case .success(let project) = project {
 				HStack {
-					Menu("More", systemImage: "ellipsis") {
+					Menu("More", lucide: .ellipsis) {
 						Section {
 							if let webUrl = project.webUrl,
 								let url = URL(string: webUrl)
@@ -429,7 +422,7 @@ struct ProjectLoader: View {
 							Section {
 								AsyncButton(
 									"Request access",
-									systemImage: "person.badge.plus"
+									lucide: .userPlus
 								) {
 									await requestAccess(projectId)
 								}
@@ -445,7 +438,7 @@ struct ProjectLoader: View {
 								if let httpUrl = project.httpUrlToRepo {
 									Button(
 										"Copy HTTP url",
-										systemImage: "doc.on.doc"
+										lucide: .copy
 									) {
 										httpUrl.copyToClipboard()
 										Notify.status(
@@ -457,7 +450,7 @@ struct ProjectLoader: View {
 								if let sshUrl = project.sshUrlToRepo {
 									Button(
 										"Copy SSH url",
-										systemImage: "doc.on.doc"
+										lucide: .copy
 									) {
 										sshUrl.copyToClipboard()
 										Notify.status(
@@ -479,7 +472,7 @@ struct ProjectLoader: View {
 									sizeLabel > 0
 										? "Download archive (~\(ByteFormatter.shared.format(sizeLabel)))"
 										: "Download archive",
-									systemImage: "archivebox"
+									lucide: .archive
 								) {
 									await downloadArchive(projectId, ref: project.repository?.rootRef)
 								}
@@ -487,42 +480,42 @@ struct ProjectLoader: View {
 						}
 					}
 
-					Menu("Create", systemImage: "plus") {
+					Menu("Create", lucide: .plus) {
 						if project.userPermissions.createIssue {
-							Button("Create Issue", systemImage: "smallcircle.circle") {
+							Button("Create Issue", lucide: .circleDot) {
 								navigationActive = true
 								navigationDestination = .issue
 							}
 						}
 
-						Button("Create Milestone", systemImage: "diamond") {
+						Button("Create Milestone", lucide: .milestone) {
 							navigationActive = true
 							navigationDestination = .milestone
 						}
 
 						if project.mergeRequestsEnabled ?? true {
-							Button("Create Merge Request", systemImage: "arrow.triangle.branch") {
+							Button("Create Merge Request", lucide: .gitBranch) {
 								navigationActive = true
 								navigationDestination = .mergeRequest
 							}
 						}
 
-						Button("Create Release", systemImage: "flag") {
+						Button("Create Release", lucide: .rocket) {
 							navigationActive = true
 							navigationDestination = .release
 						}
 
-						Button("Add new Member", systemImage: "person.badge.plus") {
+						Button("Add new Member", lucide: .userPlus) {
 							navigationActive = true
 							navigationDestination = .member
 						}
 
-						Button("Share with Group", systemImage: "person.2.badge.plus") {
+						Button("Share with Group", lucide: .userPlus) {
 							navigationActive = true
 							navigationDestination = .groupShare
 						}
 
-						Button("Create Label", systemImage: "tag") {
+						Button("Create Label", lucide: .tag) {
 							navigationActive = true
 							navigationDestination = .label
 						}

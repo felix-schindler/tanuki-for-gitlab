@@ -178,7 +178,7 @@ struct NewIssueView: View {
 					switch memberships {
 					case .success(let memberships):
 						if memberships.isEmpty {
-							NoContentView("There are no project members", systemImage: "person.2")
+							NoContentView("There are no project members", lucide: .users)
 						} else {
 							Menu("Select Assignees") {
 								ForEach(memberships, id: \.?.id) { member in
@@ -192,9 +192,9 @@ struct NewIssueView: View {
 										} label: {
 											if selectedAssignees.contains(member.id) {
 												if let username = member._user?.username {
-													Label("@\(username)", systemImage: "checkmark")
+													Label("@\(username)", lucide: .check)
 												} else {
-													Label(member.id, systemImage: "checkmark")
+													Label(member.id, lucide: .check)
 												}
 											} else {
 												if let username = member._user?.username {
@@ -212,7 +212,7 @@ struct NewIssueView: View {
 						FailedView(error)
 					}
 				} else {
-					LoadingView("Loading project members", systemImage: "person.2")
+					LoadingView("Loading project members", lucide: .users)
 				}
 			}
 
@@ -248,7 +248,7 @@ struct NewIssueView: View {
 									}
 								} label: {
 									if selectedLabels.contains(label.title) {
-										Label(label.title.emojized(), systemImage: "checkmark")
+										Label(label.title.emojized(), lucide: .check)
 									} else {
 										Text(label.title.emojized())
 									}
@@ -275,7 +275,7 @@ struct NewIssueView: View {
 				Stepper("Weight: \(weight < 0 ? "none" : String(weight))", value: $weight)
 			}
 		}.toolbar {
-			AsyncButton("Create issue", systemImage: "checkmark") {
+			AsyncButton("Create issue", lucide: .check) {
 				await createIssue()
 			}.tint(.accentColor)
 		}.task {

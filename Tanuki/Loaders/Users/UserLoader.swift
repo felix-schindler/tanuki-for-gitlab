@@ -66,7 +66,7 @@ struct UserLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading user \(self.username)", systemImage: "person")
+				LoadingView("Loading user \(self.username)", lucide: .user)
 			}
 		}.task {
 			loadUser()

@@ -6,6 +6,7 @@
 //
 
 import GitLabAPI
+import Lucide
 import SwiftUI
 
 struct NoteView: View {
@@ -17,42 +18,42 @@ struct NoteView: View {
 		self.projectId = projectId
 	}
 
-	private func convertIconName(_ iconName: String?) -> String {
+	private func convertIconName(_ iconName: String?) -> LucideIcon {
 		switch iconName {
 		case "user":
-			"person"
+			.user
 		case "comment-dots":
-			"ellipsis.bubble"
+			.messageSquare
 		case "pencil":
-			"pencil"
+			.pencil
 		case "commit":
-			"circle.and.line.horizontal"
+			.gitCommitHorizontal
 		case "check":
-			"person.fill.checkmark"
+			.userCheck
 		case "unapproval":
-			"person.fill.xmark"
+			.userX
 		case "timer":
-			"hourglass"
+			.hourglass
 		case "label":
-			"tag"
+			.tag
 		case "link":
-			"link.badge.plus"
+			.link
 		case "unlink":
-			"link"
+			.unlink
 		case "arrow-right":
-			"arrowshape.turn.up.forward"
+			.forward
 		case "clock":
-			"clock"
+			.clock
 		case "duplicate":
-			"circlebadge.2"
+			.copy
 		case "issue-close":
-			"minus.circle"
+			.circleMinus
 		case "issues":
-			"smallcircle.circle"
+			.circleDot
 		case "status-health":
-			"waveform.path.ecg"
+			.activity
 		default:
-			"questionmark"
+			.circleQuestionMark
 		}
 	}
 
@@ -61,7 +62,7 @@ struct NoteView: View {
 			if note.system {
 				Label(
 					"@\(author.username) \(note.body)",
-					systemImage: convertIconName(note.systemNoteIconName)
+					lucide: convertIconName(note.systemNoteIconName)
 				)
 				.font(.footnote)
 			} else {
@@ -85,7 +86,7 @@ struct NoteView: View {
 							timeStyle: .short
 						)
 						if note.updatedAt != note.createdAt {
-							Label(date, systemImage: "pencil.and.scribble")
+							Label(date, lucide: .pencilLine)
 								.foregroundStyle(.secondary)
 						} else {
 							Text(date)
@@ -107,7 +108,7 @@ struct NoteView: View {
 					InlineMarkdown(note.body, baseURL: API.url)
 				},
 				icon: {
-					Image(systemName: convertIconName(note.systemNoteIconName))
+					LucideLabelIcon(convertIconName(note.systemNoteIconName))
 				}
 			).font(.footnote)
 		}

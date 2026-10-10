@@ -73,7 +73,7 @@ struct UpdateStatusView: View {
 				}
 			}
 		}.toolbar {
-			AsyncButton("Update status", systemImage: "checkmark") {
+			AsyncButton("Update status", lucide: .check) {
 				await updateStatus()
 			}.tint(.accentColor)
 		}

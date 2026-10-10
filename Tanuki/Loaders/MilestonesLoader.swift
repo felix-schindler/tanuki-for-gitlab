@@ -139,25 +139,15 @@ struct MilestonesLoader: View {
 				switch milestones {
 				case .success(let milestones):
 					if milestones.isEmpty {
-						NoContentView("There are no milestones", systemImage: "diamond")
+						NoContentView("There are no milestones", lucide: .milestone)
 					} else {
 						ForEach(milestones, id: \.?.iid) { milestone in
 							if let milestone {
 								VStack(alignment: .leading, spacing: 10) {
 									Label(
-										title: {
-											Text(milestone.title.emojized())
-										},
-										icon: {
-											Image(systemName: "diamond")
-												.foregroundStyle(
-													milestone.state == .closed
-														? .red
-														: (milestone.expired
-															? .orange
-															: .green)
-												)
-										}
+										milestone.title.emojized(), lucide: .milestone,
+										color: milestone.state == .closed
+											? .red : (milestone.expired ? .orange : .green)
 									)
 
 									if let description = milestone.description, description.isNotEmpty {
@@ -171,7 +161,7 @@ struct MilestonesLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Milestones", systemImage: "diamond")
+				LoadingView("Loading Milestones", lucide: .milestone)
 			}
 		}.task {
 			loadMilestones()
@@ -185,7 +175,7 @@ struct MilestonesLoader: View {
 			loadMilestones()
 		}.toolbar {
 			HStack {
-				Button("Filter", systemImage: "line.3.horizontal.decrease") {
+				Button("Filter", lucide: .listFilter) {
 					showFilters = true
 				}
 				NavigationLink(
@@ -197,7 +187,7 @@ struct MilestonesLoader: View {
 						}
 					},
 					label: {
-						Label("Create new milestone", systemImage: "plus")
+						Label("Create new milestone", lucide: .plus)
 					}
 				).tint(.accentColor)
 			}
@@ -217,7 +207,7 @@ struct MilestonesLoader: View {
 							.font(.footnote)
 					}
 				}.toolbar {
-					AsyncButton("Apply filter", systemImage: "checkmark") {
+					AsyncButton("Apply filter", lucide: .check) {
 						await reloadMilestones()
 						showFilters = false
 					}

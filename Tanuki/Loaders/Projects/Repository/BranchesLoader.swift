@@ -37,14 +37,14 @@ struct BranchesLoader: View {
 					if branches.isEmpty {
 						NoContentView(
 							"You'll see your branches after you pushed them",
-							systemImage: "chevron.left.forwardslash.chevron.right"
+							lucide: .gitBranch
 						)
 					} else {
 						ForEach(branches, id: \.name) { branch in
 							VStack(alignment: .leading) {
 								HStack {
 									if branch.protected {
-										Image(systemName: "lock")
+										LucideLabelIcon(.lock)
 									}
 									Text(branch.name.emojized())
 										.font(.headline)
@@ -67,7 +67,7 @@ struct BranchesLoader: View {
 			} else {
 				LoadingView(
 					"Loading Branches",
-					systemImage: "chevron.left.forwardslash.chevron.right"
+					lucide: .gitBranch
 				)
 			}
 		}.task {
@@ -76,7 +76,7 @@ struct BranchesLoader: View {
 			await loadBranches()
 		}.toolbar {
 			NavigationLink(destination: NewBranchView(projectId: projectId)) {
-				Label("New branch", systemImage: "plus")
+				Label("New branch", lucide: .plus)
 			}.tint(.accentColor)
 		}.navigationTitle("Branches")
 	}

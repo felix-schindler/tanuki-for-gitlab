@@ -75,11 +75,11 @@ struct NewProjectView: View {
 			}
 
 			Picker("Visibility Level", selection: $visibility) {
-				Label("Private", systemImage: "lock")
+				Label("Private", lucide: .lock)
 					.tag(ProjectVisibility.private)
-				Label("Public", systemImage: "globe")
+				Label("Public", lucide: .globe)
 					.tag(ProjectVisibility.public)
-				Label("Internal", systemImage: "shield.lefthalf.filled")
+				Label("Internal", lucide: .shieldHalf)
 					.tag(ProjectVisibility.internal)
 			}
 
@@ -95,7 +95,7 @@ struct NewProjectView: View {
 				}
 			}
 		}.toolbar {
-			AsyncButton("Create Project", systemImage: "checkmark") {
+			AsyncButton("Create Project", lucide: .check) {
 				await createProject()
 			}.tint(.accentColor)
 		}

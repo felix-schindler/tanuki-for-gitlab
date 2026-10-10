@@ -47,7 +47,7 @@ struct TagsLoader: View {
 					if tags.isEmpty {
 						NoContentView(
 							"You'll see your tags after you pushed them",
-							systemImage: "chevron.left.forwardslash.chevron.right")
+							lucide: .tag)
 					} else {
 						ForEach(tags, id: \.name) { tag in
 							VStack(alignment: .leading) {
@@ -73,7 +73,7 @@ struct TagsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Tags", systemImage: "chevron.left.forwardslash.chevron.right")
+				LoadingView("Loading Tags", lucide: .tag)
 			}
 		}.task {
 			await loadTags()
@@ -81,7 +81,7 @@ struct TagsLoader: View {
 			await loadTags()
 		}.toolbar {
 			NavigationLink(destination: NewTagView(projectId: projectId)) {
-				Label("New tag", systemImage: "plus")
+				Label("New tag", lucide: .plus)
 			}.tint(.accentColor)
 		}.navigationTitle("Tags")
 	}

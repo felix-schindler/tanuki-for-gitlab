@@ -69,7 +69,7 @@ struct GroupProjectsLoader: View {
 					if projects.isEmpty {
 						NoContentView(
 							"The group \(self.fullPath) doesn't have any projects",
-							systemImage: "app.gift.fill"
+							lucide: .layers
 						)
 					} else {
 						ForEach(projects, id: \.?.fullPath) { maybeProject in
@@ -82,7 +82,7 @@ struct GroupProjectsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Projects", systemImage: "app.gift.fill")
+				LoadingView("Loading Projects", lucide: .layers)
 			}
 		}.task {
 			loadProjects()

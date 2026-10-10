@@ -76,7 +76,7 @@ struct NewLabelView: View {
 				Stepper("Priority: \(prio < 0 ? "none" : String(prio))", value: $prio)
 			}
 		}.toolbar {
-			AsyncButton("Save", systemImage: "checkmark") {
+			AsyncButton("Save", lucide: .check) {
 				await saveNewLabel()
 			}.tint(.accentColor)
 		}.navigationBarTitle("New Label")

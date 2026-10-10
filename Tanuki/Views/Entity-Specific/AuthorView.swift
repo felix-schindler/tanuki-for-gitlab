@@ -32,7 +32,7 @@ struct AuthorView: View {
 						if let url = URL.fromAvatar(author.avatarUrl) {
 							AvatarImage(url, size: .tiny)
 						} else {
-							Image(systemName: "person")
+							LucideLabelIcon(.user, size: 17)
 						}
 					}
 				)

@@ -100,7 +100,7 @@ struct TodoView: View {
 			}.font(.footnote)
 		}.swipeActions {
 			if todo.state != .done {
-				Button("Mark done", systemImage: "checkmark") {
+				Button("Mark done", lucide: .check) {
 					Task {
 						await markDone()
 					}

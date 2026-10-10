@@ -99,7 +99,7 @@ struct UserSnippetsLoader: View {
 				switch snippets {
 				case .success(let snippets):
 					if snippets.isEmpty {
-						NoContentView("There are no snippets", systemImage: "scissors")
+						NoContentView("There are no snippets", lucide: .scissors)
 					} else {
 						ForEach(snippets, id: \.self?.id) { maybeSnippet in
 							if let snippet = maybeSnippet {
@@ -126,8 +126,7 @@ struct UserSnippetsLoader: View {
 														}
 
 														HStack(spacing: 2) {
-															Image(
-																systemName: "clock")
+															LucideLabelIcon(.clock)
 															Text(
 																Date.fromToString(
 																	snippet
@@ -145,10 +144,10 @@ struct UserSnippetsLoader: View {
 						}
 					}
 				case .failure(let error):
-					FailedView(error.localizedDescription, icon: "scissors")
+					FailedView(error.localizedDescription, icon: .scissors)
 				}
 			} else {
-				LoadingView("Loading Snippets", systemImage: "scissors")
+				LoadingView("Loading Snippets", lucide: .scissors)
 			}
 		}.task {
 			loadSnippets()
@@ -156,7 +155,7 @@ struct UserSnippetsLoader: View {
 			await reloadSnippets()
 		}.toolbar {
 			if username == nil {
-				Button("New snippet", systemImage: "plus") {
+				Button("New snippet", lucide: .plus) {
 					createSnippet = true
 				}
 			}

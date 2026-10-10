@@ -62,7 +62,7 @@ struct UserGroupsLoader: View {
 				switch groups {
 				case .success(let groups):
 					if groups.isEmpty {
-						NoContentView("There are no groups", systemImage: "scale.3d")
+						NoContentView("There are no groups", lucide: .building)
 					} else {
 						ForEach(groups, id: \.self?.fullPath) { group in
 							if let group {
@@ -74,7 +74,7 @@ struct UserGroupsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Groups", systemImage: "scale.3d")
+				LoadingView("Loading Groups", lucide: .building)
 			}
 		}.task {
 			loadGroups()

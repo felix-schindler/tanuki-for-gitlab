@@ -64,7 +64,7 @@ struct NewTagView: View {
 				.autocorrectionDisabled()
 			TextField("Message (optional)", text: $message, axis: .vertical)
 		}.toolbar {
-			AsyncButton("Create tag", systemImage: "checkmark") {
+			AsyncButton("Create tag", lucide: .check) {
 				await createTag()
 			}.tint(.accentColor)
 		}

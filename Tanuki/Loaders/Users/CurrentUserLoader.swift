@@ -60,17 +60,17 @@ struct CurrentUserLoader: View {
 
 					Section("Account") {
 						NavigationLink(destination: KeysLoader()) {
-							Label("SSH keys", systemImage: "key")
+							Label("SSH keys", lucide: .key)
 						}
 						NavigationLink(destination: EmailsLoader()) {
-							Label("Email addresses", systemImage: "envelope")
+							Label("Email addresses", lucide: .mail)
 						}
 					}
 				case .failure(let error):
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Profile", systemImage: "person")
+				LoadingView("Loading Profile", lucide: .user)
 			}
 		}.task {
 			await loadUser()
@@ -81,7 +81,7 @@ struct CurrentUserLoader: View {
 				NavigationLink(
 					destination: SettingsView(),
 					label: {
-						Label("Settings", systemImage: "gear")
+						Label("Settings", lucide: .settings)
 					})
 			}
 

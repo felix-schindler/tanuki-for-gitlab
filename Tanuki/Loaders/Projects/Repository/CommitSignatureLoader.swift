@@ -39,7 +39,7 @@ struct SignatureLoader: View {
 		VStack {
 			if let signature {
 				if signature.verificationStatus.starts(with: "verified") {
-					RoundIconButton("Show signature", icon: "checkmark.seal") {
+					RoundIconButton("Show signature", icon: .badgeCheck) {
 						showDetails = true
 					}
 					.tint(.green)

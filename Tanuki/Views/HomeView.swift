@@ -108,14 +108,7 @@ struct HomeView: View {
 				NavigationLink(
 					destination: UserIssuesLoader(),
 					label: {
-						Label(
-							title: {
-								Text("Issues")
-							},
-							icon: {
-								Image(systemName: "smallcircle.circle")
-									.foregroundStyle(.green)
-							})
+						Label("Issues", lucide: .circleDot, color: .green)
 					})
 
 				DisclosureGroup(
@@ -129,57 +122,27 @@ struct HomeView: View {
 							destination: UserMergeLoader(.reviewRequested))
 					},
 					label: {
-						Label(
-							title: {
-								Text("Merge Requests")
-							},
-							icon: {
-								Image("git-mr.symbols")
-									.resizable()
-									.scaledToFit()
-									.foregroundStyle(.blue)
-							})
+						Label("Merge Requests", lucide: .gitPullRequest, color: .blue)
 					})
 
 				NavigationLink(
 					destination: ProjectsLoader(membership: true),
 					label: {
-						Label(
-							title: {
-								Text("Projects")
-							},
-							icon: {
-								Image(systemName: "app.gift.fill")
-									.foregroundStyle(.gray)
-							})
+						Label("Projects", lucide: .layers, color: .gray)
 					}
 				)
 
 				NavigationLink(
 					destination: UserSnippetsLoader(),
 					label: {
-						Label(
-							title: {
-								Text("Snippets")
-							},
-							icon: {
-								Image(systemName: "scissors")
-									.foregroundStyle(.purple)
-							})
+						Label("Snippets", lucide: .scissors, color: .purple)
 					}
 				)
 
 				NavigationLink(
 					destination: GroupsLoader(allAvailable: false),
 					label: {
-						Label(
-							title: {
-								Text("Groups")
-							},
-							icon: {
-								Image(systemName: "scale.3d")
-									.foregroundStyle(.red)
-							})
+						Label("Groups", lucide: .building, color: .red)
 					}
 				)
 			}
@@ -191,7 +154,7 @@ struct HomeView: View {
 						if projects.isEmpty {
 							NoContentView(
 								"There are no starred projects",
-								systemImage: "star.square.on.square.fill")
+								lucide: .star)
 						} else {
 							ForEach(projects, id: \.?.fullPath) { maybeProject in
 								if let project = maybeProject {
@@ -204,7 +167,7 @@ struct HomeView: View {
 							.frame(maxWidth: .infinity, minHeight: 100)
 					}
 				} else {
-					LoadingView("Loading starred Projects", systemImage: "star", color: .yellow)
+					LoadingView("Loading starred Projects", lucide: .star, color: .yellow)
 				}
 			}
 		}.task {
@@ -213,16 +176,16 @@ struct HomeView: View {
 			await reloadStarredProjects()
 		}.toolbar {
 			ToolbarItem(placement: .topBarLeading) {
-				Button("Jump", systemImage: "arrow.right.page.on.clipboard") {
+				Button("Jump", lucide: .clipboardPaste) {
 					jumpToClipboard()
 				}.tint(.accentColor)
 			}
 			ToolbarItemGroup(placement: .topBarTrailing) {
 				NavigationLink(destination: EventsLoader()) {
-					Label("Activity", systemImage: "bell")
+					Label("Activity", lucide: .bell)
 				}.tint(.accentColor)
 				NavigationLink(destination: NewProjectView()) {
-					Label("New project", systemImage: "plus")
+					Label("New project", lucide: .plus)
 				}.tint(.accentColor)
 			}
 		}

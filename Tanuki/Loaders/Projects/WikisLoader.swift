@@ -46,7 +46,7 @@ struct WikisLoader: View {
 					if pages.isEmpty {
 						NoContentView(
 							"This project has no wiki pages",
-							systemImage: "book.closed")
+							lucide: .bookOpen)
 					} else {
 						ForEach(pages) { page in
 							NavigationLink(
@@ -56,7 +56,7 @@ struct WikisLoader: View {
 									title: page.title
 								)
 							) {
-								Label(page.title.emojized(), systemImage: "doc.text")
+								Label(page.title.emojized(), lucide: .fileText)
 							}
 						}
 					}
@@ -64,7 +64,7 @@ struct WikisLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Wiki", systemImage: "book.closed")
+				LoadingView("Loading Wiki", lucide: .bookOpen)
 			}
 		}.task {
 			await loadPages()
@@ -113,13 +113,13 @@ struct WikiPageLoader: View {
 					} else {
 						NoContentView(
 							"This page is empty",
-							systemImage: "doc.text")
+							lucide: .fileText)
 					}
 				case .failure(let error):
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Page", systemImage: "doc.text")
+				LoadingView("Loading Page", lucide: .fileText)
 			}
 		}.task {
 			await loadPage()

@@ -31,7 +31,7 @@ struct CacheView: View {
 			Section("URL cache") {
 				Text("In memory: \(formatBytes(urlMemoryUsage))")
 				Text("On disk: \(formatBytes(urlDiskUsage))")
-				Button("Clear cache", systemImage: "trash", role: .destructive) {
+				Button("Clear cache", lucide: .trash, role: .destructive) {
 					URLCache.shared.removeAllCachedResponses()
 					urlMemoryUsage = URLCache.shared.currentMemoryUsage
 					urlDiskUsage = URLCache.shared.currentDiskUsage
@@ -42,7 +42,7 @@ struct CacheView: View {
 				Text("In memory \(formatBytes(avatarMemoryUsage))")
 				Text("On disk \(formatBytes(avatarDiskUsage))")
 
-				Button("Clear cache", systemImage: "trash", role: .destructive) {
+				Button("Clear cache", lucide: .trash, role: .destructive) {
 					URLCache.avatar.removeAllCachedResponses()
 					avatarMemoryUsage = URLCache.avatar.currentMemoryUsage
 					avatarDiskUsage = URLCache.avatar.currentDiskUsage
@@ -52,7 +52,7 @@ struct CacheView: View {
 			Section("File cache") {
 				Text("Downloaded files: \(formatBytes(Int(FileCache.size())))")
 
-				Button("Clear cache", systemImage: "trash", role: .destructive) {
+				Button("Clear cache", lucide: .trash, role: .destructive) {
 					FileCache.clear()
 					Notify.status(.success, "Cleared file cache", systemImage: "checkmark")
 				}
@@ -62,7 +62,7 @@ struct CacheView: View {
 				Text(
 					"Due to apollo-ios limitations, the actual size of the cache is unknown. If you feel this app is taking up too much storage, consider clearing this cache."
 				)
-				AsyncButton("Clear cache", systemImage: "trash", role: .destructive) {
+				AsyncButton("Clear cache", lucide: .trash, role: .destructive) {
 					do {
 						try await Network.shared.apollo.store.clearCache()
 						Notify.status(.success, "Cleared cache", systemImage: "checkmark")

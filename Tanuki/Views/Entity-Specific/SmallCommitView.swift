@@ -61,7 +61,7 @@ struct SmallCommitView: View {
 
 					if commit._signatureVerificationStatus?.starts(with: "VERIFIED") ?? false {
 						RoundIconButton(
-							"Verified", icon: "checkmark.seal"
+							"Verified", icon: .badgeCheck
 						) {
 							Haptics.shared.play(.light)
 							showVerified = true

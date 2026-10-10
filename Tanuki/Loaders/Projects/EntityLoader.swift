@@ -74,7 +74,7 @@ struct EntityLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading \(fullPath)", systemImage: "magnifyingglass")
+				LoadingView("Loading \(fullPath)", lucide: .search)
 			}
 		}
 		.task {

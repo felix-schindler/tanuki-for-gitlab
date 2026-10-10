@@ -76,7 +76,7 @@ struct ContributionsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Contributions", systemImage: "calendar")
+				LoadingView("Loading Contributions", lucide: .calendar)
 			}
 		}.task {
 			await loadContributions()

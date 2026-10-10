@@ -86,7 +86,7 @@ struct NewMilestoneView: View {
 					.frame(minHeight: 100)
 			}
 		}.toolbar {
-			AsyncButton("Create milestone", systemImage: "checkmark") {
+			AsyncButton("Create milestone", lucide: .check) {
 				await createMilestone()
 			}.tint(.accentColor)
 		}.navigationTitle("New Milestone")

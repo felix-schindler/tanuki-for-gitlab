@@ -64,7 +64,7 @@ struct UserView: View {
 									label: {
 										PillView(
 											user.location!,
-											icon: "mappin.and.ellipse",
+											icon: .mapPin,
 											bgColor: .accentColor,
 											fgColor: .white,
 											cornerRadius: 5
@@ -73,7 +73,7 @@ struct UserView: View {
 								)
 							} else {
 								PillView(
-									user.location!, icon: "mappin.and.ellipse",
+									user.location!, icon: .mapPin,
 									cornerRadius: 5)
 							}
 						}
@@ -86,7 +86,7 @@ struct UserView: View {
 									.trimmingCharacters(in: .whitespaces)
 							PillView(
 								workInfo,
-								icon: "briefcase",
+								icon: .briefcase,
 								cornerRadius: 5
 							)
 						}
@@ -147,7 +147,7 @@ struct UserView: View {
 				NavigationLink(
 					destination: UpdateStatusView(),
 					label: {
-						Label("Create status", systemImage: "pencil")
+						Label("Create status", lucide: .pencil)
 					})
 			}
 		}
@@ -209,15 +209,7 @@ struct UserView: View {
 			NavigationLink(
 				destination: UserIssuesLoader(username: user.username),
 				label: {
-					Label(
-						title: {
-							Text("Issues")
-						},
-						icon: {
-							Image(systemName: "smallcircle.circle")
-								.foregroundStyle(.green)
-						}
-					)
+					Label("Issues", lucide: .circleDot, color: .green)
 				}
 			)
 			NavigationLink(
@@ -232,52 +224,30 @@ struct UserView: View {
 							}
 						},
 						icon: {
-							Image(systemName: "scale.3d")
-								.foregroundStyle(.red)
-						})
+							LucideLabelIcon(.building, color: .red)
+						}
+					)
 				})
 			NavigationLink(
 				destination: UserProjectsLoader(username: user.username),
 				label: {
-					Label(
-						title: {
-							Text("Projects")
-						},
-						icon: {
-							Image(systemName: "app.gift.fill")
-								.foregroundStyle(.gray)
-						})
+					Label("Projects", lucide: .layers, color: .gray)
 				})
 			NavigationLink(
 				destination: UserStarredProjectsLoader(username: user.username),
 				label: {
-					Label(
-						title: {
-							Text("Starred projects")
-						},
-						icon: {
-							Image(systemName: "star.fill")
-								.foregroundStyle(.yellow)
-						})
+					Label("Starred projects", lucide: .star, color: .yellow)
 				})
 			NavigationLink(
 				destination: UserSnippetsLoader(username: user.username),
 				label: {
-					Label(
-						title: {
-							Text("Snippets")
-						},
-						icon: {
-							Image(systemName: "scissors")
-								.foregroundStyle(.purple)
-						}
-					)
+					Label("Snippets", lucide: .scissors, color: .purple)
 				})
 			if let id = user.id.toIntId() {
 				NavigationLink(
 					destination: EventsLoader(userId: id),
 					label: {
-						Label("Activity", systemImage: "clock.arrow.circlepath")
+						Label("Activity", lucide: .activity)
 					}
 				)
 			}
@@ -287,13 +257,13 @@ struct UserView: View {
 					queryType: .user
 				),
 				label: {
-					Label("Timelogs", systemImage: "hourglass")
+					Label("Timelogs", lucide: .hourglass)
 				}
 			)
 			NavigationLink(
 				destination: UserTodosLoader(username: user.username),
 				label: {
-					Label("Todos", systemImage: "checkmark.square")
+					Label("Todos", lucide: .squareCheckBig)
 				}
 			)
 		}

@@ -70,7 +70,7 @@ struct DiffsStatsLoader: View {
 				case .success(let diffs):
 					if diffs.isEmpty {
 						NoContentView(
-							"There are no files with changed content", systemImage: "plusminus")
+							"There are no files with changed content", lucide: .diff)
 					} else {
 						ForEach(diffs, id: \.path) { diff in
 							VStack(alignment: .leading) {
@@ -90,7 +90,7 @@ struct DiffsStatsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading file diffs", systemImage: "plusminus")
+				LoadingView("Loading file diffs", lucide: .diff)
 			}
 		}.task {
 			loadDiffs()

@@ -58,13 +58,13 @@ struct NewGroupView: View {
 				.autocorrectionDisabled()
 				.textInputAutocapitalization(.never)
 			Picker("Visibility Level", selection: $visibility) {
-				Label("Private", systemImage: "lock").tag(ProjectVisibility.private)
-				Label("Public", systemImage: "globe").tag(ProjectVisibility.public)
-				Label("Internal", systemImage: "shield.lefthalf.filled").tag(ProjectVisibility.internal)
+				Label("Private", lucide: .lock).tag(ProjectVisibility.private)
+				Label("Public", lucide: .globe).tag(ProjectVisibility.public)
+				Label("Internal", lucide: .shieldHalf).tag(ProjectVisibility.internal)
 			}
 			TextField("Description (optional)", text: $description, axis: .vertical)
 		}.toolbar {
-			AsyncButton(parentId == nil ? "Create Group" : "Create Subgroup", systemImage: "checkmark") {
+			AsyncButton(parentId == nil ? "Create Group" : "Create Subgroup", lucide: .check) {
 				await createGroup()
 			}.tint(.accentColor)
 		}

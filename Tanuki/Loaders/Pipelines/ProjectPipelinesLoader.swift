@@ -64,7 +64,7 @@ struct ProjectPipelinesLoader: View {
 				switch pipelines {
 				case .success(let pipelines):
 					if pipelines.isEmpty {
-						NoContentView("There are no pipelines", systemImage: "flag")
+						NoContentView("There are no pipelines", lucide: .workflow)
 					} else {
 						ForEach(pipelines, id: \.?.id) { maybePipeline in
 							if let pipeline = maybePipeline {
@@ -82,7 +82,7 @@ struct ProjectPipelinesLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Pipelines", systemImage: "flag")
+				LoadingView("Loading Pipelines", lucide: .workflow)
 			}
 		}.task {
 			loadPipelines()

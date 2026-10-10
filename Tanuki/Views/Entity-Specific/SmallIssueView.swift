@@ -33,30 +33,16 @@ struct SmallIssueView: View {
 						ScrollView(.horizontal) {
 							HStack {
 								AuthorView(issue._author)
-								HStack(spacing: 2) {
-									Image(
-										systemName:
-											"clock")
-									Text(
-										Date.fromToString(issue.createdAt)
-									)
-								}
+								Label(
+									Date.fromToString(issue.createdAt), lucide: .clock,
+									size: 17)
 							}
 						}
 						Spacer()
 						HStack {
-							HStack(spacing: 2) {
-								Image(systemName: "hand.thumbsup")
-								Text(String(issue.upvotes))
-							}
-							HStack(spacing: 2) {
-								Image(systemName: "hand.thumbsdown")
-								Text(String(issue.downvotes))
-							}
-							HStack(spacing: 2) {
-								Image(systemName: "note.text")
-								Text(String(issue.userNotesCount))
-							}
+							Label(String(issue.upvotes), lucide: .thumbsUp, size: 17)
+							Label(String(issue.downvotes), lucide: .thumbsDown, size: 17)
+							Label(String(issue.userNotesCount), lucide: .notebookText, size: 17)
 						}
 					}.font(.footnote)
 				}.swipeActions {

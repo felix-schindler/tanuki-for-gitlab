@@ -37,35 +37,18 @@ struct SmallMergeView: View {
 								if let author = mr._author {
 									AuthorView(author)
 								}
-								HStack(spacing: 2) {
-									Image(systemName: "clock")
-									Text(
-										Date.fromToString(mr.createdAt)
-									)
-								}
+								Label(
+									Date.fromToString(mr.createdAt), lucide: .clock,
+									size: 17)
 							}
 						}
 						Spacer()
 						HStack {
-							HStack(spacing: 2) {
-								Image(systemName: "hand.thumbsup")
-								Text(String(mr.upvotes))
-							}
-							HStack(spacing: 2) {
-								Image(
-									systemName:
-										"hand.thumbsdown")
-								Text(
-									String(mr.downvotes)
-								)
-							}
-							HStack(spacing: 2) {
-								Image(
-									systemName: "note.text")
-								Text(
-									String(mr.userNotesCount ?? 0)
-								)
-							}
+							Label(String(mr.upvotes), lucide: .thumbsUp, size: 17)
+							Label(String(mr.downvotes), lucide: .thumbsDown, size: 17)
+							Label(
+								String(mr.userNotesCount ?? 0), lucide: .notebookText,
+								size: 17)
 						}
 					}.font(.footnote)
 				}.swipeActions {

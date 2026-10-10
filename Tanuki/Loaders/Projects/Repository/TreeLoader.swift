@@ -149,7 +149,7 @@ struct TreeLoader: View {
 											folderPath: folder.path
 										),
 										label: {
-											Label(folder.name, systemImage: "folder")
+											Label(folder.name, lucide: .folder)
 										}
 									)
 								}
@@ -166,7 +166,7 @@ struct TreeLoader: View {
 											refName: self.refName
 										),
 										label: {
-											Label(file.name, systemImage: "doc.text")
+											Label(file.name, lucide: .fileText)
 										}
 									)
 								}
@@ -176,7 +176,7 @@ struct TreeLoader: View {
 						FailedView(error)
 					}
 				} else {
-					LoadingView("Loading file tree", systemImage: "folder")
+					LoadingView("Loading file tree", lucide: .folder)
 				}
 			}
 		}.task {
@@ -192,7 +192,7 @@ struct TreeLoader: View {
 				destination: NewFileView(
 					projectId: projectId, refName: refName, folderPath: folderPath)
 			) {
-				Label("New file", systemImage: "plus")
+				Label("New file", lucide: .plus)
 			}.tint(.accentColor)
 		}.navigationTitle(folderPath ?? "Files")
 	}

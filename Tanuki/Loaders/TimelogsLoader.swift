@@ -105,7 +105,7 @@ struct TimelogsLoader: View {
 				switch timelogs {
 				case .success(let timelogs):
 					if timelogs.isEmpty {
-						NoContentView("There are no timelogs", systemImage: "hourglass")
+						NoContentView("There are no timelogs", lucide: .hourglass)
 					} else {
 						ForEach(timelogs, id: \.?.id) { maybeLog in
 							if let log = maybeLog {
@@ -141,7 +141,7 @@ struct TimelogsLoader: View {
 													label: {
 														PillView(
 															"#\(issueIid)",
-															icon: "smallcircle.circle",
+															icon: .circleDot,
 															bgColor: .green,
 															fgColor: .white,
 															cornerRadius: 5
@@ -158,7 +158,7 @@ struct TimelogsLoader: View {
 													label: {
 														PillView(
 															"!\(mergeIid)",
-															icon: "arrow.triangle.pull",
+															icon: .gitPullRequest,
 															bgColor: .blue,
 															fgColor: .white,
 															cornerRadius: 5
@@ -181,7 +181,7 @@ struct TimelogsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Timelogs", systemImage: "hourglass")
+				LoadingView("Loading Timelogs", lucide: .hourglass)
 			}
 		}.task {
 			loadTimelogs()

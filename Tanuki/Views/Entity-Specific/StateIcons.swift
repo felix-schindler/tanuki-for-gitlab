@@ -6,6 +6,7 @@
 //
 
 import GitLabAPI
+import Lucide
 import SwiftUI
 
 struct IssueStateHelper {
@@ -26,23 +27,23 @@ struct IssueStateHelper {
 
 	public static func getIconByState(
 		_ state: GraphQLEnum<GitLabAPI.IssueState>
-	) -> String {
+	) -> LucideIcon {
 		switch state {
 		case .opened:
-			"smallcircle.circle"
+			.circleDot
 		case .closed:
-			"minus.circle"
+			.circleMinus
 		case .locked:
-			"lock.circle"
+			.lock
 		default:
-			"smallcircle.circle"
+			.circleDot
 		}
 	}
 }
 
 struct IssueStateIcon: View {
 	private let state: String
-	private let icon: String
+	private let icon: LucideIcon
 	private let color: SwiftUI.Color
 
 	init(_ state: GraphQLEnum<GitLabAPI.IssueState>) {
@@ -50,26 +51,26 @@ struct IssueStateIcon: View {
 
 		switch state {
 		case .opened:
-			icon = "smallcircle.circle"
+			icon = .circleDot
 			color = Color.green
 			break
 		case .closed:
-			icon = "minus.circle"
+			icon = .circleMinus
 			color = Color.blue
 			break
 		case .locked:
-			icon = "lock.circle"
+			icon = .lock
 			color = Color.secondary
 			break
 		default:
-			icon = "smallcircle.circle"
+			icon = .circleDot
 			color = Color.primary
 			break
 		}
 	}
 
 	public var body: some View {
-		Label(self.state, systemImage: self.icon)
+		Label(self.state, lucide: self.icon)
 			.foregroundStyle(self.color)
 			.labelStyle(.iconOnly)
 	}
@@ -95,25 +96,25 @@ struct MergeStateHelper {
 
 	public static func getIconByState(
 		_ state: GraphQLEnum<GitLabAPI.MergeRequestState>
-	) -> Image {
+	) -> LucideIcon {
 		switch state {
 		case .opened:
-			return Image("git-mr.symbols")
+			return .gitPullRequest
 		case .merged:
-			return Image("git-mr-merged.symbols")
+			return .gitMerge
 		case .closed:
-			return Image("git-mr-closed.symbols")
+			return .gitPullRequestClosed
 		case .locked:
-			return Image(systemName: "lock")
+			return .lock
 		default:
-			return Image("git-mr.symbols")
+			return .gitPullRequest
 		}
 	}
 }
 
 struct MergeStateIcon: View {
 	private let state: GraphQLEnum<GitLabAPI.MergeRequestState>
-	private let icon: Image
+	private let icon: LucideIcon
 	private let color: SwiftUI.Color
 
 	init(_ state: GraphQLEnum<GitLabAPI.MergeRequestState>) {
@@ -123,22 +124,15 @@ struct MergeStateIcon: View {
 	}
 
 	public var body: some View {
-		Label(
-			title: {
-				Text(self.state.rawValue)
-			},
-			icon: {
-				self.icon
-			}
-		)
-		.foregroundStyle(self.color)
-		.labelStyle(.iconOnly)
+		Label(self.state.rawValue, lucide: self.icon)
+			.foregroundStyle(self.color)
+			.labelStyle(.iconOnly)
 	}
 }
 
 struct MergeStatus: View {
 	private let status: GraphQLEnum<GitLabAPI.MergeStatus>
-	private let icon: String
+	private let icon: LucideIcon
 	private let color: SwiftUI.Color
 	private let msg: String
 
@@ -148,27 +142,27 @@ struct MergeStatus: View {
 		switch status {
 		case .canBeMerged:
 			self.msg = "There are no conflicts between the source and target branches."
-			self.icon = "checkmark"
+			self.icon = .check
 			self.color = Color.green
 		case .cannotBeMerged:
 			self.msg = "There are conflicts between the source and target branches."
-			self.icon = "xmark"
+			self.icon = .x
 			self.color = Color.red
 		case .checking:
 			self.msg = "Currently checking for mergeability."
-			self.icon = "arrow.2.circlepath"
+			self.icon = .refreshCw
 			self.color = Color.orange
 		case .unchecked:
 			self.msg = "Merge status has not been checked."
-			self.icon = "questionmark"
+			self.icon = .circleQuestionMark
 			self.color = Color.secondary
 		case .cannotBeMergedRecheck:
 			self.msg = "Currently unchecked. The previous state was `CANNOT_BE_MERGED`."
-			self.icon = "questionmark"
+			self.icon = .circleQuestionMark
 			self.color = Color.secondary
 		default:
 			self.msg = ""
-			self.icon = "questionmark"
+			self.icon = .circleQuestionMark
 			self.color = Color.primary
 		}
 	}
@@ -191,7 +185,7 @@ struct MergeStatus: View {
 				}
 			},
 			icon: {
-				Image(systemName: self.icon)
+				LucideLabelIcon(self.icon)
 			}
 		).foregroundStyle(self.color)
 	}
@@ -241,15 +235,7 @@ struct DetailedMergeStatusView: View {
 	}
 
 	public var body: some View {
-		Label(
-			title: {
-				Text(msg)
-			},
-			icon: {
-				Image(systemName: "minus.circle.fill")
-					.foregroundStyle(.red)
-			}
-		)
+		Label(msg, lucide: .circleMinus, color: .red)
 	}
 }
 

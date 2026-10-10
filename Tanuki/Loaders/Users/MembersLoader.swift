@@ -111,7 +111,7 @@ struct MembersLoader: View {
 					if memberships.isEmpty {
 						NoContentView(
 							"This project has no members",
-							systemImage: "person.2"
+							lucide: .users
 						)
 					} else {
 						ForEach(memberships, id: \.?.id) { maybeMember in
@@ -169,30 +169,14 @@ struct MembersLoader: View {
 															}
 														}
 														if member.createdAt != nil {
-															HStack(spacing: 2) {
-																Image(
-																	systemName: "clock"
-																)
-																Text(
-																	Date
-																		.fromToString(
-																			member.createdAt!
-																		)
-																)
-															}
+															Label(
+																Date.fromToString(member.createdAt!), lucide: .clock,
+																size: 17)
 														}
 														if member.expiresAt != nil {
-															HStack(spacing: 2) {
-																Image(
-																	systemName: "alarm"
-																)
-																Text(
-																	Date
-																		.fromToString(
-																			member.createdAt!
-																		)
-																)
-															}
+															Label(
+																Date.fromToString(member.createdAt!),
+																lucide: .alarmClock, size: 17)
 														}
 													}.font(.footnote)
 												}
@@ -207,7 +191,7 @@ struct MembersLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Members", systemImage: "person.2")
+				LoadingView("Loading Members", lucide: .users)
 			}
 		}.task {
 			loadMembers()
@@ -221,7 +205,7 @@ struct MembersLoader: View {
 					}
 				},
 				label: {
-					Label("Add new Member", systemImage: "person.badge.plus")
+					Label("Add new Member", lucide: .userPlus)
 				}
 			).tint(.accentColor)
 		}.refreshable {

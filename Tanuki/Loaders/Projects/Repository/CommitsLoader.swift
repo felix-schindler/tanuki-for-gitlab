@@ -81,7 +81,7 @@ struct CommitsLoader: View {
 			if isLoading {
 				LoadingView(
 					"Loading branches and commits",
-					systemImage: "chevron.left.forwardslash.chevron.right"
+					lucide: .gitCommitHorizontal
 				)
 			} else if let commits {
 				switch commits {
@@ -89,7 +89,7 @@ struct CommitsLoader: View {
 					if commits.isEmpty {
 						NoContentView(
 							"You'll see your commits after you pushed something to branch \(refName)",
-							systemImage: "chevron.left.forwardslash.chevron.right"
+							lucide: .gitCommitHorizontal
 						)
 					} else {
 						HStack {

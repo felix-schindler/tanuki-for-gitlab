@@ -6,11 +6,12 @@
 //
 
 import GitLabAPI
+import Lucide
 import SwiftUI
 
 struct PipelineStatus: View {
 	private let state: GraphQLEnum<GitLabAPI.PipelineStatusEnum>
-	private let icon: String
+	private let icon: LucideIcon
 	private let color: SwiftUI.Color
 
 	@State
@@ -31,27 +32,27 @@ struct PipelineStatus: View {
 
 	/// Shared icon/color mapping so list rows and pills can reuse it without the button.
 	static func style(for state: GraphQLEnum<GitLabAPI.PipelineStatusEnum>) -> (
-		icon: String, color: SwiftUI.Color
+		icon: LucideIcon, color: SwiftUI.Color
 	) {
 		switch state {
 		case .created:
-			("plus.circle", .orange)
+			(.circlePlus, .orange)
 		case .waitingForResource, .waitingForCallback:
-			("pause.circle", .orange)
+			(.circlePause, .orange)
 		case .success:
-			("checkmark.circle", .green)
+			(.circleCheck, .green)
 		case .failed:
-			("minus.circle", .red)
+			(.circleMinus, .red)
 		case .canceled:
-			("slash.circle", .gray)
+			(.circleSlash, .gray)
 		case .skipped:
-			("chevron.right.circle", .gray)
+			(.circleChevronRight, .gray)
 		case .manual:
-			("person.crop.circle", .primary)
+			(.circleUserRound, .primary)
 		case .scheduled:
-			("hourglass.circle", .primary)
+			(.hourglass, .primary)
 		default:
-			("arrow.2.circlepath.circle", .orange)
+			(.refreshCw, .orange)
 		}
 	}
 

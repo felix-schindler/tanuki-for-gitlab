@@ -83,7 +83,7 @@ struct ProjectHeaderView: View {
 			HStack {
 				if let topics = project.topics, topics.isNotEmpty {
 					HStack(spacing: 5) {
-						Label("Tags", systemImage: "tag")
+						Label("Tags", lucide: .tag)
 							.labelStyle(.iconOnly)
 						ScrollView(.horizontal) {
 							HStack {
@@ -117,7 +117,7 @@ struct ProjectHeaderView: View {
 								label: {
 									Label(
 										namespace.name,
-										systemImage: "person"
+										lucide: .user
 									)
 								}
 							)
@@ -129,7 +129,7 @@ struct ProjectHeaderView: View {
 								label: {
 									Label(
 										namespace.name,
-										systemImage: "scale.3d"
+										lucide: .building
 									)
 								}
 							)
@@ -142,7 +142,7 @@ struct ProjectHeaderView: View {
 
 					AsyncButton(
 						String(project.starCount),
-						systemImage: "star"
+						lucide: .star
 					) {
 						await star()
 					}
@@ -152,7 +152,7 @@ struct ProjectHeaderView: View {
 					if project.userPermissions.forkProject {
 						AsyncButton(
 							String(project.forksCount),
-							systemImage: "tuningfork"
+							lucide: .gitFork
 						) {
 							await fork()
 						}
@@ -161,7 +161,7 @@ struct ProjectHeaderView: View {
 					} else {
 						PillView(
 							String(project.forksCount),
-							icon: "tuningfork"
+							icon: .gitFork
 						)
 					}
 				}
