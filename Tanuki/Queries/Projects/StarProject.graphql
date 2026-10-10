@@ -1,5 +1,0 @@
-mutation StarProject($projectId: ProjectID!, $starred: Boolean!) {
-	starProject(input: { projectId: $projectId, starred: $starred }) {
-		count
-	}
-}

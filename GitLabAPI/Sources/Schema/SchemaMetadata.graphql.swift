@@ -100,7 +100,6 @@ nonisolated public enum SchemaMetadata: ApolloAPI.SchemaMetadata {
     "SnippetConnection": GitLabAPI.Objects.SnippetConnection,
     "SnippetPermissions": GitLabAPI.Objects.SnippetPermissions,
     "SshSignature": GitLabAPI.Objects.SshSignature,
-    "StarProjectPayload": GitLabAPI.Objects.StarProjectPayload,
     "Submodule": GitLabAPI.Objects.Submodule,
     "Timelog": GitLabAPI.Objects.Timelog,
     "TimelogConnection": GitLabAPI.Objects.TimelogConnection,

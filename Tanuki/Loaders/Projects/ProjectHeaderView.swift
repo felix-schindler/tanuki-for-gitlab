@@ -17,10 +17,24 @@ struct ProjectHeaderView: View {
 	}
 
 	private func star() async {
+		guard let id = project.id.toIntId() else {
+			Notify.status(.error, "Starring project failed", systemImage: "xmark")
+			return
+		}
 		do {
-			_ = try await Network.shared.apollo.perform(
-				mutation: StarProjectMutation(projectId: project.id, starred: true))
+			_ = try await API.req(
+				type: RestAPIProject.self, method: .post,
+				endpoint: "projects/\(id)/star")
 			Notify.status(.success, "Project starred", systemImage: "star")
+		} catch APIError.http(let status, _) where status == 304 {
+			do {
+				_ = try await API.req(
+					type: RestAPIProject.self, method: .post,
+					endpoint: "projects/\(id)/unstar")
+				Notify.status(.success, "Project unstarred", systemImage: "star")
+			} catch let error {
+				Notify.status(.error, "Unstarring project failed", error.localizedDescription, systemImage: "xmark")
+			}
 		} catch let error {
 			Notify.status(.error, "Starring project failed", error.localizedDescription, systemImage: "xmark")
 		}
