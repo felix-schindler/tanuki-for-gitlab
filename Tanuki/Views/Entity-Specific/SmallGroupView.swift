@@ -36,19 +36,16 @@ struct SmallGroupView: View {
 							} else {
 								Text(group.fullPath)
 							}
-                            if let visibility = group.visibility {
-                                VisibilityIcon(visibility)
-                            }
+							if let visibility = group.visibility {
+								VisibilityIcon(visibility)
+							}
 						}
 
-						HStack(spacing: 10) {
-							Label(
-								String(group.groupMembersCount), lucide: .users,
-								size: 17)
-
-							Label(
-								String(group.projectsCount), lucide: .layers,
-								size: 17)
+						ScrollView(.horizontal) {
+							HStack {
+								PillView(String(group.groupMembersCount), icon: .users)
+								PillView(String(group.projectsCount), icon: .layers)
+							}
 						}.font(.footnote)
 					}
 

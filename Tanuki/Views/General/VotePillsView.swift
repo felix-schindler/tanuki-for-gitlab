@@ -76,7 +76,7 @@ struct VotePillsView: View {
 			}
 		}
 		.controlSize(.small)
-		.buttonStyle(.bordered)
+		.adaptiveButtonStyle()
 		.disabled(projectId == nil)
 	}
 }

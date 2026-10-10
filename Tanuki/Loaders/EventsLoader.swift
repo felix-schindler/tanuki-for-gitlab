@@ -77,12 +77,11 @@ struct EventsLoader: View {
 					} else {
 						ForEach(events, id: \.id) { event in
 							VStack(alignment: .leading) {
-								HStack {
-									ScrollView(.horizontal) {
+								ScrollView(.horizontal) {
+									HStack {
 										AuthorView(event.author)
+										PillView(event.createdAt.toString(timeStyle: .short), icon: "clock")
 									}
-									Spacer()
-									Text(event.createdAt.toString(timeStyle: .short))
 								}.font(.footnote)
 								Text(getStupidText(event: event))
 							}

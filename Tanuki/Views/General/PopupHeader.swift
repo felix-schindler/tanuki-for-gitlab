@@ -38,7 +38,7 @@ struct PopupHeader: View {
 				}
 			)
 			.tint(.green)
-			.buttonStyle(.bordered)
+			.adaptiveButtonStyle()
 			.controlSize(.large)
 		}
 		.padding()

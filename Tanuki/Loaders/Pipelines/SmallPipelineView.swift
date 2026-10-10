@@ -53,10 +53,7 @@ struct SmallPipelineView: View {
 							if let source = pipeline.source {
 								PillView(source)
 							}
-							Spacer()
-							Text(Date.fromToString(pipeline.createdAt, timeStyle: .short))
-								.font(.caption2)
-								.foregroundStyle(.secondary)
+							PillView(Date.fromToString(pipeline.createdAt, timeStyle: .short), icon: .clock)
 						}.font(.footnote)
 					}
 				}

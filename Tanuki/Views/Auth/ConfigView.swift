@@ -93,7 +93,7 @@ struct ConfigView: View {
 			)
 			.tint(.accentColor)
 			.buttonBorderShape(.capsule)
-			.buttonStyle(.bordered)
+			.adaptiveButtonStyle()
 			.controlSize(.large)
 		}
 		.padding()

@@ -67,30 +67,23 @@ struct NoteView: View {
 				.font(.footnote)
 			} else {
 				VStack(alignment: .leading) {
-					HStack {
-						ScrollView(.horizontal) {
-							HStack {
-								AuthorView(author, showUsername: true)
+					ScrollView(.horizontal) {
+						HStack {
+							AuthorView(author, showUsername: true)
 
-								if let accessLevel = note.maxAccessLevelOfAuthor {
-									PillView(accessLevel)
-								}
-
-								Spacer()
+							if let accessLevel = note.maxAccessLevelOfAuthor {
+								PillView(accessLevel)
 							}
-						}
 
-						let date = Date.fromToString(
-							note.createdAt,
-							dateStyle: .short,
-							timeStyle: .short
-						)
-						if note.updatedAt != note.createdAt {
-							Label(date, lucide: .pencilLine)
-								.foregroundStyle(.secondary)
-						} else {
-							Text(date)
-								.foregroundStyle(.secondary)
+							if note.updatedAt != note.createdAt {
+								PillView(
+									Date.fromToString(note.createdAt, dateStyle: .short, timeStyle: .short),
+									icon: .pencilLine)
+							} else {
+								PillView(
+									Date.fromToString(note.createdAt, dateStyle: .short, timeStyle: .short),
+									icon: .clock)
+							}
 						}
 					}.font(.footnote)
 

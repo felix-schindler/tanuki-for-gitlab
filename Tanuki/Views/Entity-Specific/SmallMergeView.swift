@@ -31,24 +31,15 @@ struct SmallMergeView: View {
 							.foregroundStyle(.secondary)
 					}.font(.footnote)
 					Text(mr.title.emojized())
-					HStack {
-						ScrollView(.horizontal) {
-							HStack {
-								if let author = mr._author {
-									AuthorView(author)
-								}
-								Label(
-									Date.fromToString(mr.createdAt), lucide: .clock,
-									size: 17)
-							}
-						}
-						Spacer()
+					ScrollView(.horizontal) {
 						HStack {
-							Label(String(mr.upvotes), lucide: .thumbsUp, size: 17)
-							Label(String(mr.downvotes), lucide: .thumbsDown, size: 17)
-							Label(
-								String(mr.userNotesCount ?? 0), lucide: .notebookText,
-								size: 17)
+							if let author = mr._author {
+								AuthorView(author)
+							}
+							PillView(Date.fromToString(mr.createdAt), icon: .clock)
+							PillView(String(mr.upvotes), icon: .thumbsUp)
+							PillView(String(mr.downvotes), icon: .thumbsDown)
+							PillView(String(mr.userNotesCount ?? 0), icon: .notebookText)
 						}
 					}.font(.footnote)
 				}.swipeActions {

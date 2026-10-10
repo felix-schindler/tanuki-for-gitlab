@@ -122,19 +122,18 @@ struct CommitsLoader: View {
 												InlineMarkdown(commit.title)
 													.fontWeight(.medium)
 
-												VStack(alignment: .leading) {
+												ScrollView(.horizontal) {
 													HStack {
-														Text(
-															"Authored by \(commit.authorName) at \(commit.authoredDate.toString(.short))"
-														)
-													}.font(.footnote)
-												}
+														PillView(commit.authorName, icon: "person")
+														PillView(commit.authoredDate.toString(.short), icon: "clock")
+													}
+												}.font(.footnote)
 											}
 											Spacer()
 											VStack {
 												SignatureLoader(
 													projectId: self.projectId, commitId: commit.id)
-												Text(commit.shortId)
+												PillView(commit.shortId)
 													.textSelection(.enabled)
 													.font(.system(.footnote, design: .monospaced))
 											}

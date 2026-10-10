@@ -44,7 +44,7 @@ struct SetupView: View {
 				)
 				.tint(.accentColor)
 				.buttonBorderShape(.capsule)
-				.buttonStyle(.borderedProminent)
+				.adaptiveButtonStyleProminent()
 				.controlSize(.large)
 
 				NavigationLink(
@@ -56,7 +56,7 @@ struct SetupView: View {
 				)
 				.tint(.accentColor)
 				.buttonBorderShape(.capsule)
-				.buttonStyle(.bordered)
+				.adaptiveButtonStyle()
 				.controlSize(.large)
 
 				Spacer()

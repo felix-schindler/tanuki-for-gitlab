@@ -125,13 +125,7 @@ struct UserSnippetsLoader: View {
 															AuthorView(author)
 														}
 
-														HStack(spacing: 2) {
-															LucideLabelIcon(.clock)
-															Text(
-																Date.fromToString(
-																	snippet
-																		.createdAt))
-														}
+														PillView(Date.fromToString(snippet.createdAt), icon: .clock)
 													}.font(.footnote)
 												}
 											}

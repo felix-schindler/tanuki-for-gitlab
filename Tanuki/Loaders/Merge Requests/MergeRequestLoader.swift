@@ -207,16 +207,13 @@ struct MergeRequestLoader: View {
 												fullPath: sourceProject.fullPath
 											),
 											label: {
-												PillView(
-													"\(sourceProject.fullPath)/\(mr.sourceBranch)",
-													bgColor: .blue,
-													fgColor: .white,
-													cornerRadius: 5
-												)
-												.font(.system(.footnote, design: .monospaced))
-												.textSelection(.enabled)
+												Text("\(sourceProject.fullPath)/\(mr.sourceBranch)")
+													.font(.system(.footnote, design: .monospaced))
 											}
 										)
+										.controlSize(.mini)
+										.buttonBorderShape(.capsule)
+										.adaptiveButtonStyle()
 									} else {
 										PillView(
 											mr.sourceBranch,
@@ -577,7 +574,7 @@ struct MergeRequestLoader: View {
 						.tint(MergeStateHelper.getColorByState(mr.state))
 						.labelStyle(.titleAndIcon)
 						.buttonBorderShape(.roundedRectangle)
-						.buttonStyle(.borderedProminent)
+						.adaptiveButtonStyleProminent()
 						.controlSize(.mini)
 
 						if let webUrl = mr.webUrl,

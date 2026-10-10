@@ -58,7 +58,7 @@ struct JumpFailureView: View {
 			} label: {
 				Label(copied ? "Details copied" : "Copy details", lucide: .copy)
 			}
-			.buttonStyle(.bordered)
+			.adaptiveButtonStyle()
 			.font(.footnote)
 		}
 		.padding(.vertical, 4)

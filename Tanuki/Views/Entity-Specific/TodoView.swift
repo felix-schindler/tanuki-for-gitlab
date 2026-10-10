@@ -57,21 +57,18 @@ struct TodoView: View {
 
 	private var main: some View {
 		VStack(alignment: .leading) {
-			HStack {
-				ScrollView(.horizontal) {
-					HStack {
-						PillView(
-							todo.state.rawValue.capitalized,
-							bgColor: (todo.state == .done ? .blue : .green),
-							fgColor: .white
-						)
-						PillView(
-							"\(todo.targetType.rawValue.lowercased().capitalized) · \(todo.action.rawValue.replacing("_", with: " "))"
-						)
-					}
+			ScrollView(.horizontal) {
+				HStack {
+					PillView(
+						todo.state.rawValue.capitalized,
+						bgColor: (todo.state == .done ? .blue : .green),
+						fgColor: .white
+					)
+					PillView(
+						"\(todo.targetType.rawValue.lowercased().capitalized) · \(todo.action.rawValue.replacing("_", with: " "))"
+					)
+					PillView(Date.fromToString(todo.createdAt), icon: "clock")
 				}
-				Spacer()
-				Text(Date.fromToString(todo.createdAt))
 			}.font(.footnote)
 
 			Markdown(todo.body)
@@ -93,8 +90,12 @@ struct TodoView: View {
 						NavigationLink(
 							destination: GroupLoader(fullPath: groupPath),
 							label: {
-								PillView(groupPath)
-							})
+								Text(groupPath)
+							}
+						)
+						.controlSize(.mini)
+						.buttonBorderShape(.capsule)
+						.adaptiveButtonStyle()
 					}
 				}
 			}.font(.footnote)

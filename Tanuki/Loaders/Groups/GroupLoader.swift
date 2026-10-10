@@ -87,7 +87,7 @@ struct GroupLoader: View {
 									.fontWeight(.bold)
 							}
 							if let visibility = group.visibility {
-                                Spacer()
+								Spacer()
 								VisibilityIcon(visibility)
 							}
 						}
@@ -100,9 +100,12 @@ struct GroupLoader: View {
 									NavigationLink(
 										destination: GroupLoader(fullPath: parent.fullPath),
 										label: {
-                                            Label(parent.name ?? parent.fullPath, lucide: .building)
+											Label(parent.name ?? parent.fullPath, lucide: .building)
 										}
-                                    ).buttonStyle(.bordered)
+									)
+									.controlSize(.mini)
+									.buttonBorderShape(.capsule)
+									.adaptiveButtonStyle()
 								}
 
 								if group.name != group.fullName {

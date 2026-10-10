@@ -74,11 +74,8 @@ struct CustomEmojisLoader: View {
 									}
 									VStack(alignment: .leading) {
 										Text(emoji.name)
-										Label(
-											Date.fromToString(emoji.createdAt),
-											lucide: .clock, size: 17
-										)
-										.font(.footnote)
+										PillView(Date.fromToString(emoji.createdAt), icon: .clock)
+											.font(.footnote)
 									}
 								}
 							}

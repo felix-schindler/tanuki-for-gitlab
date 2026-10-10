@@ -110,27 +110,24 @@ struct TimelogsLoader: View {
 						ForEach(timelogs, id: \.?.id) { maybeLog in
 							if let log = maybeLog {
 								VStack(alignment: .leading) {
-									HStack {
-										ScrollView(.horizontal) {
-											NavigationLink(
-												destination: ProjectLoader(
-													fullPath: log._project.fullPath
-												),
-												label: {
-													Text(log._project.nameWithNamespace)
-												}
-											).foregroundStyle(.secondary)
-										}
-
-										if let spentAt = log.spentAt {
-											Spacer()
-											Text(Date.fromToString(spentAt))
-										}
-									}.font(.footnote)
 
 									ScrollView(.horizontal) {
 										HStack {
+											NavigationLink(
+												destination: ProjectLoader(fullPath: log._project.fullPath),
+												label: {
+													Label(log._project.nameWithNamespace, lucide: .gift)
+												}
+											)
+											.controlSize(.mini)
+											.buttonBorderShape(.capsule)
+											.adaptiveButtonStyle()
+
 											AuthorView(log._user)
+
+											if let spentAt = log.spentAt {
+												PillView(Date.fromToString(spentAt), icon: .clock)
+											}
 
 											if let issueIid = log._issue?.iid {
 												NavigationLink(
@@ -139,13 +136,12 @@ struct TimelogsLoader: View {
 														iid: issueIid
 													),
 													label: {
-														PillView(
-															"#\(issueIid)",
-															icon: .circleDot,
-															bgColor: .green,
-															fgColor: .white
-														)
-													})
+														Label("#\(issueIid)", lucide: .circleDot)
+													}
+												)
+												.controlSize(.mini)
+												.buttonBorderShape(.capsule)
+												.adaptiveButtonStyle()
 											}
 
 											if let mergeIid = log._mergeRequest?.iid {
@@ -155,18 +151,18 @@ struct TimelogsLoader: View {
 														iid: mergeIid
 													),
 													label: {
-														PillView(
-															"!\(mergeIid)",
-															icon: .gitPullRequest,
-															bgColor: .blue,
-															fgColor: .white
-														)
-													})
+														Label("!\(mergeIid)", lucide: .gitPullRequest)
+													}
+												)
+												.controlSize(.mini)
+												.buttonBorderShape(.capsule)
+												.adaptiveButtonStyle()
 											}
 										}.font(.footnote)
 									}
 
-									Text("\(log.timeSpent / 60) minutes")
+									PillView("\(log.timeSpent / 60) minutes", icon: .clock)
+										.font(.footnote)
 
 									if let summary = log.summary, summary.isNotEmpty {
 										Markdown(summary)

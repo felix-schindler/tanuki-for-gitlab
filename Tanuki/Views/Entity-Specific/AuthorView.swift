@@ -39,7 +39,7 @@ struct AuthorView: View {
 			}
 		)
 		.controlSize(.mini)
-		.buttonStyle(.borderedProminent)
+		.adaptiveButtonStyleProminent()
 		.buttonBorderShape(.capsule)
 	}
 }

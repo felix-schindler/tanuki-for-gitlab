@@ -118,7 +118,7 @@ struct PipelineJobView: View {
 							}
 						}
 					}
-					.buttonStyle(.bordered)
+					.adaptiveButtonStyle()
 					.controlSize(.small)
 				}
 			}

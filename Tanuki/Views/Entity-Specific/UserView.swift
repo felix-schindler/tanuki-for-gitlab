@@ -62,14 +62,12 @@ struct UserView: View {
 								Link(
 									destination: url,
 									label: {
-										PillView(
-											location,
-											icon: .mapPin,
-											bgColor: .accentColor,
-											fgColor: .white
-										)
+										Label(location, lucide: .mapPin)
 									}
 								)
+								.controlSize(.mini)
+								.buttonBorderShape(.capsule)
+								.adaptiveButtonStyle()
 							} else {
 								PillView(location, icon: .mapPin)
 							}

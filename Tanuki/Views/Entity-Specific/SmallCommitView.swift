@@ -44,9 +44,12 @@ struct SmallCommitView: View {
 				if commit.authorName != nil
 					&& commit.authoredDate != nil
 				{
-					Text(
-						"\(commit.authorName!) authored at \(Date.fromToString(commit.authoredDate!))"
-					)
+					ScrollView(.horizontal) {
+						HStack {
+							PillView(commit.authorName!, icon: "person")
+							PillView(Date.fromToString(commit.authoredDate!), icon: "clock")
+						}
+					}
 					.font(.footnote)
 				}
 			}
@@ -71,7 +74,8 @@ struct SmallCommitView: View {
 					}
 				}
 
-				Text(commit.shortId)
+				PillView(commit.shortId)
+					.textSelection(.enabled)
 					.font(.system(.footnote, design: .monospaced))
 			}
 		}.sheet(isPresented: $showVerified) {

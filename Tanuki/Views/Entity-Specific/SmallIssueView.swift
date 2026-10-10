@@ -29,20 +29,13 @@ struct SmallIssueView: View {
 							.foregroundStyle(.secondary)
 					}.font(.footnote)
 					Text(issue.title.emojized())
-					HStack {
-						ScrollView(.horizontal) {
-							HStack {
-								AuthorView(issue._author)
-								Label(
-									Date.fromToString(issue.createdAt), lucide: .clock,
-									size: 17)
-							}
-						}
-						Spacer()
+					ScrollView(.horizontal) {
 						HStack {
-							Label(String(issue.upvotes), lucide: .thumbsUp, size: 17)
-							Label(String(issue.downvotes), lucide: .thumbsDown, size: 17)
-							Label(String(issue.userNotesCount), lucide: .notebookText, size: 17)
+							AuthorView(issue._author)
+							PillView(Date.fromToString(issue.createdAt), icon: .clock)
+							PillView(String(issue.upvotes), icon: .thumbsUp)
+							PillView(String(issue.downvotes), icon: .thumbsDown)
+							PillView(String(issue.userNotesCount), icon: .notebookText)
 						}
 					}.font(.footnote)
 				}.swipeActions {

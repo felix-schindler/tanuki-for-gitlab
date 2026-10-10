@@ -58,14 +58,15 @@ struct TagsLoader: View {
 									InlineMarkdown(tag.message)
 								}
 
-								VStack(alignment: .leading) {
-									HStack(alignment: .top) {
-										Text(tag.commit.shortId)
+								ScrollView(.horizontal) {
+									HStack {
+										PillView(tag.commit.shortId)
 											.font(.system(.footnote, design: .monospaced))
-										Text(tag.commit.authoredDate.toString())
+										PillView(tag.commit.authoredDate.toString(), icon: "clock")
 									}
-									InlineMarkdown(tag.commit.title.emojized())
 								}.font(.footnote)
+								InlineMarkdown(tag.commit.title.emojized())
+									.font(.footnote)
 							}
 						}
 					}
