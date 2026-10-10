@@ -110,27 +110,20 @@ struct TimelogsLoader: View {
 						ForEach(timelogs, id: \.?.id) { maybeLog in
 							if let log = maybeLog {
 								VStack(alignment: .leading) {
-									HStack {
-										ScrollView(.horizontal) {
-											NavigationLink(
-												destination: ProjectLoader(
-													fullPath: log._project.fullPath
-												),
-												label: {
-													Text(log._project.nameWithNamespace)
-												}
-											).foregroundStyle(.secondary)
-										}
-
-										if let spentAt = log.spentAt {
-											Spacer()
-											Text(Date.fromToString(spentAt))
-										}
-									}.font(.footnote)
 
 									ScrollView(.horizontal) {
 										HStack {
+											NavigationLink(
+												destination: ProjectLoader(fullPath: log._project.fullPath),
+												label: {
+													PillView(log._project.nameWithNamespace, icon: "app.gift.fill")
+												})
+
 											AuthorView(log._user)
+
+											if let spentAt = log.spentAt {
+												PillView(Date.fromToString(spentAt), icon: "clock")
+											}
 
 											if let issueIid = log._issue?.iid {
 												NavigationLink(

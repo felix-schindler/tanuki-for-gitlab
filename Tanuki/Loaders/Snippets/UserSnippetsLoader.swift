@@ -125,14 +125,7 @@ struct UserSnippetsLoader: View {
 															AuthorView(author)
 														}
 
-														HStack(spacing: 2) {
-															Image(
-																systemName: "clock")
-															Text(
-																Date.fromToString(
-																	snippet
-																		.createdAt))
-														}
+														PillView(Date.fromToString(snippet.createdAt), icon: "clock")
 													}.font(.footnote)
 												}
 											}

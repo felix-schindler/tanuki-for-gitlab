@@ -41,25 +41,10 @@ struct SmallGroupView: View {
 							}
 						}
 
-						HStack(spacing: 10) {
-							HStack(spacing: 2) {
-								Image(
-									systemName: "person.2")
-								Text(
-									String(
-										group
-											.groupMembersCount
-									))
-							}
-
-							HStack(spacing: 2) {
-								Image(
-									systemName:
-										"app.gift.fill")
-								Text(
-									String(
-										group.projectsCount)
-								)
+						ScrollView(.horizontal) {
+							HStack {
+								PillView(String(group.groupMembersCount), icon: "person.2")
+								PillView(String(group.projectsCount), icon: "app.gift.fill")
 							}
 						}.font(.footnote)
 					}

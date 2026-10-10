@@ -29,34 +29,13 @@ struct SmallIssueView: View {
 							.foregroundStyle(.secondary)
 					}.font(.footnote)
 					Text(issue.title.emojized())
-					HStack {
-						ScrollView(.horizontal) {
-							HStack {
-								AuthorView(issue._author)
-								HStack(spacing: 2) {
-									Image(
-										systemName:
-											"clock")
-									Text(
-										Date.fromToString(issue.createdAt)
-									)
-								}
-							}
-						}
-						Spacer()
+					ScrollView(.horizontal) {
 						HStack {
-							HStack(spacing: 2) {
-								Image(systemName: "hand.thumbsup")
-								Text(String(issue.upvotes))
-							}
-							HStack(spacing: 2) {
-								Image(systemName: "hand.thumbsdown")
-								Text(String(issue.downvotes))
-							}
-							HStack(spacing: 2) {
-								Image(systemName: "note.text")
-								Text(String(issue.userNotesCount))
-							}
+							AuthorView(issue._author)
+							PillView(Date.fromToString(issue.createdAt), icon: "clock")
+							PillView(String(issue.upvotes), icon: "hand.thumbsup")
+							PillView(String(issue.downvotes), icon: "hand.thumbsdown")
+							PillView(String(issue.userNotesCount), icon: "note.text")
 						}
 					}.font(.footnote)
 				}.swipeActions {

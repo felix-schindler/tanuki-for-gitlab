@@ -50,14 +50,15 @@ struct BranchesLoader: View {
 										.font(.headline)
 								}
 
-								VStack(alignment: .leading) {
+								ScrollView(.horizontal) {
 									HStack {
-										Text(branch.commit.shortId)
+										PillView(branch.commit.shortId)
 											.font(.system(.footnote, design: .monospaced))
-										Text(branch.commit.authoredDate.toString())
+										PillView(branch.commit.authoredDate.toString(), icon: "clock")
 									}
-									Text(branch.commit.title.emojized())
 								}.font(.footnote)
+								Text(branch.commit.title.emojized())
+									.font(.footnote)
 							}
 						}
 					}

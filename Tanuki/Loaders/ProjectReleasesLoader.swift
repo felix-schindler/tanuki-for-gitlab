@@ -77,6 +77,12 @@ struct ProjectReleasesLoader: View {
 														AuthorView(author)
 													}
 
+													if let releasedAt = release.releasedAt {
+														PillView(
+															Date.fromToString(releasedAt, timeStyle: .short),
+															icon: "clock")
+													}
+
 													if let tagName = release.tagName {
 														PillView(tagName, icon: "tag")
 													}
@@ -147,16 +153,7 @@ struct ProjectReleasesLoader: View {
 										}
 									},
 									header: {
-										HStack {
-											Text(release.name?.emojized() ?? release.id)
-											if let releasedAt = release.releasedAt {
-												Spacer()
-												Text(
-													Date.fromToString(releasedAt, timeStyle: .short)
-												)
-												.font(.footnote)
-											}
-										}
+										Text(release.name?.emojized() ?? release.id)
 									})
 							}
 						}

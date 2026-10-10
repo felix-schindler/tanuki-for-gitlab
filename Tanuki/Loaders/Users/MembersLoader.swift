@@ -153,46 +153,18 @@ struct MembersLoader: View {
 
 												ScrollView(.horizontal) {
 													HStack {
-														if let author = member._createdBy {
-															if author.username != user.username {
-																ScrollView(
-																	.horizontal
-																) {
-																	HStack {
-																		AuthorView(
-																			author
-																		)
-																	}.font(
-																		.footnote
-																	)
-																}
-															}
+														if let author = member._createdBy,
+															author.username != user.username
+														{
+															AuthorView(author)
 														}
-														if member.createdAt != nil {
-															HStack(spacing: 2) {
-																Image(
-																	systemName: "clock"
-																)
-																Text(
-																	Date
-																		.fromToString(
-																			member.createdAt!
-																		)
-																)
-															}
+														if let createdAt = member.createdAt {
+															PillView(Date.fromToString(createdAt), icon: "clock")
 														}
-														if member.expiresAt != nil {
-															HStack(spacing: 2) {
-																Image(
-																	systemName: "alarm"
-																)
-																Text(
-																	Date
-																		.fromToString(
-																			member.createdAt!
-																		)
-																)
-															}
+														if let expiresAt = member.expiresAt {
+															PillView(
+																"Expires \(Date.fromToString(expiresAt))", icon: "alarm"
+															)
 														}
 													}.font(.footnote)
 												}
