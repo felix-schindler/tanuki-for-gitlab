@@ -54,7 +54,7 @@ struct BranchesLoader: View {
 									HStack {
 										PillView(branch.commit.shortId)
 											.font(.system(.footnote, design: .monospaced))
-										PillView(branch.commit.authoredDate.toString(), icon: "clock")
+										PillView(branch.commit.authoredDate.toString(), icon: .clock)
 									}
 								}.font(.footnote)
 								Text(branch.commit.title.emojized())

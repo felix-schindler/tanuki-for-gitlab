@@ -80,7 +80,7 @@ struct EventsLoader: View {
 								ScrollView(.horizontal) {
 									HStack {
 										AuthorView(event.author)
-										PillView(event.createdAt.toString(timeStyle: .short), icon: "clock")
+										PillView(event.createdAt.toString(timeStyle: .short), icon: .clock)
 									}
 								}.font(.footnote)
 								Text(getStupidText(event: event))

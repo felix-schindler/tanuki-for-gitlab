@@ -80,7 +80,7 @@ struct ProjectReleasesLoader: View {
 													if let releasedAt = release.releasedAt {
 														PillView(
 															Date.fromToString(releasedAt, timeStyle: .short),
-															icon: "clock")
+															icon: .clock)
 													}
 
 													if let tagName = release.tagName {

@@ -62,7 +62,7 @@ struct TagsLoader: View {
 									HStack {
 										PillView(tag.commit.shortId)
 											.font(.system(.footnote, design: .monospaced))
-										PillView(tag.commit.authoredDate.toString(), icon: "clock")
+										PillView(tag.commit.authoredDate.toString(), icon: .clock)
 									}
 								}.font(.footnote)
 								InlineMarkdown(tag.commit.title.emojized())

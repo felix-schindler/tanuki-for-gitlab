@@ -124,8 +124,8 @@ struct CommitsLoader: View {
 
 												ScrollView(.horizontal) {
 													HStack {
-														PillView(commit.authorName, icon: "person")
-														PillView(commit.authoredDate.toString(.short), icon: "clock")
+														PillView(commit.authorName, icon: .user)
+														PillView(commit.authoredDate.toString(.short), icon: .clock)
 													}
 												}.font(.footnote)
 											}
