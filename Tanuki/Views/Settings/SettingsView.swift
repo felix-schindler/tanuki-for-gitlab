@@ -69,6 +69,18 @@ struct SettingsView: View {
 				}
 				AppStoreReview()
 			}
+
+			Section {
+				Link(destination: URL(string: "https://schindlerfelix.de/projects/tanuki/privacy")!) {
+					Label("Privacy Policy", systemImage: "hand.raised")
+				}
+				Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
+					Label("Terms of Use (EULA)", systemImage: "doc.text")
+				}
+				Link(destination: URL(string: "https://github.com/felix-schindler/tanuki-ios")!) {
+					Label("Source Code on GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
+				}
+			}
 		}
 	}
 }
