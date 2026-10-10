@@ -143,8 +143,7 @@ struct TimelogsLoader: View {
 															"#\(issueIid)",
 															icon: .circleDot,
 															bgColor: .green,
-															fgColor: .white,
-															cornerRadius: 5
+															fgColor: .white
 														)
 													})
 											}
@@ -160,8 +159,7 @@ struct TimelogsLoader: View {
 															"!\(mergeIid)",
 															icon: .gitPullRequest,
 															bgColor: .blue,
-															fgColor: .white,
-															cornerRadius: 5
+															fgColor: .white
 														)
 													})
 											}

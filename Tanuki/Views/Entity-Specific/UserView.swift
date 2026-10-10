@@ -31,8 +31,8 @@ struct UserView: View {
 							}
 							Text(user.name)
 								.fontWeight(.bold)
-							if user.pronouns?.isNotEmpty ?? false {
-								PillView(user.pronouns!, cornerRadius: 5)
+							if let pronouns = user.pronouns, pronouns.isNotEmpty {
+								PillView(pronouns)
 							}
 						}
 					}
@@ -63,18 +63,15 @@ struct UserView: View {
 									destination: url,
 									label: {
 										PillView(
-											user.location!,
+											location,
 											icon: .mapPin,
 											bgColor: .accentColor,
-											fgColor: .white,
-											cornerRadius: 5
+											fgColor: .white
 										)
 									}
 								)
 							} else {
-								PillView(
-									user.location!, icon: .mapPin,
-									cornerRadius: 5)
+								PillView(location, icon: .mapPin)
 							}
 						}
 
@@ -84,11 +81,7 @@ struct UserView: View {
 								? "\(user.jobTitle!) at \(user.organization!)"
 								: "\(user.jobTitle ?? "") \(user.organization ?? "")"
 									.trimmingCharacters(in: .whitespaces)
-							PillView(
-								workInfo,
-								icon: .briefcase,
-								cornerRadius: 5
-							)
+							PillView(workInfo, icon: .briefcase)
 						}
 					}.font(.footnote)
 				}

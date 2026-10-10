@@ -81,43 +81,32 @@ struct GroupLoader: View {
 							if let avatarUrl = URL.fromAvatar(group.avatarUrl) {
 								AvatarImage(avatarUrl, size: .medium)
 							}
-							Spacer()
 							if let name = group.name?.emojized(), name.isNotEmpty {
 								Text(name)
 									.font(.title)
 									.fontWeight(.bold)
 							}
-							Spacer()
 							if let visibility = group.visibility {
+                                Spacer()
 								VisibilityIcon(visibility)
 							}
 						}
 
 						ScrollView(.horizontal) {
 							HStack {
-								PillView(
-									String(group.groupMembersCount),
-									icon: .users,
-									cornerRadius: 5
-								)
+								PillView("\(group.groupMembersCount)", icon: .users)
 
 								if let parent = group.parent {
 									NavigationLink(
-										destination: GroupLoader(
-											fullPath: parent.fullPath),
+										destination: GroupLoader(fullPath: parent.fullPath),
 										label: {
-											PillView(
-												parent.name ?? parent.fullPath,
-												icon:
-													.users,
-												cornerRadius: 5
-											)
+                                            Label(parent.name ?? parent.fullPath, lucide: .building)
 										}
-									)
+                                    ).buttonStyle(.bordered)
 								}
 
 								if group.name != group.fullName {
-									PillView(group.fullName ?? group.path, cornerRadius: 5)
+									PillView(group.fullName ?? group.path)
 								}
 							}.font(.footnote)
 						}

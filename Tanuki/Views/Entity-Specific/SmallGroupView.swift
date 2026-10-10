@@ -31,14 +31,14 @@ struct SmallGroupView: View {
 
 					VStack(alignment: .leading) {
 						HStack {
-							if let visibility = group.visibility {
-								VisibilityIcon(visibility)
-							}
 							if let groupName = group._name?.emojized(), groupName.isNotEmpty {
 								Text(groupName)
 							} else {
 								Text(group.fullPath)
 							}
+                            if let visibility = group.visibility {
+                                VisibilityIcon(visibility)
+                            }
 						}
 
 						HStack(spacing: 10) {

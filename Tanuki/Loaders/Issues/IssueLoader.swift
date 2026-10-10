@@ -146,7 +146,6 @@ struct IssueLoader: View {
 											icon: .alarmClock,
 											bgColor: .blue,
 											fgColor: .white,
-											cornerRadius: 5
 										)
 									}
 								}
