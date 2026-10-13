@@ -6,6 +6,7 @@
 //
 
 import HighlightedTextEditor
+import LucideSwift
 import SwiftUI
 
 private struct _Note: Codable {

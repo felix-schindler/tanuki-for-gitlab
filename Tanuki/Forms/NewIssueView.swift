@@ -7,6 +7,7 @@
 
 import GitLabAPI
 import HighlightedTextEditor
+import LucideSwift
 import SwiftUI
 
 enum IssueType: String, CaseIterable {

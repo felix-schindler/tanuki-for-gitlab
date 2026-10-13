@@ -5,15 +5,15 @@
 //  Created by Felix Schindler on 21.09.25.
 //
 
-import Lucide
+import LucideSwift
 import SwiftUI
 
 struct LoadingView: View {
 	private let msg: String
-	private let icon: LucideIcon
+	private let icon: LucideIconName
 	private let color: Color
 
-	init(_ message: String, lucide: LucideIcon, color: Color = .secondary) {
+	init(_ message: String, lucide: LucideIconName, color: Color = .secondary) {
 		self.msg = message
 		self.icon = lucide
 		self.color = color

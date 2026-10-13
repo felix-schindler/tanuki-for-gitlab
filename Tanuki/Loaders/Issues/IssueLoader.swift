@@ -7,6 +7,7 @@
 //
 
 import GitLabAPI
+import LucideSwift
 import SwiftUI
 
 struct IssueLoader: View {
@@ -213,7 +214,7 @@ struct IssueLoader: View {
 											}
 										},
 										icon: {
-											LucideLabelIcon(.circleUserRound)
+											LucideIcon(.circleUserRound)
 										})
 								}
 							)
@@ -236,7 +237,7 @@ struct IssueLoader: View {
 										}
 									},
 									icon: {
-										LucideLabelIcon(.tag)
+										LucideIcon(.tag)
 									}
 								)
 							}
@@ -264,7 +265,7 @@ struct IssueLoader: View {
 										}
 									},
 									icon: {
-										LucideLabelIcon(.hourglass)
+										LucideIcon(.hourglass)
 									})
 							}
 						}

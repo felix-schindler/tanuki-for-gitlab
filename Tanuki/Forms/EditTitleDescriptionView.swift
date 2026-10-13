@@ -6,6 +6,7 @@
 //
 
 import HighlightedTextEditor
+import LucideSwift
 import SwiftUI
 
 struct EditTitleDescriptionView: View {

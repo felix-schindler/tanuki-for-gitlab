@@ -6,6 +6,7 @@
 //
 
 import GitLabAPI
+import LucideSwift
 import SwiftUI
 
 struct CurrentUserTodosLoader: View {

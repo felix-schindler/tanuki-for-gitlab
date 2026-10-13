@@ -7,6 +7,7 @@
 //
 
 import GitLabAPI
+import LucideSwift
 import SwiftUI
 
 struct UserStarredProjectsLoader: View {

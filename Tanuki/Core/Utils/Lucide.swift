@@ -5,126 +5,90 @@
 //  Created by Felix Schindler on 10.10.26.
 //
 
-import Lucide
+import LucideSwift
 import SwiftUI
-import UIKit
 
-/// Renders Lucide icons to cached template UIImages, so they also work in
-/// UIKit-bridged containers (tab bar, toolbar) which only accept real Images.
-@MainActor
-enum LucideRenderer {
-	private static var cache: [String: UIImage] = [:]
-
-	static func image(_ icon: LucideIcon, size: CGFloat) -> UIImage {
-		let key = "\(icon.rawValue)@\(Int(size))"
-		if let cached = cache[key] {
-			return cached
-		}
-		let renderer = ImageRenderer(
-			content: Lucide(icon)
-				.foregroundStyle(.black)
-				.frame(width: size, height: size)
-		)
-		renderer.scale = 3
-		let image = renderer.uiImage ?? UIImage()
-		cache[key] = image
-		return image
-	}
-}
-
-/// Fixed-size Lucide icon for use in labels, buttons and rows.
-public struct LucideLabelIcon: View {
-	let icon: LucideIcon
-	var color: Color?
-	var size: CGFloat = 24
-
-	public init(_ icon: LucideIcon, color: Color? = nil, size: CGFloat = 24) {
-		self.icon = icon
-		self.color = color
-		self.size = size
-	}
-
-	@ViewBuilder
-	public var body: some View {
-		if let color {
-			lucideImage.foregroundStyle(color)
-		} else {
-			lucideImage
-		}
-	}
-
-	private var lucideImage: some View {
-		Image(uiImage: LucideRenderer.image(icon, size: size))
-			.renderingMode(.template)
-			.resizable()
-			.scaledToFit()
-			.frame(width: size, height: size)
-	}
-}
-
-extension Label where Title == Text, Icon == LucideLabelIcon {
+extension Label where Title == Text, Icon == LucideIcon {
 	@MainActor public init(
-		_ titleKey: LocalizedStringKey, lucide: LucideIcon, color: Color? = nil,
+		_ titleKey: LocalizedStringKey, lucide: LucideIconName, color: Color,
 		size: CGFloat = 24
 	) {
 		self.init {
 			Text(titleKey)
 		} icon: {
-			LucideLabelIcon(lucide, color: color, size: size)
+			LucideIcon(lucide, size: size, color: color)
 		}
 	}
 
 	@MainActor public init<S: StringProtocol>(
-		_ title: S, lucide: LucideIcon, color: Color? = nil, size: CGFloat = 24
+		_ title: S, lucide: LucideIconName, color: Color, size: CGFloat = 24
 	) {
 		self.init {
 			Text(title)
 		} icon: {
-			LucideLabelIcon(lucide, color: color, size: size)
+			LucideIcon(lucide, size: size, color: color)
 		}
 	}
 }
 
-extension Button where Label == SwiftUI.Label<Text, LucideLabelIcon> {
+/// Buttons and menus bridge to UIKit (toolbar, tab bar, UIMenu), which only
+/// accepts real Images — so these build Image-based labels, unlike the
+/// vector-based Label extension above.
+extension Button where Label == SwiftUI.Label<Text, Image> {
 	@MainActor public init(
-		_ titleKey: LocalizedStringKey, lucide: LucideIcon, color: Color? = nil,
-		size: CGFloat = 24, role: ButtonRole? = nil, action: @escaping () -> Void
+		_ titleKey: LocalizedStringKey, lucide: LucideIconName, role: ButtonRole? = nil,
+		action: @escaping () -> Void
 	) {
 		self.init(role: role, action: action) {
-			SwiftUI.Label(titleKey, lucide: lucide, color: color, size: size)
+			SwiftUI.Label {
+				Text(titleKey)
+			} icon: {
+				Image(lucide: lucide)
+			}
 		}
 	}
 
 	@MainActor public init<S: StringProtocol>(
-		_ title: S, lucide: LucideIcon, color: Color? = nil, size: CGFloat = 24,
-		role: ButtonRole? = nil, action: @escaping () -> Void
+		_ title: S, lucide: LucideIconName, role: ButtonRole? = nil,
+		action: @escaping () -> Void
 	) {
 		self.init(role: role, action: action) {
-			SwiftUI.Label(title, lucide: lucide, color: color, size: size)
+			SwiftUI.Label {
+				Text(title)
+			} icon: {
+				Image(lucide: lucide)
+			}
 		}
 	}
 }
 
-extension Menu where Label == SwiftUI.Label<Text, LucideLabelIcon> {
+extension Menu where Label == SwiftUI.Label<Text, Image> {
 	@MainActor public init(
-		_ titleKey: LocalizedStringKey, lucide: LucideIcon, color: Color? = nil,
-		size: CGFloat = 24, @ViewBuilder content: @escaping () -> Content
-	) {
-		self.init {
-			content()
-		} label: {
-			SwiftUI.Label(titleKey, lucide: lucide, color: color, size: size)
-		}
-	}
-
-	@MainActor public init<S: StringProtocol>(
-		_ title: S, lucide: LucideIcon, color: Color? = nil, size: CGFloat = 24,
+		_ titleKey: LocalizedStringKey, lucide: LucideIconName,
 		@ViewBuilder content: @escaping () -> Content
 	) {
 		self.init {
 			content()
 		} label: {
-			SwiftUI.Label(title, lucide: lucide, color: color, size: size)
+			SwiftUI.Label {
+				Text(titleKey)
+			} icon: {
+				Image(lucide: lucide)
+			}
+		}
+	}
+
+	@MainActor public init<S: StringProtocol>(
+		_ title: S, lucide: LucideIconName, @ViewBuilder content: @escaping () -> Content
+	) {
+		self.init {
+			content()
+		} label: {
+			SwiftUI.Label {
+				Text(title)
+			} icon: {
+				Image(lucide: lucide)
+			}
 		}
 	}
 }

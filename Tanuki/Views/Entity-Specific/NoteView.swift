@@ -6,7 +6,7 @@
 //
 
 import GitLabAPI
-import Lucide
+import LucideSwift
 import SwiftUI
 
 struct NoteView: View {
@@ -18,7 +18,7 @@ struct NoteView: View {
 		self.projectId = projectId
 	}
 
-	private func convertIconName(_ iconName: String?) -> LucideIcon {
+	private func convertIconName(_ iconName: String?) -> LucideIconName {
 		switch iconName {
 		case "user":
 			.user
@@ -101,7 +101,7 @@ struct NoteView: View {
 					InlineMarkdown(note.body, baseURL: API.url)
 				},
 				icon: {
-					LucideLabelIcon(convertIconName(note.systemNoteIconName))
+					LucideIcon(convertIconName(note.systemNoteIconName))
 				}
 			).font(.footnote)
 		}

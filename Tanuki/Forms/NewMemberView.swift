@@ -5,6 +5,7 @@
 //  Created by Felix Schindler on 20.09.25.
 //
 
+import LucideSwift
 import SwiftUI
 
 enum ProjectRole: Int {

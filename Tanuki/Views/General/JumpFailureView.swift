@@ -5,7 +5,7 @@
 //  Created by Felix Schindler on 07.10.26.
 //
 
-import Lucide
+import LucideSwift
 import SwiftUI
 
 struct JumpFailureView: View {
@@ -33,7 +33,7 @@ struct JumpFailureView: View {
 	public var body: some View {
 		VStack(alignment: .leading, spacing: 12) {
 			HStack(alignment: .top, spacing: 10) {
-				LucideLabelIcon(.triangleAlert, color: .yellow, size: 24)
+				LucideIcon(.triangleAlert, size: 24, color: .yellow)
 				VStack(alignment: .leading, spacing: 2) {
 					Text(headline)
 						.font(.headline)
@@ -78,7 +78,7 @@ struct JumpFailureView: View {
 	}
 
 	private func row(
-		_ title: String, _ value: String, lucide: LucideIcon, monospaced: Bool = false
+		_ title: String, _ value: String, lucide: LucideIconName, monospaced: Bool = false
 	) -> some View {
 		VStack(alignment: .leading, spacing: 1) {
 			Label(title, lucide: lucide)

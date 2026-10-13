@@ -5,6 +5,7 @@
 //  Created by Felix Schindler on 23.11.25.
 //
 
+import LucideSwift
 import SwiftUI
 
 struct SettingsView: View {
@@ -15,7 +16,7 @@ struct SettingsView: View {
 		List {
 			Section {
 				VStack(alignment: .leading) {
-					LucideLabelIcon(.settings, color: .white, size: 50)
+					LucideIcon(.settings, size: 50, color: .white)
 						.padding(5)
 						.background(.gray)
 						.clipShape(RoundedRectangle(cornerRadius: 15.0))

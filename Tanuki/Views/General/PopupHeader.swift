@@ -5,6 +5,7 @@
 //  Created by Felix Schindler on 04.03.24.
 //
 
+import LucideSwift
 import SwiftUI
 
 struct PopupHeader: View {

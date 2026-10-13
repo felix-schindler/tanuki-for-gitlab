@@ -6,6 +6,7 @@
 //
 
 import GitLabAPI
+import LucideSwift
 import SwiftUI
 
 struct CurrentUserLoader: View {
@@ -81,7 +82,11 @@ struct CurrentUserLoader: View {
 				NavigationLink(
 					destination: SettingsView(),
 					label: {
-						Label("Settings", lucide: .settings)
+						Label {
+							Text("Settings")
+						} icon: {
+							Image(lucide: .settings)
+						}
 					})
 			}
 

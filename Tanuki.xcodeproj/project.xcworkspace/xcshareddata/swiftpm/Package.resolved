@@ -1,5 +1,5 @@
 {
-  "originHash" : "0f92fd925fa5076835a125ff75cbd1e64434bc7050047bc453c5e1d04eec6567",
+  "originHash" : "6428415cc904a763ce6f2e628e3798b5f4bab92272c3d8bb344755b23c258ce2",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -40,10 +40,10 @@
     {
       "identity" : "lucide-swift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/bring-shrubbery/lucide-swift",
+      "location" : "https://github.com/ajaxjiang96/lucide-swift",
       "state" : {
-        "revision" : "2f02c730a540211e2261ca33d83c970c18442a2a",
-        "version" : "1.49.0"
+        "revision" : "a340584fbcc5dea796835ffde5b3f3e6ecaa566c",
+        "version" : "0.9.14"
       }
     },
     {

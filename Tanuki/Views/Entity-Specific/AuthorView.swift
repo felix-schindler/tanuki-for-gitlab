@@ -5,6 +5,7 @@
 //  Created by Felix Schindler on 01.03.24.
 //
 
+import LucideSwift
 import SwiftUI
 
 struct AuthorView: View {
@@ -32,7 +33,7 @@ struct AuthorView: View {
 						if let url = URL.fromAvatar(author.avatarUrl) {
 							AvatarImage(url, size: .tiny)
 						} else {
-							LucideLabelIcon(.user, size: 17)
+							LucideIcon(.user, size: 17)
 						}
 					}
 				)

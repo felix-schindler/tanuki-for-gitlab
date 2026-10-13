@@ -5,6 +5,7 @@
 //  Created by Felix Schindler on 31.10.21.
 //
 
+import LucideSwift
 import SwiftUI
 
 struct EventsLoader: View {

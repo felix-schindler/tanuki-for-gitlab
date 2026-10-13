@@ -5,6 +5,7 @@
 //  Created by Felix Schindler on 11.09.25.
 //
 
+import LucideSwift
 import SwiftUI
 
 struct ConfigView: View {

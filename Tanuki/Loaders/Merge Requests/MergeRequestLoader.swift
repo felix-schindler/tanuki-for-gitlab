@@ -6,6 +6,7 @@
 //
 
 import GitLabAPI
+import LucideSwift
 import SwiftUI
 
 struct MergeRequestLoader: View {
@@ -225,7 +226,7 @@ struct MergeRequestLoader: View {
 										.textSelection(.enabled)
 									}
 
-									LucideLabelIcon(.arrowRight)
+									LucideIcon(.arrowRight)
 
 									PillView(
 										mr.targetBranch,
@@ -298,7 +299,7 @@ struct MergeRequestLoader: View {
 											}
 										},
 										icon: {
-											LucideLabelIcon(.circleUserRound)
+											LucideIcon(.circleUserRound)
 										})
 								}
 							)
@@ -338,7 +339,7 @@ struct MergeRequestLoader: View {
 											}
 										},
 										icon: {
-											LucideLabelIcon(.users)
+											LucideIcon(.users)
 										})
 								}
 							)
@@ -361,7 +362,7 @@ struct MergeRequestLoader: View {
 										}
 									},
 									icon: {
-										LucideLabelIcon(.tag)
+										LucideIcon(.tag)
 									}
 								)
 							}
@@ -385,7 +386,7 @@ struct MergeRequestLoader: View {
 										}
 									},
 									icon: {
-										LucideLabelIcon(.hourglass)
+										LucideIcon(.hourglass)
 									}
 								)
 							}
@@ -415,7 +416,7 @@ struct MergeRequestLoader: View {
 												}
 											},
 											icon: {
-												LucideLabelIcon(.fileText)
+												LucideIcon(.fileText)
 											}
 										)
 									} else {
@@ -567,7 +568,7 @@ struct MergeRequestLoader: View {
 										Text(mr.state.rawValue.capitalized)
 									},
 									icon: {
-										LucideLabelIcon(MergeStateHelper.getIconByState(mr.state))
+										LucideIcon(MergeStateHelper.getIconByState(mr.state))
 									})
 							}
 						)

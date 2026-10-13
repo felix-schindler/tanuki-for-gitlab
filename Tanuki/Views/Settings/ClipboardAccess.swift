@@ -5,6 +5,7 @@
 //  Created by Felix Schindler on 23.11.25.
 //
 
+import LucideSwift
 import SwiftUI
 
 struct ClipboardAccess: View {

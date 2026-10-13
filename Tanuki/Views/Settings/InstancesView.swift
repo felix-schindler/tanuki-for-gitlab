@@ -5,6 +5,7 @@
 //  Created by Felix Schindler on 12.04.26.
 //
 
+import LucideSwift
 import SwiftUI
 
 struct InstancesView: View {
@@ -36,7 +37,7 @@ struct InstancesView: View {
 							Spacer()
 
 							if instance.id == selectedId {
-								LucideLabelIcon(.circleCheck)
+								LucideIcon(.circleCheck)
 									.foregroundStyle(.accent)
 							}
 						}

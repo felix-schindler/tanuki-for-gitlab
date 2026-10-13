@@ -5,6 +5,7 @@
 //  Created by Felix Schindler on 02.11.21.
 //
 
+import LucideSwift
 import SwiftUI
 
 struct BranchesLoader: View {
@@ -44,7 +45,7 @@ struct BranchesLoader: View {
 							VStack(alignment: .leading) {
 								HStack {
 									if branch.protected {
-										LucideLabelIcon(.lock)
+										LucideIcon(.lock)
 									}
 									Text(branch.name.emojized())
 										.font(.headline)

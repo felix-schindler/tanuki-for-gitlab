@@ -6,6 +6,7 @@
 //
 
 import Charts
+import LucideSwift
 import SwiftUI
 
 struct ContributionsLoader: View {
