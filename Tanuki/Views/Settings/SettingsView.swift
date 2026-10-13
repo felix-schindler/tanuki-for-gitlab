@@ -15,22 +15,6 @@ struct SettingsView: View {
 	public var body: some View {
 		List {
 			Section {
-				VStack(alignment: .leading) {
-					LucideIcon(.settings, size: 50, color: .white)
-						.padding(5)
-						.background(.gray)
-						.clipShape(RoundedRectangle(cornerRadius: 15.0))
-						.padding(.bottom, 10)
-					Text("Settings")
-						.font(.title2.bold())
-						.padding(.bottom, 1)
-					Text("Clear caches, manage cookies, manage clipboard access, or submit feedback.")
-						.font(.callout)
-						.foregroundStyle(.secondary)
-				}
-			}
-
-			Section {
 				NavigationLink(destination: CacheView()) {
 					Label("Cache", lucide: .hardDrive)
 				}
