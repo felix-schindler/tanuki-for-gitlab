@@ -5,7 +5,6 @@
 //  Created by Felix Schindler on 05.05.23.
 //
 
-import LucideSwift
 import SwiftUI
 
 struct Tag: Codable {

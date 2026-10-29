@@ -7,7 +7,6 @@
 //
 
 import GitLabAPI
-import LucideSwift
 import NVMColor
 import SwiftUI
 
@@ -184,7 +183,7 @@ struct ProjectLoader: View {
 											}
 										},
 										icon: {
-											LucideIcon(.circleDot, color: .green)
+											LucideLabelIcon(.circleDot, color: .green)
 										})
 								}
 							)
@@ -205,7 +204,7 @@ struct ProjectLoader: View {
 											}
 										},
 										icon: {
-											LucideIcon(.gitPullRequest, color: .blue)
+											LucideLabelIcon(.gitPullRequest, color: .blue)
 										}
 									)
 								}

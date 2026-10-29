@@ -6,7 +6,7 @@
 //
 
 import GitLabAPI
-import LucideSwift
+import Lucide
 import SwiftUI
 
 struct IssueStateHelper {
@@ -27,7 +27,7 @@ struct IssueStateHelper {
 
 	public static func getIconByState(
 		_ state: GraphQLEnum<GitLabAPI.IssueState>
-	) -> LucideIconName {
+	) -> LucideIcon {
 		switch state {
 		case .opened:
 			.circleDot
@@ -43,7 +43,7 @@ struct IssueStateHelper {
 
 struct IssueStateIcon: View {
 	private let state: String
-	private let icon: LucideIconName
+	private let icon: LucideIcon
 	private let color: SwiftUI.Color
 
 	init(_ state: GraphQLEnum<GitLabAPI.IssueState>) {
@@ -96,7 +96,7 @@ struct MergeStateHelper {
 
 	public static func getIconByState(
 		_ state: GraphQLEnum<GitLabAPI.MergeRequestState>
-	) -> LucideIconName {
+	) -> LucideIcon {
 		switch state {
 		case .opened:
 			return .gitPullRequest
@@ -114,7 +114,7 @@ struct MergeStateHelper {
 
 struct MergeStateIcon: View {
 	private let state: GraphQLEnum<GitLabAPI.MergeRequestState>
-	private let icon: LucideIconName
+	private let icon: LucideIcon
 	private let color: SwiftUI.Color
 
 	init(_ state: GraphQLEnum<GitLabAPI.MergeRequestState>) {
@@ -132,7 +132,7 @@ struct MergeStateIcon: View {
 
 struct MergeStatus: View {
 	private let status: GraphQLEnum<GitLabAPI.MergeStatus>
-	private let icon: LucideIconName
+	private let icon: LucideIcon
 	private let color: SwiftUI.Color
 	private let msg: String
 
@@ -185,7 +185,7 @@ struct MergeStatus: View {
 				}
 			},
 			icon: {
-				LucideIcon(self.icon)
+				LucideLabelIcon(self.icon)
 			}
 		).foregroundStyle(self.color)
 	}

@@ -5,15 +5,15 @@
 //  Created by Felix Schindler on 21.09.25.
 //
 
-import LucideSwift
+import Lucide
 import SwiftUI
 
 struct NoContentView: View {
 	private let msg: String
-	private let image: LucideIconName
+	private let image: LucideIcon
 	private let description: String?
 
-	init(_ message: String, lucide: LucideIconName, description: String? = nil) {
+	init(_ message: String, lucide: LucideIcon, description: String? = nil) {
 		self.msg = message
 		self.image = lucide
 		self.description = description
@@ -21,7 +21,7 @@ struct NoContentView: View {
 
 	var body: some View {
 		VStack {
-			LucideIcon(image, size: 40)
+			LucideLabelIcon(image, size: 40)
 				.foregroundStyle(.secondary)
 				.padding(.bottom, 10)
 			Text(self.msg)

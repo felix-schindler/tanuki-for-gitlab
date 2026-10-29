@@ -6,7 +6,6 @@
 //
 
 import GitLabAPI
-import LucideSwift
 import SwiftUI
 
 struct MergeButton: View {
@@ -113,7 +112,7 @@ struct MergeButton: View {
 							Text("Merge conflicts must be resolved.")
 						},
 						icon: {
-							LucideIcon(.circleMinus, color: .red)
+							LucideLabelIcon(.circleMinus, color: .red)
 						}
 					)
 				}

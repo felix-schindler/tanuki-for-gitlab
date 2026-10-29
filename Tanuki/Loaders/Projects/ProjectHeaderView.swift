@@ -7,7 +7,6 @@
 
 import Charts
 import GitLabAPI
-import LucideSwift
 import SwiftUI
 
 struct ProjectHeaderView: View {

@@ -6,7 +6,6 @@
 //
 
 import GitLabAPI
-import LucideSwift
 import SwiftUI
 import UIKit
 
@@ -183,18 +182,10 @@ struct HomeView: View {
 			}
 			ToolbarItemGroup(placement: .topBarTrailing) {
 				NavigationLink(destination: EventsLoader()) {
-					Label {
-						Text("Activity")
-					} icon: {
-						Image(lucide: .bell)
-					}
+					Label("Activity", lucide: .bell)
 				}.tint(.accentColor)
 				NavigationLink(destination: NewProjectView()) {
-					Label {
-						Text("New project")
-					} icon: {
-						Image(lucide: .plus)
-					}
+					Label("New project", lucide: .plus)
 				}.tint(.accentColor)
 			}
 		}

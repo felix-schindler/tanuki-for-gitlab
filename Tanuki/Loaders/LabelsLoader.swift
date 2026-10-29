@@ -6,7 +6,6 @@
 //
 
 import GitLabAPI
-import LucideSwift
 import SwiftUI
 
 enum LabelQueryType {

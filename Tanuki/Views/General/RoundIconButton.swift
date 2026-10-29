@@ -5,7 +5,7 @@
 //  Created by Felix Schindler on 26.02.24.
 //
 
-import LucideSwift
+import Lucide
 import SwiftUI
 import UIKit
 
@@ -32,11 +32,7 @@ struct ShareButton: View {
 
 	public var body: some View {
 		ShareLink(item: url) {
-			Label {
-				Text("Share")
-			} icon: {
-				Image(lucide: .squareArrowOutUpRight)
-			}
+			Label("Share", lucide: .squareArrowOutUpRight)
 		}
 	}
 }
@@ -61,12 +57,12 @@ enum ShareSheet {
 
 struct RoundIconButton: View {
 	private let label: String
-	private let icon: LucideIconName
+	private let icon: LucideIcon
 	private let role: ButtonRole?
 	private let action: () -> Void
 
 	init(
-		_ label: String, icon: LucideIconName, role: ButtonRole? = nil,
+		_ label: String, icon: LucideIcon, role: ButtonRole? = nil,
 		action: @escaping () -> Void
 	) {
 		self.label = label

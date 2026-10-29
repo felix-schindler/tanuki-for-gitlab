@@ -7,7 +7,6 @@
 //
 
 import GitLabAPI
-import LucideSwift
 import SwiftUI
 
 struct GroupIssuesLoader: View {

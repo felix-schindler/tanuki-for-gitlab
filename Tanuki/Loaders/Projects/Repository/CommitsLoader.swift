@@ -5,7 +5,6 @@
 //  Created by Felix Schindler on 02.11.21.
 //
 
-import LucideSwift
 import SwiftUI
 
 struct Commit: Codable {

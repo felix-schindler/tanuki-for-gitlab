@@ -6,7 +6,6 @@
 //
 
 import HighlightedTextEditor
-import LucideSwift
 import SwiftUI
 
 struct NewMergeRequestView: View {

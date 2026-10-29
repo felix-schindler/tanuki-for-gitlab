@@ -5,7 +5,6 @@
 //  Created by Felix Schindler on 29.01.26.
 //
 
-import LucideSwift
 import SwiftUI
 
 private enum TimeSpan: String, CaseIterable {

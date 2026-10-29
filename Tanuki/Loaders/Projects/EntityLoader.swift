@@ -6,7 +6,6 @@
 //
 
 import GitLabAPI
-import LucideSwift
 import SwiftUI
 
 /// Resolves a bare `host/namespace/path` link to a project, group or user, and any

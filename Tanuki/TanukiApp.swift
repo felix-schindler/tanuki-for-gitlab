@@ -6,7 +6,6 @@
 //  Rewritten by Felix Schindler on 26.02.24.
 //
 
-import LucideSwift
 import OSLog
 import SwiftUI
 import WebKit
@@ -56,38 +55,22 @@ struct TanukiApp: App {
 		TabView {
 			HomeView()
 				.tabItem {
-					Label {
-						Text("Home")
-					} icon: {
-						Image(lucide: .house)
-					}
+					Label("Home", lucide: .house)
 				}.tag(0)
 			NavigationStack {
 				CurrentUserTodosLoader()
 			}.tabItem {
-				Label {
-					Text("Todos")
-				} icon: {
-					Image(lucide: .squareCheckBig)
-				}
+				Label("Todos", lucide: .squareCheckBig)
 			}.tag(1)
 			NavigationStack {
 				ExploreView()
 			}.tabItem {
-				Label {
-					Text("Explore")
-				} icon: {
-					Image(lucide: .sparkles)
-				}
+				Label("Explore", lucide: .sparkles)
 			}.tag(2)
 			NavigationStack {
 				CurrentUserLoader()
 			}.tabItem {
-				Label {
-					Text("Profile")
-				} icon: {
-					Image(lucide: .user)
-				}
+				Label("Profile", lucide: .user)
 			}.tag(3)
 		}.task {
 			sessionStore.refresh()

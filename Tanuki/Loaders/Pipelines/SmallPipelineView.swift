@@ -6,7 +6,7 @@
 //
 
 import GitLabAPI
-import LucideSwift
+import Lucide
 import SwiftUI
 
 struct SmallPipelineView: View {
@@ -59,7 +59,7 @@ struct SmallPipelineView: View {
 				}
 			},
 			icon: {
-				LucideIcon(style.icon, color: style.color)
+				LucideLabelIcon(style.icon, color: style.color)
 			}
 		)
 	}

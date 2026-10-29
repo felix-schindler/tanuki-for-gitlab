@@ -5,7 +5,6 @@
 //  Created by Felix Schindler on 18.02.26.
 //
 
-import LucideSwift
 import StoreKit
 import SwiftUI
 

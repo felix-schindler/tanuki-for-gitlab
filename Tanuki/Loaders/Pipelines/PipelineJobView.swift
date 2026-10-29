@@ -6,7 +6,6 @@
 //
 
 import GitLabAPI
-import LucideSwift
 import SwiftUI
 
 struct PipelineJobView: View {
@@ -132,7 +131,7 @@ struct PipelineJobView: View {
 								ProgressView()
 									.controlSize(.small)
 							} else {
-								LucideIcon(.download)
+								LucideLabelIcon(.download)
 							}
 							Text(
 								"\(artifact.name ?? "") (\(ByteFormatter.shared.format(Int64(artifact.size) ?? 0)))"

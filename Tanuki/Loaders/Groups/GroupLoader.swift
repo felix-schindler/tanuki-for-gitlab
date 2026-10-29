@@ -6,7 +6,6 @@
 //
 
 import GitLabAPI
-import LucideSwift
 import SwiftUI
 
 struct GroupLoader: View {
@@ -136,7 +135,7 @@ struct GroupLoader: View {
 											}
 										},
 										icon: {
-											LucideIcon(.gift, color: .gray)
+											LucideLabelIcon(.gift, color: .gray)
 										}
 									)
 								}
@@ -155,7 +154,7 @@ struct GroupLoader: View {
 											}
 										},
 										icon: {
-											LucideIcon(.building, color: .red)
+											LucideLabelIcon(.building, color: .red)
 										}
 									)
 								})

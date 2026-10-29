@@ -5,7 +5,6 @@
 //  Created by Felix Schindler on 07.04.24.
 //
 
-import LucideSwift
 import SwiftUI
 
 struct Diff: Codable {
@@ -121,15 +120,15 @@ struct DiffLoader: View {
 								header: {
 									HStack {
 										if diff.newFile {
-											LucideIcon(.squarePlus, color: .green)
+											LucideLabelIcon(.squarePlus, color: .green)
 										} else if diff.renamedFile {
-											LucideIcon(.squareArrowRight, color: .blue)
+											LucideLabelIcon(.squareArrowRight, color: .blue)
 										} else if diff.deletedFile {
-											LucideIcon(.squareMinus, color: .red)
+											LucideLabelIcon(.squareMinus, color: .red)
 										} else if diff.generatedFile ?? false {
-											LucideIcon(.cog, color: .purple)
+											LucideLabelIcon(.cog, color: .purple)
 										} else {
-											LucideIcon(.squarePen, color: .orange)
+											LucideLabelIcon(.squarePen, color: .orange)
 										}
 
 										ScrollView(.horizontal) {

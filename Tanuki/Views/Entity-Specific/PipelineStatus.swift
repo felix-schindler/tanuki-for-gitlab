@@ -6,12 +6,12 @@
 //
 
 import GitLabAPI
-import LucideSwift
+import Lucide
 import SwiftUI
 
 struct PipelineStatus: View {
 	private let state: GraphQLEnum<GitLabAPI.PipelineStatusEnum>
-	private let icon: LucideIconName
+	private let icon: LucideIcon
 	private let color: SwiftUI.Color
 
 	@State
@@ -32,7 +32,7 @@ struct PipelineStatus: View {
 
 	/// Shared icon/color mapping so list rows and pills can reuse it without the button.
 	static func style(for state: GraphQLEnum<GitLabAPI.PipelineStatusEnum>) -> (
-		icon: LucideIconName, color: SwiftUI.Color
+		icon: LucideIcon, color: SwiftUI.Color
 	) {
 		switch state {
 		case .created:

@@ -6,7 +6,6 @@
 //
 
 import GitLabAPI
-import LucideSwift
 import SwiftUI
 
 struct UserView: View {
@@ -216,7 +215,7 @@ struct UserView: View {
 							}
 						},
 						icon: {
-							LucideIcon(.building, color: .red)
+							LucideLabelIcon(.building, color: .red)
 						}
 					)
 				})

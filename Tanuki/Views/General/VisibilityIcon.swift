@@ -5,12 +5,12 @@
 //  Created by Felix Schindler on 27.02.24.
 //
 
-import LucideSwift
+import Lucide
 import SwiftUI
 
 struct VisibilityIcon: View {
 	private let visibility: String
-	private let icon: LucideIconName
+	private let icon: LucideIcon
 	private let showText: Bool
 
 	init(_ visibility: String, showText: Bool = false) {

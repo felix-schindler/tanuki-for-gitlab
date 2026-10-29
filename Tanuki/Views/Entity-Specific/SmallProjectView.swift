@@ -5,7 +5,6 @@
 //  Created by Felix Schindler on 28.02.24.
 //
 
-import LucideSwift
 import SwiftUI
 
 struct SmallProjectView: View {
@@ -28,7 +27,7 @@ struct SmallProjectView: View {
 					Text(project.nameWithNamespace)
 					Spacer()
 					if project.archived == true {
-						LucideIcon(.archive)
+						LucideLabelIcon(.archive)
 							.help("Archived")
 							.accessibilityLabel("Archived")
 					} else if let visibility = project.visibility {

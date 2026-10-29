@@ -5,18 +5,18 @@
 //  Created by Felix Schindler on 26.02.24.
 //
 
-import LucideSwift
+import Lucide
 import SwiftUI
 
 struct PillView: View {
 	private let label: String
-	private let icon: LucideIconName?
+	private let icon: LucideIcon?
 	private let fgColor: Color
 	private let bgColor: Color
 	private let cornerRadius: CGFloat
 
 	init(
-		_ label: String, icon: LucideIconName? = nil, bgColor: Color? = nil,
+		_ label: String, icon: LucideIcon? = nil, bgColor: Color? = nil,
 		fgColor: Color? = nil, cornerRadius: CGFloat = 25
 	) {
 		self.label = label

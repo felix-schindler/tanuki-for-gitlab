@@ -5,7 +5,7 @@
 //  Created by Felix Schindler on 20.09.25.
 //
 
-import LucideSwift
+import Lucide
 import SwiftUI
 
 struct AsyncButton<Label: View>: View {
@@ -54,19 +54,15 @@ extension AsyncButton where Label == Text {
 	}
 }
 
-extension AsyncButton where Label == SwiftUI.Label<Text, Image> {
+extension AsyncButton where Label == SwiftUI.Label<Text, LucideLabelIcon> {
 	init(
 		_ title: String,
-		lucide: LucideIconName,
+		lucide: LucideIcon,
 		role: ButtonRole? = nil,
 		action: @escaping () async -> Void
 	) {
 		self.init(action: action, role: role) {
-			SwiftUI.Label {
-				Text(title)
-			} icon: {
-				Image(lucide: lucide)
-			}
+			SwiftUI.Label(title, lucide: lucide)
 		}
 	}
 }

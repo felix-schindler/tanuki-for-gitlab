@@ -5,7 +5,6 @@
 //  Created by Felix Schindler on 03.10.25.
 //
 
-import LucideSwift
 import SwiftUI
 
 struct CacheView: View {

@@ -6,7 +6,7 @@
 //
 
 import AVKit
-import LucideSwift
+import Lucide
 import SwiftUI
 
 struct FileLoader: View {
@@ -65,7 +65,7 @@ struct FileLoader: View {
 		Formats.videoFormats.contains(fileExtension)
 	}
 
-	private var icon: LucideIconName {
+	private var icon: LucideIcon {
 		if Formats.audioFormats.contains(fileExtension) || isVideo {
 			return .play
 		} else if Formats.imageFormats.contains(fileExtension) {
@@ -251,7 +251,7 @@ struct FileLoader: View {
 	@ViewBuilder
 	private var pending: some View {
 		VStack(spacing: 12) {
-			LucideIcon(icon, size: 50, color: .gray)
+			LucideLabelIcon(icon, color: .gray, size: 50)
 
 			switch phase {
 			case .ready(let size):
@@ -279,9 +279,9 @@ struct FileLoader: View {
 		.frame(maxWidth: .infinity, minHeight: 100)
 	}
 
-	private func unavailable(_ message: String, lucide: LucideIconName) -> some View {
+	private func unavailable(_ message: String, lucide: LucideIcon) -> some View {
 		VStack {
-			LucideIcon(lucide, size: 50, color: .gray)
+			LucideLabelIcon(lucide, color: .gray, size: 50)
 			Text(message)
 		}
 	}

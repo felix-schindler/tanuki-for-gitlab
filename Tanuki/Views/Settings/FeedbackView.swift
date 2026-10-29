@@ -6,7 +6,6 @@
 //
 
 import Alamofire
-import LucideSwift
 import SwiftUI
 
 struct FeedbackView: View {

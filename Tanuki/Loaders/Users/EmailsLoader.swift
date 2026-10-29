@@ -6,7 +6,6 @@
 //
 
 import GitLabAPI
-import LucideSwift
 import SwiftUI
 
 struct EmailsLoader: View {
@@ -105,9 +104,9 @@ struct EmailsLoader: View {
 										.textSelection(.enabled)
 									Spacer()
 									if email.confirmedAt != nil {
-										LucideIcon(.badgeCheck, color: .green)
+										LucideLabelIcon(.badgeCheck, color: .green)
 									} else {
-										LucideIcon(.badgeX, color: .red)
+										LucideLabelIcon(.badgeX, color: .red)
 									}
 								}.swipeActions(edge: .trailing, allowsFullSwipe: true) {
 									Button(role: .destructive) {
