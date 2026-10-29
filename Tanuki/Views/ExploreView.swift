@@ -13,18 +13,42 @@ struct ExploreView: View {
 			NavigationLink(
 				destination: ProjectsLoader(),
 				label: {
-					Label("Projects", lucide: .layers, color: .gray)
+					Label(
+						title: {
+							Text("Projects")
+						},
+						icon: {
+							Image(systemName: "app.gift.fill")
+								.foregroundStyle(.gray)
+						}
+					)
 				}
 			)
 			NavigationLink(
 				destination: GroupsLoader(),
 				label: {
-					Label("Groups", lucide: .building, color: .red)
+					Label(
+						title: {
+							Text("Groups")
+						},
+						icon: {
+							Image(systemName: "scale.3d")
+								.foregroundStyle(.red)
+						}
+					)
 				})
 			NavigationLink(
 				destination: UsersLoader(),
 				label: {
-					Label("Users", lucide: .users, color: .cyan)
+					Label(
+						title: {
+							Text("Users")
+						},
+						icon: {
+							Image(systemName: "person.2")
+								.foregroundStyle(.cyan)
+						}
+					)
 				})
 		}.navigationTitle("Explore")
 	}

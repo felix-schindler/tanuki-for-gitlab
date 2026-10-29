@@ -47,7 +47,7 @@ struct TagsLoader: View {
 					if tags.isEmpty {
 						NoContentView(
 							"You'll see your tags after you pushed them",
-							lucide: .tag)
+							systemImage: "chevron.left.forwardslash.chevron.right")
 					} else {
 						ForEach(tags, id: \.name) { tag in
 							VStack(alignment: .leading) {
@@ -62,7 +62,7 @@ struct TagsLoader: View {
 									HStack {
 										PillView(tag.commit.shortId)
 											.font(.system(.footnote, design: .monospaced))
-										PillView(tag.commit.authoredDate.toString(), icon: .clock)
+										PillView(tag.commit.authoredDate.toString(), icon: "clock")
 									}
 								}.font(.footnote)
 								InlineMarkdown(tag.commit.title.emojized())
@@ -74,7 +74,7 @@ struct TagsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Tags", lucide: .tag)
+				LoadingView("Loading Tags", systemImage: "chevron.left.forwardslash.chevron.right")
 			}
 		}.task {
 			await loadTags()
@@ -82,7 +82,7 @@ struct TagsLoader: View {
 			await loadTags()
 		}.toolbar {
 			NavigationLink(destination: NewTagView(projectId: projectId)) {
-				Label("New tag", lucide: .plus)
+				Label("New tag", systemImage: "plus")
 			}.tint(.accentColor)
 		}.navigationTitle("Tags")
 	}

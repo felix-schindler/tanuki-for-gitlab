@@ -6,7 +6,6 @@
 //
 
 import CachedAsyncImage
-import Lucide
 import SwiftUI
 
 enum AvatarSize {
@@ -67,7 +66,9 @@ struct AvatarImage: View {
 					.scaledToFit()
 					.cornerRadius(self.radius)
 			case .failure:
-				Lucide(.triangleAlert)
+				Image(systemName: "exclamationmark.triangle")
+					.resizable()
+					.scaledToFit()
 			@unknown default:
 				EmptyView()
 			}

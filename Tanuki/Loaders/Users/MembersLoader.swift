@@ -111,7 +111,7 @@ struct MembersLoader: View {
 					if memberships.isEmpty {
 						NoContentView(
 							"This project has no members",
-							lucide: .users
+							systemImage: "person.2"
 						)
 					} else {
 						ForEach(memberships, id: \.?.id) { maybeMember in
@@ -159,12 +159,12 @@ struct MembersLoader: View {
 															AuthorView(author)
 														}
 														if let createdAt = member.createdAt {
-															PillView(Date.fromToString(createdAt), icon: .clock)
+															PillView(Date.fromToString(createdAt), icon: "clock")
 														}
 														if let expiresAt = member.expiresAt {
 															PillView(
 																"Expires \(Date.fromToString(expiresAt))",
-																icon: .alarmClock
+																icon: "alarm"
 															)
 														}
 													}.font(.footnote)
@@ -180,7 +180,7 @@ struct MembersLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Members", lucide: .users)
+				LoadingView("Loading Members", systemImage: "person.2")
 			}
 		}.task {
 			loadMembers()
@@ -194,7 +194,7 @@ struct MembersLoader: View {
 					}
 				},
 				label: {
-					Label("Add new Member", lucide: .userPlus)
+					Label("Add new Member", systemImage: "person.badge.plus")
 				}
 			).tint(.accentColor)
 		}.refreshable {

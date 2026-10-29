@@ -77,7 +77,7 @@ struct NewFileView: View {
 					.autocorrectionDisabled()
 			}
 		}.toolbar {
-			AsyncButton("Create file", lucide: .check) {
+			AsyncButton("Create file", systemImage: "checkmark") {
 				await createFile()
 			}.tint(.accentColor)
 		}

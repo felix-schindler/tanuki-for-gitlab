@@ -97,12 +97,12 @@ struct ProjectIssuesLoader: View {
 					if !(project.issuesEnabled ?? false) {
 						NoContentView(
 							"Issues are not enabled for this project",
-							lucide: .circleDot
+							systemImage: "smallcircle.circle"
 						)
 					} else if let issues = project.issues?.nodes {
 						if issues.isEmpty {
 							NoContentView(
-								"There are no issues", lucide: .circleDot)
+								"There are no issues", systemImage: "smallcircle.circle")
 						} else {
 							ForEach(issues, id: \.?.iid) { issue in
 								if let issue {
@@ -115,7 +115,7 @@ struct ProjectIssuesLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Issues", lucide: .circleDot, color: .green)
+				LoadingView("Loading Issues", systemImage: "smallcircle.circle", color: .green)
 			}
 		}.task {
 			loadIssues()
@@ -130,12 +130,12 @@ struct ProjectIssuesLoader: View {
 					NavigationLink(
 						destination: NewIssueView(id: projectId, fullPath: self.fullPath),
 						label: {
-							Label("New issue", lucide: .plus)
+							Label("New issue", systemImage: "plus")
 						}
 					).tint(.accentColor)
 				}
 
-				Button("Filter", lucide: .listFilter) {
+				Button("Filter", systemImage: "line.3.horizontal.decrease") {
 					showFilters = true
 				}
 			}
@@ -143,7 +143,7 @@ struct ProjectIssuesLoader: View {
 			NavigationStack {
 				IssueFilterView(filter: $filter)
 					.toolbar {
-						AsyncButton("Apply filter", lucide: .check) {
+						AsyncButton("Apply filter", systemImage: "checkmark") {
 							await reloadIssues()
 							showFilters = false
 						}

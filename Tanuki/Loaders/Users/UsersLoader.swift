@@ -86,7 +86,7 @@ struct UsersLoader: View {
 				switch users {
 				case .success(let users):
 					if users.isEmpty {
-						NoContentView("There are no users", lucide: .users)
+						NoContentView("There are no users", systemImage: "person.2")
 					} else {
 						ForEach(users, id: \.self?.username) { user in
 							if let user {
@@ -98,14 +98,14 @@ struct UsersLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Users", lucide: .users)
+				LoadingView("Loading Users", systemImage: "person.2")
 			}
 		}.task {
 			loadUsers()
 		}.refreshable {
 			await reloadUsers()
 		}.toolbar {
-			Button("Filter", lucide: .listFilter) {
+			Button("Filter", systemImage: "line.3.horizontal.decrease") {
 				showFilters = true
 			}
 		}.sheet(isPresented: $showFilters, onDismiss: { showFilters = false }) {
@@ -130,7 +130,7 @@ struct UsersLoader: View {
 						}
 					}
 				}.toolbar {
-					AsyncButton("Apply filter", lucide: .check) {
+					AsyncButton("Apply filter", systemImage: "checkmark") {
 						await reloadUsers()
 						self.showFilters = false
 					}

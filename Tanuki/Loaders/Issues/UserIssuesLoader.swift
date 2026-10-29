@@ -143,7 +143,7 @@ struct UserIssuesLoader: View {
 
 					if issues.isEmpty {
 						NoContentView(
-							"All caught up!", lucide: .circleDot,
+							"All caught up!", systemImage: "smallcircle.circle",
 							description: "There are no Issues")
 					} else {
 						ForEach(0..<issues.count, id: \.self) { index in
@@ -155,21 +155,21 @@ struct UserIssuesLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Issues", lucide: .circleDot, color: .green)
+				LoadingView("Loading Issues", systemImage: "smallcircle.circle", color: .green)
 			}
 		}.task {
 			loadIssues()
 		}.refreshable {
 			await reloadIssues()
 		}.toolbar {
-			Button("Filter", lucide: .listFilter) {
+			Button("Filter", systemImage: "line.3.horizontal.decrease") {
 				showFilters = true
 			}
 		}.sheet(isPresented: $showFilters, onDismiss: { self.showFilters = false }) {
 			NavigationStack {
 				IssueFilterView(filter: $filter)
 					.toolbar {
-						AsyncButton("Apply filter", lucide: .check) {
+						AsyncButton("Apply filter", systemImage: "checkmark") {
 							await reloadIssues()
 							showFilters = false
 						}

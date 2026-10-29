@@ -78,7 +78,7 @@ struct NewGroupShareView: View {
 				}
 			}
 		}.toolbar {
-			AsyncButton("Share", lucide: .check) {
+			AsyncButton("Share", systemImage: "checkmark") {
 				await shareWithGroup()
 			}.tint(.accentColor)
 		}.navigationTitle("Share with Group")

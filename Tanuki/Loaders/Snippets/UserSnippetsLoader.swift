@@ -99,7 +99,7 @@ struct UserSnippetsLoader: View {
 				switch snippets {
 				case .success(let snippets):
 					if snippets.isEmpty {
-						NoContentView("There are no snippets", lucide: .scissors)
+						NoContentView("There are no snippets", systemImage: "scissors")
 					} else {
 						ForEach(snippets, id: \.self?.id) { maybeSnippet in
 							if let snippet = maybeSnippet {
@@ -125,7 +125,7 @@ struct UserSnippetsLoader: View {
 															AuthorView(author)
 														}
 
-														PillView(Date.fromToString(snippet.createdAt), icon: .clock)
+														PillView(Date.fromToString(snippet.createdAt), icon: "clock")
 													}.font(.footnote)
 												}
 											}
@@ -138,10 +138,10 @@ struct UserSnippetsLoader: View {
 						}
 					}
 				case .failure(let error):
-					FailedView(error.localizedDescription, icon: .scissors)
+					FailedView(error.localizedDescription, icon: "scissors")
 				}
 			} else {
-				LoadingView("Loading Snippets", lucide: .scissors)
+				LoadingView("Loading Snippets", systemImage: "scissors")
 			}
 		}.task {
 			loadSnippets()
@@ -149,7 +149,7 @@ struct UserSnippetsLoader: View {
 			await reloadSnippets()
 		}.toolbar {
 			if username == nil {
-				Button("New snippet", lucide: .plus) {
+				Button("New snippet", systemImage: "plus") {
 					createSnippet = true
 				}
 			}

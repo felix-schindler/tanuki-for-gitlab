@@ -179,7 +179,7 @@ struct UserMergeLoader: View {
 				switch mergeRequests {
 				case .success(let mergeRequests):
 					if mergeRequests.isEmpty {
-						NoContentView("There are no merge requests", lucide: .gitPullRequest)
+						NoContentView("There are no merge requests", image: "git-mr.symbols")
 					} else {
 						ForEach(mergeRequests, id: \.?.reference) {
 							maybeMerge in
@@ -192,21 +192,21 @@ struct UserMergeLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Merge Requests", lucide: .gitPullRequest, color: .blue)
+				LoadingView("Loading Merge Requests", image: "git-mr.symbols", color: .blue)
 			}
 		}.task {
 			loadMergeRequests()
 		}.refreshable {
 			await reloadMergeRequests()
 		}.toolbar {
-			Button("Filter", lucide: .listFilter) {
+			Button("Filter", systemImage: "line.3.horizontal.decrease") {
 				showFilters = true
 			}
 		}.sheet(isPresented: $showFilters, onDismiss: { self.showFilters = false }) {
 			NavigationStack {
 				MergeRequestFilterView(filter: $filter)
 					.toolbar {
-						AsyncButton("Apply filter", lucide: .check) {
+						AsyncButton("Apply filter", systemImage: "checkmark") {
 							await reloadMergeRequests()
 							showFilters = false
 						}

@@ -225,7 +225,7 @@ struct MergeRequestLoader: View {
 										.textSelection(.enabled)
 									}
 
-									LucideLabelIcon(.arrowRight)
+									Image(systemName: "arrow.right")
 
 									PillView(
 										mr.targetBranch,
@@ -298,7 +298,7 @@ struct MergeRequestLoader: View {
 											}
 										},
 										icon: {
-											LucideLabelIcon(.circleUserRound)
+											Image(systemName: "person.crop.circle")
 										})
 								}
 							)
@@ -338,7 +338,10 @@ struct MergeRequestLoader: View {
 											}
 										},
 										icon: {
-											LucideLabelIcon(.users)
+											Image(
+												systemName:
+													"person.line.dotted.person.fill"
+											)
 										})
 								}
 							)
@@ -361,7 +364,7 @@ struct MergeRequestLoader: View {
 										}
 									},
 									icon: {
-										LucideLabelIcon(.tag)
+										Image(systemName: "tag")
 									}
 								)
 							}
@@ -369,7 +372,7 @@ struct MergeRequestLoader: View {
 							if let milestone = mr.milestone {
 								Label(
 									milestone.title,
-									lucide: .milestone
+									systemImage: "diamond"
 								)
 							}
 
@@ -385,7 +388,7 @@ struct MergeRequestLoader: View {
 										}
 									},
 									icon: {
-										LucideLabelIcon(.hourglass)
+										Image(systemName: "hourglass")
 									}
 								)
 							}
@@ -415,7 +418,7 @@ struct MergeRequestLoader: View {
 												}
 											},
 											icon: {
-												LucideLabelIcon(.fileText)
+												Image(systemName: "doc.text")
 											}
 										)
 									} else {
@@ -430,7 +433,7 @@ struct MergeRequestLoader: View {
 									iid: self.iid
 								),
 								label: {
-									Label("Changed files overview", lucide: .diff)
+									Label("Changed files overview", systemImage: "plusminus")
 								}
 							)
 
@@ -440,7 +443,7 @@ struct MergeRequestLoader: View {
 									iid: self.iid
 								),
 								label: {
-									Label("Commits", lucide: .gitCommitHorizontal)
+									Label("Commits", systemImage: "circle.and.line.horizontal")
 								}
 							)
 						}
@@ -469,14 +472,14 @@ struct MergeRequestLoader: View {
 								if mr.userPermissions.canApprove {
 									AsyncButton(
 										"Approve",
-										lucide: .userCheck
+										systemImage: "person.fill.checkmark"
 									) {
 										await approve(projectId)
 									}.tint(.green)
 								} else if mr.approved {
 									AsyncButton(
 										"Revoke approval",
-										lucide: .userX
+										systemImage: "person.fill.xmark"
 									) {
 										await unapprove(projectId)
 									}.tint(.red)
@@ -494,29 +497,55 @@ struct MergeRequestLoader: View {
 											await reloadMergeRequest()
 										}
 									) {
-										Label("Edit MR", lucide: .pencil)
+										Label("Edit MR", systemImage: "pencil")
 									}
 
 									if mr.state == .opened {
 										AsyncButton(
 											Self.isDraft(mr.title) ? "Mark as ready" : "Mark as draft",
-											lucide: Self.isDraft(mr.title) ? .flagOff : .flag
+											systemImage: Self.isDraft(mr.title) ? "flag.slash" : "flag"
 										) {
 											await changeDraft(
 												projectId, title: mr.title,
 												toDraft: !Self.isDraft(mr.title))
 										}.tint(Self.isDraft(mr.title) ? .green : .orange)
 
-										AsyncButton("Close MR", lucide: .gitPullRequestClosed) {
-											await changeState(projectId, state: "close")
-										}.tint(.blue)
+										AsyncButton(
+											action: {
+												await changeState(projectId, state: "close")
+											},
+											label: {
+												Label(
+													title: {
+														Text("Close MR")
+													},
+													icon: {
+														Image("git-mr-closed.symbols")
+															.resizable()
+															.scaledToFit()
+													})
+											}
+										).tint(.blue)
 									} else if mr.state == .closed {
-										AsyncButton("Reopen MR", lucide: .gitPullRequest) {
-											await changeState(projectId, state: "reopen")
-										}.tint(.green)
+										AsyncButton(
+											action: {
+												await changeState(projectId, state: "reopen")
+											},
+											label: {
+												Label(
+													title: {
+														Text("Reopen MR")
+													},
+													icon: {
+														Image("git-mr.symbols")
+															.resizable()
+															.scaledToFit()
+													})
+											}
+										).tint(.green)
 									}
 
-									AsyncButton("Delete MR", lucide: .trash) {
+									AsyncButton("Delete MR", systemImage: "trash") {
 										await remove(projectId)
 									}.tint(.red)
 								}
@@ -543,13 +572,13 @@ struct MergeRequestLoader: View {
 							}
 						}
 					} else {
-						NoContentView("Can't find merge request", lucide: .gitPullRequest)
+						NoContentView("Can't find merge request", image: "git-mr.symbols")
 					}
 				case .failure(let error):
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Merge Request !\(self.iid)", lucide: .gitPullRequest, color: .blue)
+				LoadingView("Loading Merge Request !\(self.iid)", image: "git-mr.symbols", color: .blue)
 			}
 		}.task {
 			loadMergeRequest()
@@ -567,7 +596,9 @@ struct MergeRequestLoader: View {
 										Text(mr.state.rawValue.capitalized)
 									},
 									icon: {
-										LucideLabelIcon(MergeStateHelper.getIconByState(mr.state))
+										MergeStateHelper.getIconByState(mr.state)
+											.resizable()
+											.scaledToFit()
 									})
 							}
 						)

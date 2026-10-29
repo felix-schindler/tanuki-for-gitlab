@@ -57,9 +57,9 @@ struct NewSnippetView: View {
 				.autocorrectionDisabled()
 				.textInputAutocapitalization(.never)
 			Picker("Visibility Level", selection: $visibility) {
-				Label("Private", lucide: .lock).tag(ProjectVisibility.private)
-				Label("Public", lucide: .globe).tag(ProjectVisibility.public)
-				Label("Internal", lucide: .shieldHalf).tag(ProjectVisibility.internal)
+				Label("Private", systemImage: "lock").tag(ProjectVisibility.private)
+				Label("Public", systemImage: "globe").tag(ProjectVisibility.public)
+				Label("Internal", systemImage: "shield.lefthalf.filled").tag(ProjectVisibility.internal)
 			}
 			Section("Content (required)") {
 				TextEditor(text: $content)
@@ -69,7 +69,7 @@ struct NewSnippetView: View {
 			}
 			TextField("Description (optional)", text: $description, axis: .vertical)
 		}.toolbar {
-			AsyncButton("Create Snippet", lucide: .check) {
+			AsyncButton("Create Snippet", systemImage: "checkmark") {
 				await createSnippet()
 			}.tint(.accentColor)
 		}

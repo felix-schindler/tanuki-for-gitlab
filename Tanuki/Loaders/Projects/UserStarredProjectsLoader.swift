@@ -68,7 +68,7 @@ struct UserStarredProjectsLoader: View {
 				switch projects {
 				case .success(let projects):
 					if projects.isEmpty {
-						NoContentView("There are no starred projects", lucide: .star)
+						NoContentView("There are no starred projects", systemImage: "star")
 					} else {
 						ForEach(projects, id: \.self?.fullPath) { maybeProject in
 							if let project = maybeProject {
@@ -80,7 +80,7 @@ struct UserStarredProjectsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading starred Projects", lucide: .star)
+				LoadingView("Loading starred Projects", systemImage: "star")
 			}
 		}.task {
 			loadProjects()

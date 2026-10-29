@@ -64,7 +64,7 @@ struct ProjectReleasesLoader: View {
 				switch releases {
 				case .success(let releases):
 					if releases.isEmpty {
-						NoContentView("There are no releases", lucide: .rocket)
+						NoContentView("There are no releases", systemImage: "flag")
 					} else {
 						ForEach(releases, id: \.?.id) { maybeRelease in
 							if let release = maybeRelease {
@@ -80,11 +80,11 @@ struct ProjectReleasesLoader: View {
 													if let releasedAt = release.releasedAt {
 														PillView(
 															Date.fromToString(releasedAt, timeStyle: .short),
-															icon: .clock)
+															icon: "clock")
 													}
 
 													if let tagName = release.tagName {
-														PillView(tagName, icon: .tag)
+														PillView(tagName, icon: "tag")
 													}
 
 													if let milestones = release.milestones?.nodes {
@@ -93,7 +93,7 @@ struct ProjectReleasesLoader: View {
 															if let milestone = maybeMilestone {
 																PillView(
 																	milestone.title.emojized(),
-																	icon: .milestone
+																	icon: "diamond"
 																)
 															}
 														}
@@ -103,7 +103,7 @@ struct ProjectReleasesLoader: View {
 														PillView(
 															commit,
 															icon:
-																.gitCommitHorizontal
+																"text.line.first.and.arrowtriangle.forward"
 														)
 														.textSelection(.enabled)
 														.font(
@@ -170,7 +170,7 @@ struct ProjectReleasesLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Releases", lucide: .rocket)
+				LoadingView("Loading Releases", systemImage: "flag")
 			}
 		}.task {
 			loadReleases()
@@ -181,7 +181,7 @@ struct ProjectReleasesLoader: View {
 				NavigationLink(
 					destination: NewReleaseView(id: projectId, fullPath: self.fullPath),
 					label: {
-						Label("Create new release", lucide: .plus)
+						Label("Create new release", systemImage: "plus")
 					}
 				).tint(.accentColor)
 			}

@@ -79,13 +79,13 @@ struct MrCommitsLoader: View {
 					} else {
 						NoContentView(
 							"There are no commits in this MR",
-							lucide: .gitCommitHorizontal)
+							systemImage: "circle.and.line.horizontal")
 					}
 				case .failure(let error):
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Commits", lucide: .gitCommitHorizontal)
+				LoadingView("Loading Commits", systemImage: "circle.and.line.horizontal")
 			}
 		}.task {
 			loadCommits()

@@ -36,7 +36,7 @@ struct JobTraceView: View {
 				switch trace {
 				case .success(let text):
 					if text.isEmpty {
-						NoContentView("No log output", lucide: .fileText)
+						NoContentView("No log output", systemImage: "doc.text")
 					} else {
 						Text(text)
 							.font(.system(.caption, design: .monospaced))
@@ -48,7 +48,7 @@ struct JobTraceView: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading log", lucide: .fileText)
+				LoadingView("Loading log", systemImage: "doc.text")
 			}
 		}.task {
 			await loadTrace()
@@ -56,7 +56,7 @@ struct JobTraceView: View {
 			await loadTrace()
 		}.toolbar {
 			if case .success(let text) = trace, text.isNotEmpty {
-				Button("Copy log", lucide: .copy) {
+				Button("Copy log", systemImage: "doc.on.doc") {
 					text.copyToClipboard()
 					Notify.status(.success, "Copied to clipboard", systemImage: "checkmark")
 				}

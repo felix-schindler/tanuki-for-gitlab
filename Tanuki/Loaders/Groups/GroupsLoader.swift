@@ -95,7 +95,7 @@ struct GroupsLoader: View {
 				switch groups {
 				case .success(let groups):
 					if groups.isEmpty {
-						NoContentView("There are no groups", lucide: .building)
+						NoContentView("There are no groups", systemImage: "scale.3d")
 					} else {
 						ForEach(groups, id: \.self?.fullPath) { group in
 							if let group {
@@ -107,7 +107,7 @@ struct GroupsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Groups", lucide: .building)
+				LoadingView("Loading Groups", systemImage: "scale.3d")
 			}
 		}.task {
 			loadGroups()
@@ -115,12 +115,12 @@ struct GroupsLoader: View {
 			await reloadGroups()
 		}.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
-				Button("Filter", lucide: .listFilter) {
+				Button("Filter", systemImage: "line.3.horizontal.decrease") {
 					showFilters = true
 				}
 			}
 			ToolbarItem(placement: .topBarTrailing) {
-				Button("New group", lucide: .plus) {
+				Button("New group", systemImage: "plus") {
 					createGroup = true
 				}
 			}
@@ -181,7 +181,7 @@ struct GroupsLoader: View {
 						}
 					}
 				}.toolbar {
-					AsyncButton("Apply filter", lucide: .check) {
+					AsyncButton("Apply filter", systemImage: "checkmark") {
 						await reloadGroups()
 						self.showFilters = false
 					}

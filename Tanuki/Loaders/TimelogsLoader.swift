@@ -105,7 +105,7 @@ struct TimelogsLoader: View {
 				switch timelogs {
 				case .success(let timelogs):
 					if timelogs.isEmpty {
-						NoContentView("There are no timelogs", lucide: .hourglass)
+						NoContentView("There are no timelogs", systemImage: "hourglass")
 					} else {
 						ForEach(timelogs, id: \.?.id) { maybeLog in
 							if let log = maybeLog {
@@ -116,7 +116,7 @@ struct TimelogsLoader: View {
 											NavigationLink(
 												destination: ProjectLoader(fullPath: log._project.fullPath),
 												label: {
-													Label(log._project.nameWithNamespace, lucide: .gift)
+													Label(log._project.nameWithNamespace, systemImage: "app.gift.fill")
 												}
 											)
 											.controlSize(.mini)
@@ -126,7 +126,7 @@ struct TimelogsLoader: View {
 											AuthorView(log._user)
 
 											if let spentAt = log.spentAt {
-												PillView(Date.fromToString(spentAt), icon: .clock)
+												PillView(Date.fromToString(spentAt), icon: "clock")
 											}
 
 											if let issueIid = log._issue?.iid {
@@ -136,7 +136,7 @@ struct TimelogsLoader: View {
 														iid: issueIid
 													),
 													label: {
-														Label("#\(issueIid)", lucide: .circleDot)
+														Label("#\(issueIid)", systemImage: "smallcircle.circle")
 													}
 												)
 												.controlSize(.mini)
@@ -151,7 +151,7 @@ struct TimelogsLoader: View {
 														iid: mergeIid
 													),
 													label: {
-														Label("!\(mergeIid)", lucide: .gitPullRequest)
+														Label("!\(mergeIid)", systemImage: "arrow.triangle.pull")
 													}
 												)
 												.controlSize(.mini)
@@ -161,7 +161,7 @@ struct TimelogsLoader: View {
 										}.font(.footnote)
 									}
 
-									PillView("\(log.timeSpent / 60) minutes", icon: .clock)
+									PillView("\(log.timeSpent / 60) minutes", icon: "clock")
 										.font(.footnote)
 
 									if let summary = log.summary, summary.isNotEmpty {
@@ -175,7 +175,7 @@ struct TimelogsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Timelogs", lucide: .hourglass)
+				LoadingView("Loading Timelogs", systemImage: "hourglass")
 			}
 		}.task {
 			loadTimelogs()

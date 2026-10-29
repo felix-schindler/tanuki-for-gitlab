@@ -58,7 +58,7 @@ struct NewBranchView: View {
 				.textInputAutocapitalization(.never)
 				.autocorrectionDisabled()
 		}.toolbar {
-			AsyncButton("Create branch", lucide: .check) {
+			AsyncButton("Create branch", systemImage: "checkmark") {
 				await createBranch()
 			}.tint(.accentColor)
 		}

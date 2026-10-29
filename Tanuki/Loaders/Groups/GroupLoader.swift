@@ -94,13 +94,13 @@ struct GroupLoader: View {
 
 						ScrollView(.horizontal) {
 							HStack {
-								PillView("\(group.groupMembersCount)", icon: .users)
+								PillView("\(group.groupMembersCount)", icon: "person.2")
 
 								if let parent = group.parent {
 									NavigationLink(
 										destination: GroupLoader(fullPath: parent.fullPath),
 										label: {
-											Label(parent.name ?? parent.fullPath, lucide: .building)
+											Label(parent.name ?? parent.fullPath, systemImage: "scale.3d")
 										}
 									)
 									.controlSize(.mini)
@@ -135,7 +135,8 @@ struct GroupLoader: View {
 											}
 										},
 										icon: {
-											LucideLabelIcon(.gift, color: .gray)
+											Image(systemName: "app.gift.fill")
+												.foregroundStyle(.gray)
 										}
 									)
 								}
@@ -154,7 +155,8 @@ struct GroupLoader: View {
 											}
 										},
 										icon: {
-											LucideLabelIcon(.building, color: .red)
+											Image(systemName: "scale.3d")
+												.foregroundStyle(.red)
 										}
 									)
 								})
@@ -205,7 +207,7 @@ struct GroupLoader: View {
 									))
 							},
 							label: {
-								Label("Manage", lucide: .users)
+								Label("Manage", systemImage: "person.2")
 							}
 						)
 
@@ -227,7 +229,7 @@ struct GroupLoader: View {
 								}
 							},
 							label: {
-								Label("Plan", lucide: .calendarCheck)
+								Label("Plan", systemImage: "calendar.badge.checkmark")
 							}
 						)
 
@@ -238,15 +240,15 @@ struct GroupLoader: View {
 									destination: GroupMergeLoader(fullPath: self.fullPath))
 							},
 							label: {
-								Label("Code", lucide: .codeXml)
+								Label("Code", systemImage: "chevron.left.forwardslash.chevron.right")
 							}
 						)
 					}.navigationTitle(group.path)
 				case .failure(let error):
-					FailedView(error.localizedDescription, icon: .building)
+					FailedView(error.localizedDescription, icon: "scale.3d")
 				}
 			} else {
-				LoadingView("Loading Group \(self.fullPath)", lucide: .building)
+				LoadingView("Loading Group \(self.fullPath)", systemImage: "scale.3d")
 			}
 		}.task {
 			loadGroup()
@@ -260,14 +262,14 @@ struct GroupLoader: View {
 					}
 
 					if group.userPermissions.createProjects || group.requestAccessEnabled ?? false {
-						Menu("More", lucide: .ellipsis) {
+						Menu("More", systemImage: "ellipsis") {
 							if group.userPermissions.createProjects {
-								Button("Create project", lucide: .plus) {
+								Button("Create project", systemImage: "plus") {
 									navigationActive = true
 								}
 							}
 
-							Button("Create subgroup", lucide: .building) {
+							Button("Create subgroup", systemImage: "scale.3d") {
 								createSubgroup = true
 							}
 
@@ -276,7 +278,7 @@ struct GroupLoader: View {
 							{
 								AsyncButton(
 									"Request access",
-									lucide: .userPlus
+									systemImage: "person.badge.plus"
 								) {
 									await requestAccess(groupId)
 								}

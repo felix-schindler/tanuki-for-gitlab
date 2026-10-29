@@ -53,7 +53,7 @@ struct NewNoteView: View {
 	}
 
 	public var body: some View {
-		Button("New note", lucide: .arrowUp) {
+		Button("New note", systemImage: "arrow.up") {
 			show = true
 		}.sheet(isPresented: $show) {
 			NavigationStack {
@@ -67,7 +67,7 @@ struct NewNoteView: View {
 						Toggle("Internal", isOn: self.$internal)
 					}
 				}.toolbar {
-					AsyncButton("Create note", lucide: .check) {
+					AsyncButton("Create note", systemImage: "checkmark") {
 						await createNote()
 					}.tint(.accentColor)
 				}

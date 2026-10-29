@@ -37,14 +37,14 @@ struct BranchesLoader: View {
 					if branches.isEmpty {
 						NoContentView(
 							"You'll see your branches after you pushed them",
-							lucide: .gitBranch
+							systemImage: "chevron.left.forwardslash.chevron.right"
 						)
 					} else {
 						ForEach(branches, id: \.name) { branch in
 							VStack(alignment: .leading) {
 								HStack {
 									if branch.protected {
-										LucideLabelIcon(.lock)
+										Image(systemName: "lock")
 									}
 									Text(branch.name.emojized())
 										.font(.headline)
@@ -54,7 +54,7 @@ struct BranchesLoader: View {
 									HStack {
 										PillView(branch.commit.shortId)
 											.font(.system(.footnote, design: .monospaced))
-										PillView(branch.commit.authoredDate.toString(), icon: .clock)
+										PillView(branch.commit.authoredDate.toString(), icon: "clock")
 									}
 								}.font(.footnote)
 								Text(branch.commit.title.emojized())
@@ -68,7 +68,7 @@ struct BranchesLoader: View {
 			} else {
 				LoadingView(
 					"Loading Branches",
-					lucide: .gitBranch
+					systemImage: "chevron.left.forwardslash.chevron.right"
 				)
 			}
 		}.task {
@@ -77,7 +77,7 @@ struct BranchesLoader: View {
 			await loadBranches()
 		}.toolbar {
 			NavigationLink(destination: NewBranchView(projectId: projectId)) {
-				Label("New branch", lucide: .plus)
+				Label("New branch", systemImage: "plus")
 			}.tint(.accentColor)
 		}.navigationTitle("Branches")
 	}

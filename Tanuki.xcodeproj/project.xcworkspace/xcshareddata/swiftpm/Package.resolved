@@ -38,15 +38,6 @@
       }
     },
     {
-      "identity" : "lucide-swift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/bring-shrubbery/lucide-swift",
-      "state" : {
-        "revision" : "2f02c730a540211e2261ca33d83c970c18442a2a",
-        "version" : "1.49.0"
-      }
-    },
-    {
       "identity" : "markdownview",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/keitaoouchi/MarkdownView",

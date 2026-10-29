@@ -5,7 +5,6 @@
 //  Created by Felix Schindler on 07.10.26.
 //
 
-import Lucide
 import SwiftUI
 
 struct JumpFailureView: View {
@@ -33,7 +32,9 @@ struct JumpFailureView: View {
 	public var body: some View {
 		VStack(alignment: .leading, spacing: 12) {
 			HStack(alignment: .top, spacing: 10) {
-				LucideLabelIcon(.triangleAlert, color: .yellow, size: 24)
+				Image(systemName: "exclamationmark.triangle")
+					.font(.title2)
+					.foregroundStyle(.yellow)
 				VStack(alignment: .leading, spacing: 2) {
 					Text(headline)
 						.font(.headline)
@@ -46,7 +47,7 @@ struct JumpFailureView: View {
 			details
 
 			if let hint = diagnostics.error?.hint {
-				Label(hint, lucide: .lightbulb)
+				Label(hint, systemImage: "lightbulb")
 					.font(.footnote)
 					.foregroundStyle(.secondary)
 			}
@@ -56,7 +57,7 @@ struct JumpFailureView: View {
 				copied = true
 				Notify.status(.success, "Details copied", systemImage: "doc.on.doc")
 			} label: {
-				Label(copied ? "Details copied" : "Copy details", lucide: .copy)
+				Label(copied ? "Details copied" : "Copy details", systemImage: "doc.on.doc")
 			}
 			.adaptiveButtonStyle()
 			.font(.footnote)
@@ -67,21 +68,21 @@ struct JumpFailureView: View {
 	/// "Where did it try to go" answers, selectable so they can be copied by hand.
 	private var details: some View {
 		VStack(alignment: .leading, spacing: 6) {
-			row("Tried to open", targetLine, lucide: .arrowRight)
-			row("Signed in to", diagnostics.host, lucide: .server)
+			row("Tried to open", targetLine, systemImage: "arrow.right")
+			row("Signed in to", diagnostics.host, systemImage: "server.rack")
 			row(
 				"Clipboard", JumpURLError.excerpt(diagnostics.raw, limit: 240),
-				lucide: .clipboardPaste, monospaced: true)
+				systemImage: "doc.on.clipboard", monospaced: true)
 		}
 		.padding(10)
 		.background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 10))
 	}
 
 	private func row(
-		_ title: String, _ value: String, lucide: LucideIcon, monospaced: Bool = false
+		_ title: String, _ value: String, systemImage: String, monospaced: Bool = false
 	) -> some View {
 		VStack(alignment: .leading, spacing: 1) {
-			Label(title, lucide: lucide)
+			Label(title, systemImage: systemImage)
 				.font(.caption)
 				.foregroundStyle(.secondary)
 			Text(value)
@@ -107,7 +108,7 @@ struct JumpFailureCard: View {
 		VStack(alignment: .leading, spacing: 8) {
 			JumpFailureView(diagnostics)
 
-			Button("Dismiss", lucide: .x) {
+			Button("Dismiss", systemImage: "xmark") {
 				onDismiss()
 			}
 			.font(.footnote)

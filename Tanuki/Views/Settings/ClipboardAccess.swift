@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ClipboardAccess: View {
 	var body: some View {
-		NoContentView("There's nothing here yet, come back soon!", lucide: .flaskConical)
+		NoContentView("There's nothing here yet, come back soon!", systemImage: "testtube.2")
 	}
 }
 

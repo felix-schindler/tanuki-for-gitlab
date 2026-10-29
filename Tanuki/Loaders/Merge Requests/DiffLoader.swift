@@ -97,7 +97,7 @@ struct DiffLoader: View {
 				switch diffs {
 				case .success(let diffs):
 					if diffs.isEmpty {
-						NoContentView("There are no changes", lucide: .diff)
+						NoContentView("There are no changes", systemImage: "plusminus")
 					} else {
 						ForEach(diffs, id: \.oldPath) { diff in
 							Section(
@@ -120,15 +120,20 @@ struct DiffLoader: View {
 								header: {
 									HStack {
 										if diff.newFile {
-											LucideLabelIcon(.squarePlus, color: .green)
+											Image(systemName: "plus.square")
+												.foregroundStyle(.green)
 										} else if diff.renamedFile {
-											LucideLabelIcon(.squareArrowRight, color: .blue)
+											Image(systemName: "arrow.right.square")
+												.foregroundStyle(.blue)
 										} else if diff.deletedFile {
-											LucideLabelIcon(.squareMinus, color: .red)
+											Image(systemName: "minus.square")
+												.foregroundStyle(.red)
 										} else if diff.generatedFile ?? false {
-											LucideLabelIcon(.cog, color: .purple)
+											Image(systemName: "gear.circle")
+												.foregroundStyle(.purple)
 										} else {
-											LucideLabelIcon(.squarePen, color: .orange)
+											Image(systemName: "dot.square")
+												.foregroundStyle(.orange)
 										}
 
 										ScrollView(.horizontal) {
@@ -146,7 +151,7 @@ struct DiffLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Diffs", lucide: .diff)
+				LoadingView("Loading Diffs", systemImage: "plusminus")
 			}
 		}.task {
 			await loadDiffs()

@@ -6,7 +6,6 @@
 //
 
 import AVKit
-import Lucide
 import SwiftUI
 
 struct FileLoader: View {
@@ -65,15 +64,15 @@ struct FileLoader: View {
 		Formats.videoFormats.contains(fileExtension)
 	}
 
-	private var icon: LucideIcon {
+	private var icon: String {
 		if Formats.audioFormats.contains(fileExtension) || isVideo {
-			return .play
+			return "play"
 		} else if Formats.imageFormats.contains(fileExtension) {
-			return .image
+			return "photo"
 		} else if isPDF {
-			return .fileText
+			return "doc.richtext"
 		} else {
-			return .file
+			return "document"
 		}
 	}
 
@@ -182,9 +181,9 @@ struct FileLoader: View {
 			if case .failed(let error) = phase {
 				FailedView(error)
 			} else if Formats.audioFormats.contains(fileExtension) {
-				unavailable("Can't preview this \(fileExtension) audio file", lucide: .play)
+				unavailable("Can't preview this \(fileExtension) audio file", systemImage: "play")
 			} else if Formats.binaryFormats.contains(fileExtension) {
-				unavailable("Can't preview this \(fileExtension) file", lucide: .fileArchive)
+				unavailable("Can't preview this \(fileExtension) file", systemImage: "doc.zipper")
 			} else if isLoaded, let localURL {
 				if isPDF {
 					PDFPreview(url: localURL)
@@ -223,7 +222,7 @@ struct FileLoader: View {
 					.scaledToFit()
 					.cornerRadius(10)
 			} else {
-				unavailable("Can't preview this \(fileExtension) file", lucide: .image)
+				unavailable("Can't preview this \(fileExtension) file", systemImage: "photo")
 			}
 		} else {
 			textPreview
@@ -244,14 +243,18 @@ struct FileLoader: View {
 				)
 			}
 		} else {
-			unavailable("Can't preview this \(fileExtension) file", lucide: .file)
+			unavailable("Can't preview this \(fileExtension) file", systemImage: "document")
 		}
 	}
 
 	@ViewBuilder
 	private var pending: some View {
 		VStack(spacing: 12) {
-			LucideLabelIcon(icon, color: .gray, size: 50)
+			Image(systemName: icon)
+				.resizable()
+				.scaledToFit()
+				.foregroundStyle(.gray)
+				.frame(width: 50, height: 50)
 
 			switch phase {
 			case .ready(let size):
@@ -262,7 +265,7 @@ struct FileLoader: View {
 						await loadFile()
 					}
 				} label: {
-					Label("Download", lucide: .download)
+					Label("Download", systemImage: "arrow.down.circle")
 				}
 				.adaptiveButtonStyleProminent()
 			case .downloading(let received, let total):
@@ -279,9 +282,13 @@ struct FileLoader: View {
 		.frame(maxWidth: .infinity, minHeight: 100)
 	}
 
-	private func unavailable(_ message: String, lucide: LucideIcon) -> some View {
+	private func unavailable(_ message: String, systemImage: String) -> some View {
 		VStack {
-			LucideLabelIcon(lucide, color: .gray, size: 50)
+			Image(systemName: systemImage)
+				.resizable()
+				.scaledToFit()
+				.foregroundStyle(.gray)
+				.frame(width: 50, height: 50)
 			Text(message)
 		}
 	}

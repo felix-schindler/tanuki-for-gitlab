@@ -58,7 +58,7 @@ struct CurrentUserTodosLoader: View {
 					if todos.isEmpty {
 						NoContentView(
 							"All caught up!",
-							lucide: .squareCheckBig,
+							systemImage: "checkmark.square",
 							description: "There are no Todos"
 						)
 					} else {
@@ -72,7 +72,7 @@ struct CurrentUserTodosLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading your Todos", lucide: .squareCheckBig)
+				LoadingView("Loading your Todos", systemImage: "checkmark.square")
 			}
 		}.task {
 			loadTodos()

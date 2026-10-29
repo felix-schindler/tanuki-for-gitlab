@@ -67,7 +67,7 @@ struct EditTitleDescriptionView: View {
 			}
 		}
 		.toolbar {
-			AsyncButton("Save", lucide: .check) {
+			AsyncButton("Save", systemImage: "checkmark") {
 				await save()
 			}.tint(.accentColor)
 		}

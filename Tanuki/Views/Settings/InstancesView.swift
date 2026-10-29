@@ -18,7 +18,7 @@ struct InstancesView: View {
 			if instances.isEmpty {
 				NoContentView(
 					"No Instances",
-					lucide: .server,
+					systemImage: "server.rack",
 					description: "Add a GitLab instance to get started"
 				)
 			} else {
@@ -36,7 +36,7 @@ struct InstancesView: View {
 							Spacer()
 
 							if instance.id == selectedId {
-								LucideLabelIcon(.circleCheck)
+								Image(systemName: "checkmark.circle.fill")
 									.foregroundStyle(.accent)
 							}
 						}
@@ -64,7 +64,7 @@ struct InstancesView: View {
 									}
 								}
 							} label: {
-								Label("Delete", lucide: .trash).labelStyle(.iconOnly)
+								Label("Delete", systemImage: "trash").labelStyle(.iconOnly)
 							}
 						}
 					}
@@ -75,7 +75,7 @@ struct InstancesView: View {
 
 			Section {
 				NavigationLink(destination: ConfigView(showSetup: nil)) {
-					Label("Add Instance", lucide: .circlePlus)
+					Label("Add Instance", systemImage: "plus.circle")
 				}
 			}
 		}.task {
@@ -83,7 +83,7 @@ struct InstancesView: View {
 			selectedId = InstanceManager.selectedId
 		}.toolbar {
 			NavigationLink(destination: ConfigView(showSetup: nil)) {
-				Label("Add Instance", lucide: .plus)
+				Label("Add Instance", systemImage: "plus")
 			}
 		}.navigationTitle("Instances")
 	}

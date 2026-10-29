@@ -33,7 +33,7 @@ struct PopupHeader: View {
 			Button(
 				action: {},
 				label: {
-					Label("Test", lucide: .check)
+					Label("Test", systemImage: "checkmark")
 						.frame(maxWidth: .infinity)
 				}
 			)

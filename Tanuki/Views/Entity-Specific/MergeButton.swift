@@ -112,7 +112,8 @@ struct MergeButton: View {
 							Text("Merge conflicts must be resolved.")
 						},
 						icon: {
-							LucideLabelIcon(.circleMinus, color: .red)
+							Image(systemName: "minus.circle.fill")
+								.foregroundStyle(.red)
 						}
 					)
 				}
@@ -145,12 +146,12 @@ struct MergeButton: View {
 					}
 				}.toolbar {
 					ToolbarItem(placement: .topBarLeading) {
-						Button("Cancel", lucide: .x, role: .cancel) {
+						Button("Cancel", systemImage: "xmark", role: .cancel) {
 							showMergeOptions = false
 						}
 					}
 					ToolbarItem(placement: .topBarTrailing) {
-						AsyncButton("Merge", lucide: .check) {
+						AsyncButton("Merge", systemImage: "checkmark") {
 							await merge()
 						}.labelStyle(.titleAndIcon)
 					}

@@ -68,10 +68,10 @@ struct VotePillsView: View {
 
 	var body: some View {
 		HStack {
-			AsyncButton("\(upvotes)", lucide: .thumbsUp) {
+			AsyncButton("\(upvotes)", systemImage: "hand.thumbsup") {
 				await vote("thumbsup")
 			}
-			AsyncButton("\(downvotes)", lucide: .thumbsDown) {
+			AsyncButton("\(downvotes)", systemImage: "hand.thumbsdown") {
 				await vote("thumbsdown")
 			}
 		}

@@ -6,7 +6,6 @@
 //
 
 import GitLabAPI
-import Lucide
 import SwiftUI
 
 struct SmallPipelineView: View {
@@ -46,20 +45,21 @@ struct SmallPipelineView: View {
 								AuthorView(author)
 							}
 							if let commitId = pipeline.commit?.shortId {
-								PillView(commitId, icon: .gitCommitHorizontal)
+								PillView(commitId, icon: "text.line.first.and.arrowtriangle.forward")
 									.textSelection(.enabled)
 									.font(.system(.footnote, design: .monospaced))
 							}
 							if let source = pipeline.source {
 								PillView(source)
 							}
-							PillView(Date.fromToString(pipeline.createdAt, timeStyle: .short), icon: .clock)
+							PillView(Date.fromToString(pipeline.createdAt, timeStyle: .short), icon: "clock")
 						}.font(.footnote)
 					}
 				}
 			},
 			icon: {
-				LucideLabelIcon(style.icon, color: style.color)
+				Image(systemName: style.icon)
+					.foregroundStyle(style.color)
 			}
 		)
 	}

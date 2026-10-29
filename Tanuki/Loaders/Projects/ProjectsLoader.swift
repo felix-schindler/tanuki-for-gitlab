@@ -101,7 +101,7 @@ struct ProjectsLoader: View {
 				switch projects {
 				case .success(let projects):
 					if projects.isEmpty {
-						NoContentView("There are no projects", lucide: .layers)
+						NoContentView("There are no projects", systemImage: "app.gift.fill")
 					} else {
 						ForEach(projects, id: \.?.fullPath) { project in
 							if let project {
@@ -113,14 +113,14 @@ struct ProjectsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Projects", lucide: .layers)
+				LoadingView("Loading Projects", systemImage: "app.gift.fill")
 			}
 		}.task {
 			loadProjects()
 		}.refreshable {
 			await reloadProjects()
 		}.toolbar {
-			Button("Filter", lucide: .listFilter) {
+			Button("Filter", systemImage: "line.3.horizontal.decrease") {
 				showFilters = true
 			}
 		}.sheet(isPresented: $showFilters, onDismiss: { showFilters = false }) {
@@ -215,7 +215,7 @@ struct ProjectsLoader: View {
 						}
 					}
 				}.toolbar {
-					AsyncButton("Apply filter", lucide: .check) {
+					AsyncButton("Apply filter", systemImage: "checkmark") {
 						await reloadProjects()
 						self.showFilters = false
 					}

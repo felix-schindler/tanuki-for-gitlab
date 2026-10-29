@@ -36,10 +36,10 @@ struct SmallMergeView: View {
 							if let author = mr._author {
 								AuthorView(author)
 							}
-							PillView(Date.fromToString(mr.createdAt), icon: .clock)
-							PillView(String(mr.upvotes), icon: .thumbsUp)
-							PillView(String(mr.downvotes), icon: .thumbsDown)
-							PillView(String(mr.userNotesCount ?? 0), icon: .notebookText)
+							PillView(Date.fromToString(mr.createdAt), icon: "clock")
+							PillView(String(mr.upvotes), icon: "hand.thumbsup")
+							PillView(String(mr.downvotes), icon: "hand.thumbsdown")
+							PillView(String(mr.userNotesCount ?? 0), icon: "note.text")
 						}
 					}.font(.footnote)
 				}.swipeActions {

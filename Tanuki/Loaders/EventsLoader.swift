@@ -73,14 +73,14 @@ struct EventsLoader: View {
 				switch events {
 				case .success(let events):
 					if events.isEmpty {
-						NoContentView("There are no events", lucide: .activity)
+						NoContentView("There are no events", systemImage: "clock.arrow.circlepath")
 					} else {
 						ForEach(events, id: \.id) { event in
 							VStack(alignment: .leading) {
 								ScrollView(.horizontal) {
 									HStack {
 										AuthorView(event.author)
-										PillView(event.createdAt.toString(timeStyle: .short), icon: .clock)
+										PillView(event.createdAt.toString(timeStyle: .short), icon: "clock")
 									}
 								}.font(.footnote)
 								Text(getStupidText(event: event))
@@ -91,7 +91,7 @@ struct EventsLoader: View {
 					FailedView(failure.localizedDescription)
 				}
 			} else {
-				LoadingView("Loading events", lucide: .bell)
+				LoadingView("Loading events", systemImage: "bell")
 			}
 		}.task {
 			await getEvents()

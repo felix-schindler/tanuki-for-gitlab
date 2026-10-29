@@ -89,7 +89,7 @@ struct GroupMergeLoader: View {
 				switch mergeRequests {
 				case .success(let mrs):
 					if mrs.isEmpty {
-						NoContentView("There are no Merge Requests", lucide: .gitPullRequest)
+						NoContentView("There are no Merge Requests", image: "git-mr.symbols")
 					} else {
 						ForEach(mrs, id: \.?.reference) { maybeMerge in
 							if let mr = maybeMerge,
@@ -104,21 +104,21 @@ struct GroupMergeLoader: View {
 				}
 			} else {
 				LoadingView(
-					"Loading Merge Requests", lucide: .gitPullRequest, color: .blue)
+					"Loading Merge Requests", image: "git-mr.symbols", color: .blue)
 			}
 		}.task {
 			loadMergeRequests()
 		}.refreshable {
 			await reloadMergeRequests()
 		}.toolbar {
-			Button("Filter", lucide: .listFilter) {
+			Button("Filter", systemImage: "line.3.horizontal.decrease") {
 				showFilters = true
 			}
 		}.sheet(isPresented: $showFilters, onDismiss: { self.showFilters = false }) {
 			NavigationStack {
 				MergeRequestFilterView(filter: $filter)
 					.toolbar {
-						AsyncButton("Apply filter", lucide: .check) {
+						AsyncButton("Apply filter", systemImage: "checkmark") {
 							await reloadMergeRequests()
 							showFilters = false
 						}

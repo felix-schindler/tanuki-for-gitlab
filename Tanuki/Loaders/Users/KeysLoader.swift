@@ -39,7 +39,7 @@ struct KeysLoader: View {
 					if keys.isEmpty {
 						NoContentView(
 							"You'll see your SSH keys after you added them",
-							lucide: .key
+							systemImage: "key"
 						)
 					} else {
 						ForEach(keys, id: \.id) { key in
@@ -55,14 +55,14 @@ struct KeysLoader: View {
 											.font(.headline)
 										ScrollView(.horizontal) {
 											HStack {
-												PillView(key.createdAt.toString(), icon: .calendarPlus)
+												PillView(key.createdAt.toString(), icon: "calendar.badge.plus")
 												if let lastUsedAt = key.lastUsedAt {
 													PillView("Last used \(lastUsedAt.toString())")
 												} else {
 													PillView("Never used")
 												}
 												if let expiresAt = key.expiresAt {
-													PillView(expiresAt.toString(), icon: .calendarClock)
+													PillView(expiresAt.toString(), icon: "calendar.badge.clock")
 												}
 											}
 										}.font(.footnote)
@@ -74,7 +74,7 @@ struct KeysLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading SSH Keys", lucide: .key)
+				LoadingView("Loading SSH Keys", systemImage: "key")
 			}
 		}.task {
 			await loadKeys()

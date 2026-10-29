@@ -99,21 +99,21 @@ struct PipelineJobView: View {
 								destination: JobTraceView(
 									fullPath: fullPath, jobId: jobId, jobName: job.name ?? "Job")
 							) {
-								Label("Log", lucide: .fileText)
+								Label("Log", systemImage: "doc.text")
 							}
 						}
 						if job.retryable {
-							AsyncButton("Retry", lucide: .rotateCw) {
+							AsyncButton("Retry", systemImage: "arrow.clockwise") {
 								await jobAction("retry")
 							}
 						}
 						if job.playable {
-							AsyncButton("Play", lucide: .play) {
+							AsyncButton("Play", systemImage: "play") {
 								await jobAction("play")
 							}
 						}
 						if job.cancelable {
-							AsyncButton("Cancel", lucide: .x) {
+							AsyncButton("Cancel", systemImage: "xmark") {
 								await jobAction("cancel")
 							}
 						}
@@ -131,7 +131,7 @@ struct PipelineJobView: View {
 								ProgressView()
 									.controlSize(.small)
 							} else {
-								LucideLabelIcon(.download)
+								Image(systemName: "square.and.arrow.down")
 							}
 							Text(
 								"\(artifact.name ?? "") (\(ByteFormatter.shared.format(Int64(artifact.size) ?? 0)))"

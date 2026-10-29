@@ -94,7 +94,7 @@ struct EmailsLoader: View {
 					if emails.isEmpty {
 						NoContentView(
 							"You'll see your email addresses after you added them",
-							lucide: .mail
+							systemImage: "envelope"
 						)
 					} else {
 						ForEach(emails, id: \.self?.id) { email in
@@ -104,9 +104,11 @@ struct EmailsLoader: View {
 										.textSelection(.enabled)
 									Spacer()
 									if email.confirmedAt != nil {
-										LucideLabelIcon(.badgeCheck, color: .green)
+										Image(systemName: "checkmark.seal.fill")
+											.foregroundStyle(.green)
 									} else {
-										LucideLabelIcon(.badgeX, color: .red)
+										Image(systemName: "xmark.seal.fill")
+											.foregroundStyle(.red)
 									}
 								}.swipeActions(edge: .trailing, allowsFullSwipe: true) {
 									Button(role: .destructive) {
@@ -114,7 +116,7 @@ struct EmailsLoader: View {
 											await deleteEmail(email)
 										}
 									} label: {
-										Label("Delete", lucide: .trash)
+										Label("Delete", systemImage: "trash")
 									}
 								}
 							}
@@ -124,7 +126,7 @@ struct EmailsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Emails", lucide: .mail)
+				LoadingView("Loading Emails", systemImage: "envelope")
 			}
 		}.task {
 			await loadEmails()
@@ -132,7 +134,7 @@ struct EmailsLoader: View {
 			await reloadEmails()
 		}.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
-				Button("Add", lucide: .plus) {
+				Button("Add", systemImage: "plus") {
 					showAdd = true
 				}
 			}
@@ -143,7 +145,7 @@ struct EmailsLoader: View {
 						.textInputAutocapitalization(.never)
 						.keyboardType(.emailAddress)
 				}.toolbar {
-					AsyncButton("Save", lucide: .check) {
+					AsyncButton("Save", systemImage: "checkmark") {
 						await addEmail()
 					}
 					.tint(.accentColor)

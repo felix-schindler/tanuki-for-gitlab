@@ -6,7 +6,6 @@
 //
 
 import GitLabAPI
-import Lucide
 import SwiftUI
 
 struct NoteView: View {
@@ -18,42 +17,42 @@ struct NoteView: View {
 		self.projectId = projectId
 	}
 
-	private func convertIconName(_ iconName: String?) -> LucideIcon {
+	private func convertIconName(_ iconName: String?) -> String {
 		switch iconName {
 		case "user":
-			.user
+			"person"
 		case "comment-dots":
-			.messageSquare
+			"ellipsis.bubble"
 		case "pencil":
-			.pencil
+			"pencil"
 		case "commit":
-			.gitCommitHorizontal
+			"circle.and.line.horizontal"
 		case "check":
-			.userCheck
+			"person.fill.checkmark"
 		case "unapproval":
-			.userX
+			"person.fill.xmark"
 		case "timer":
-			.hourglass
+			"hourglass"
 		case "label":
-			.tag
+			"tag"
 		case "link":
-			.link
+			"link.badge.plus"
 		case "unlink":
-			.unlink
+			"link"
 		case "arrow-right":
-			.forward
+			"arrowshape.turn.up.forward"
 		case "clock":
-			.clock
+			"clock"
 		case "duplicate":
-			.copy
+			"circlebadge.2"
 		case "issue-close":
-			.circleMinus
+			"minus.circle"
 		case "issues":
-			.circleDot
+			"smallcircle.circle"
 		case "status-health":
-			.activity
+			"waveform.path.ecg"
 		default:
-			.circleQuestionMark
+			"questionmark"
 		}
 	}
 
@@ -62,7 +61,7 @@ struct NoteView: View {
 			if note.system {
 				Label(
 					"@\(author.username) \(note.body)",
-					lucide: convertIconName(note.systemNoteIconName)
+					systemImage: convertIconName(note.systemNoteIconName)
 				)
 				.font(.footnote)
 			} else {
@@ -78,11 +77,11 @@ struct NoteView: View {
 							if note.updatedAt != note.createdAt {
 								PillView(
 									Date.fromToString(note.createdAt, dateStyle: .short, timeStyle: .short),
-									icon: .pencilLine)
+									icon: "pencil.and.scribble")
 							} else {
 								PillView(
 									Date.fromToString(note.createdAt, dateStyle: .short, timeStyle: .short),
-									icon: .clock)
+									icon: "clock")
 							}
 						}
 					}.font(.footnote)
@@ -101,7 +100,7 @@ struct NoteView: View {
 					InlineMarkdown(note.body, baseURL: API.url)
 				},
 				icon: {
-					LucideLabelIcon(convertIconName(note.systemNoteIconName))
+					Image(systemName: convertIconName(note.systemNoteIconName))
 				}
 			).font(.footnote)
 		}

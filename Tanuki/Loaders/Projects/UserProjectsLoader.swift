@@ -68,7 +68,7 @@ struct UserProjectsLoader: View {
 				switch projects {
 				case .success(let projects):
 					if projects.isEmpty {
-						NoContentView("There are no projects", lucide: .layers)
+						NoContentView("There are no projects", systemImage: "app.gift.fill")
 					} else {
 						ForEach(projects, id: \.?.fullPath) { maybeProject in
 							if let project = maybeProject {
@@ -80,7 +80,7 @@ struct UserProjectsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Projects", lucide: .layers)
+				LoadingView("Loading Projects", systemImage: "app.gift.fill")
 			}
 		}.task {
 			loadProjects()

@@ -5,12 +5,11 @@
 //  Created by Felix Schindler on 27.02.24.
 //
 
-import Lucide
 import SwiftUI
 
 struct VisibilityIcon: View {
 	private let visibility: String
-	private let icon: LucideIcon
+	private let systemName: String
 	private let showText: Bool
 
 	init(_ visibility: String, showText: Bool = false) {
@@ -19,26 +18,26 @@ struct VisibilityIcon: View {
 
 		switch visibility {
 		case "public":
-			icon = .globe
+			systemName = "globe"
 			break
 		case "internal":
-			icon = .shieldHalf
+			systemName = "shield.lefthalf.filled"
 			break
 		case "private":
-			icon = .lock
+			systemName = "lock"
 			break
 		default:
-			icon = .circleQuestionMark
+			systemName = "questionmark"
 			break
 		}
 	}
 
 	public var body: some View {
 		if showText {
-			Label(self.visibility.capitalized, lucide: icon)
+			Label(self.visibility.capitalized, systemImage: systemName)
 				.labelStyle(.titleAndIcon)
 		} else {
-			Label(self.visibility.capitalized, lucide: icon)
+			Label(self.visibility.capitalized, systemImage: systemName)
 				.labelStyle(.iconOnly)
 		}
 	}

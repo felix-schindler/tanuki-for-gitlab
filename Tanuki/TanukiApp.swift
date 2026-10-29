@@ -55,22 +55,22 @@ struct TanukiApp: App {
 		TabView {
 			HomeView()
 				.tabItem {
-					Label("Home", lucide: .house)
+					Label("Home", systemImage: "house")
 				}.tag(0)
 			NavigationStack {
 				CurrentUserTodosLoader()
 			}.tabItem {
-				Label("Todos", lucide: .squareCheckBig)
+				Label("Todos", systemImage: "checkmark.square")
 			}.tag(1)
 			NavigationStack {
 				ExploreView()
 			}.tabItem {
-				Label("Explore", lucide: .sparkles)
+				Label("Explore", systemImage: "sparkles")
 			}.tag(2)
 			NavigationStack {
 				CurrentUserLoader()
 			}.tabItem {
-				Label("Profile", lucide: .user)
+				Label("Profile", systemImage: "person")
 			}.tag(3)
 		}.task {
 			sessionStore.refresh()
