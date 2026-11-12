@@ -718,6 +718,7 @@ protocol NewCommit {
 	var title: String? { get }
 	var shortId: String { get }
 	var authorName: String? { get }
+	var _author: MyAuthor? { get }
 	var authoredDate: GitLabAPI.Time? { get }
 	var webUrl: String { get }
 	var _signatureVerificationStatus: String? { get }
@@ -725,6 +726,15 @@ protocol NewCommit {
 }
 
 extension ProjectQuery.Data.Project.Repository.Tree.LastCommit: NewCommit {
+	var _author: MyAuthor? {
+		guard let author else { return nil }
+		return MyAuthor(
+			avatarUrl: author.avatarUrl,
+			name: author.name,
+			username: author.username
+		)
+	}
+
 	var _signatureVerificationStatus: String? {
 		return self.signature?.verificationStatus?.rawValue
 	}
@@ -739,6 +749,15 @@ extension ProjectQuery.Data.Project.Repository.Tree.LastCommit: NewCommit {
 }
 
 extension MergeRequestCommitsQuery.Data.Project.MergeRequest.Commits.Node: NewCommit {
+	var _author: MyAuthor? {
+		guard let author else { return nil }
+		return MyAuthor(
+			avatarUrl: author.avatarUrl,
+			name: author.name,
+			username: author.username
+		)
+	}
+
 	var _signatureVerificationStatus: String? {
 		return self.signature?.verificationStatus?.rawValue
 	}

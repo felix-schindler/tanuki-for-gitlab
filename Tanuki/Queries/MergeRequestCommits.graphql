@@ -8,6 +8,11 @@ query MergeRequestCommits($fullPath: ID!, $iid: String!) {
           title
           shortId
           authorName
+          author {
+            avatarUrl
+            name
+            username
+          }
           authoredDate
           webUrl
           signature {

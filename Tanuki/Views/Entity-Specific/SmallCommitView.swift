@@ -35,49 +35,50 @@ struct SmallCommitView: View {
 	}
 
 	private var main: some View {
-        VStack(alignment: .leading) {
-            HStack {
-                if let title = commit.title, title.isNotEmpty {
-                    InlineMarkdown(title)
-                    Spacer()
-                }
-                
-                let isCommitVerified = commit._signatureVerificationStatus?.starts(with: "VERIFIED") ?? false
-                if commit._lastPipelineStatus != nil || isCommitVerified {
-                    HStack {
-                        if let status = commit._lastPipelineStatus {
-                            PipelineStatus(status)
-                        }
-                        
-                        if isCommitVerified {
-                            RoundIconButton(
-                                "Verified", icon: "checkmark.seal"
-                            ) {
-                                Haptics.shared.play(.light)
-                                showVerified = true
-                            }
-                            .tint(.green)
-                            .controlSize(.mini)
-                        }
-                    }
-                }
-            }
+		VStack(alignment: .leading) {
+			HStack {
+				if let title = commit.title, title.isNotEmpty {
+					InlineMarkdown(title)
+					Spacer()
+				}
 
-            ScrollView(.horizontal) {
-                HStack {
-                    // TODO: Replace with `AuthorView`
-                    if let authorName = commit.authorName {
-                        PillView(authorName, icon: Icons.users.rawValue)
-                    }
-                    if let authoredDate = commit.authoredDate {
-                        PillView(Date.fromToString(authoredDate), icon: Icons.clock.rawValue)
-                    }
-                    PillView(commit.shortId)
-                        .textSelection(.enabled)
-                        .font(.system(.footnote, design: .monospaced))
-                }
-            }
-            .font(.footnote)
+				let isCommitVerified = commit._signatureVerificationStatus?.starts(with: "VERIFIED") ?? false
+				if commit._lastPipelineStatus != nil || isCommitVerified {
+					HStack {
+						if let status = commit._lastPipelineStatus {
+							PipelineStatus(status)
+						}
+
+						if isCommitVerified {
+							RoundIconButton(
+								"Verified", icon: "checkmark.seal"
+							) {
+								Haptics.shared.play(.light)
+								showVerified = true
+							}
+							.tint(.green)
+							.controlSize(.mini)
+						}
+					}
+				}
+			}
+
+			ScrollView(.horizontal) {
+				HStack {
+					if let author = commit._author {
+						AuthorView(author)
+					} else if let authorName = commit.authorName {
+						PillView(authorName, icon: Icons.users.rawValue)
+					}
+					if let authoredDate = commit.authoredDate {
+						PillView(Date.fromToString(authoredDate), icon: Icons.clock.rawValue)
+					}
+					PillView(commit.shortId)
+						.textSelection(.enabled)
+						.font(.system(.footnote, design: .monospaced))
+				}
+			}
+			.font(.footnote)
 		}.sheet(isPresented: $showVerified) {
 			VStack(alignment: .leading) {
 				PopupHeader(

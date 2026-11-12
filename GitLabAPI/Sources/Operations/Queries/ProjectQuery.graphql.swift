@@ -8,7 +8,7 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
   public static let operationName: String = "Project"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query Project($fullPath: ID!) { project(fullPath: $fullPath) { __typename id avatarUrl name visibility description topics starCount forksCount issuesEnabled openIssuesCount mergeRequestsEnabled wikiEnabled snippetsEnabled jobsEnabled openMergeRequestsCount webUrl httpUrlToRepo sshUrlToRepo createdAt archived namespace { __typename id name fullPath } statistics { __typename commitCount repositorySize lfsObjectsSize } releases { __typename count } labels { __typename count } repository { __typename rootRef readme: blobs(paths: ["README.md", "README", "README.txt"], first: 1) { __typename nodes { __typename rawTextBlob } } license: blobs( paths: ["LICENSE", "LICENSE.txt", "LICENSE.md", "COPYING"] first: 1 ) { __typename nodes { __typename rawTextBlob } } contributing: blobs( paths: ["CONTRIBUTING", "CONTRIBUTING.txt", "CONTRIBUTING.md"] first: 1 ) { __typename nodes { __typename rawTextBlob } } tree { __typename lastCommit { __typename id title shortId authorName authoredDate webUrl signature { __typename verificationStatus } pipelines { __typename nodes { __typename status } } } } } languages { __typename name share color } userPermissions { __typename createIssue createSnippet forkProject requestAccess } } }"#
+      #"query Project($fullPath: ID!) { project(fullPath: $fullPath) { __typename id avatarUrl name visibility description topics starCount forksCount issuesEnabled openIssuesCount mergeRequestsEnabled wikiEnabled snippetsEnabled jobsEnabled openMergeRequestsCount webUrl httpUrlToRepo sshUrlToRepo createdAt archived namespace { __typename id name fullPath } statistics { __typename commitCount repositorySize lfsObjectsSize } releases { __typename count } labels { __typename count } repository { __typename rootRef readme: blobs(paths: ["README.md", "README", "README.txt"], first: 1) { __typename nodes { __typename rawTextBlob } } license: blobs( paths: ["LICENSE", "LICENSE.txt", "LICENSE.md", "COPYING"] first: 1 ) { __typename nodes { __typename rawTextBlob } } contributing: blobs( paths: ["CONTRIBUTING", "CONTRIBUTING.txt", "CONTRIBUTING.md"] first: 1 ) { __typename nodes { __typename rawTextBlob } } tree { __typename lastCommit { __typename id title shortId authorName author { __typename avatarUrl name username } authoredDate webUrl signature { __typename verificationStatus } pipelines { __typename nodes { __typename status } } } } } languages { __typename name share color } userPermissions { __typename createIssue createSnippet forkProject requestAccess } } }"#
     ))
 
   public var fullPath: ID
@@ -416,6 +416,7 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
               .field("title", String?.self),
               .field("shortId", String.self),
               .field("authorName", String?.self),
+              .field("author", Author?.self),
               .field("authoredDate", GitLabAPI.Time?.self),
               .field("webUrl", String.self),
               .field("signature", Signature?.self),
@@ -433,6 +434,8 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
             public var shortId: String { __data["shortId"] }
             /// Commit authors name.
             public var authorName: String? { __data["authorName"] }
+            /// Author of the commit.
+            public var author: Author? { __data["author"] }
             /// Timestamp of when the commit was authored.
             public var authoredDate: GitLabAPI.Time? { __data["authoredDate"] }
             /// Web URL of the commit.
@@ -441,6 +444,32 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
             public var signature: Signature? { __data["signature"] }
             /// Pipelines of the commit ordered latest first.
             public var pipelines: Pipelines? { __data["pipelines"] }
+
+            /// Project.Repository.Tree.LastCommit.Author
+            ///
+            /// Parent Type: `UserCore`
+            nonisolated public struct Author: GitLabAPI.SelectionSet {
+              @_spi(Unsafe) public let __data: DataDict
+              @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+              @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.UserCore }
+              @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+                .field("__typename", String.self),
+                .field("avatarUrl", String?.self),
+                .field("name", String.self),
+                .field("username", String.self),
+              ] }
+              @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+                ProjectQuery.Data.Project.Repository.Tree.LastCommit.Author.self
+              ] }
+
+              /// URL of the user's avatar.
+              public var avatarUrl: String? { __data["avatarUrl"] }
+              /// Human-readable name of the user. Returns `****` if the user is a project bot and the requester does not have permission to view the project.
+              public var name: String { __data["name"] }
+              /// Username of the user. Unique within the instance of GitLab.
+              public var username: String { __data["username"] }
+            }
 
             /// Project.Repository.Tree.LastCommit.Signature
             ///

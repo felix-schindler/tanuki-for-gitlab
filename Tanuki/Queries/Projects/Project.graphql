@@ -59,6 +59,11 @@ query Project($fullPath: ID!) {
           title
           shortId
           authorName
+          author {
+            avatarUrl
+            name
+            username
+          }
           authoredDate
           webUrl
           signature {

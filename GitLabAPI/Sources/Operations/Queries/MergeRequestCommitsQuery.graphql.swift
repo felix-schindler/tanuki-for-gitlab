@@ -8,7 +8,7 @@ nonisolated public struct MergeRequestCommitsQuery: GraphQLQuery {
   public static let operationName: String = "MergeRequestCommits"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query MergeRequestCommits($fullPath: ID!, $iid: String!) { project(fullPath: $fullPath) { __typename id mergeRequest(iid: $iid) { __typename commits { __typename nodes { __typename id title shortId authorName authoredDate webUrl signature { __typename verificationStatus } pipelines { __typename nodes { __typename status } } } } } } }"#
+      #"query MergeRequestCommits($fullPath: ID!, $iid: String!) { project(fullPath: $fullPath) { __typename id mergeRequest(iid: $iid) { __typename commits { __typename nodes { __typename id title shortId authorName author { __typename avatarUrl name username } authoredDate webUrl signature { __typename verificationStatus } pipelines { __typename nodes { __typename status } } } } } } }"#
     ))
 
   public var fullPath: ID
@@ -116,6 +116,7 @@ nonisolated public struct MergeRequestCommitsQuery: GraphQLQuery {
               .field("title", String?.self),
               .field("shortId", String.self),
               .field("authorName", String?.self),
+              .field("author", Author?.self),
               .field("authoredDate", GitLabAPI.Time?.self),
               .field("webUrl", String.self),
               .field("signature", Signature?.self),
@@ -133,6 +134,8 @@ nonisolated public struct MergeRequestCommitsQuery: GraphQLQuery {
             public var shortId: String { __data["shortId"] }
             /// Commit authors name.
             public var authorName: String? { __data["authorName"] }
+            /// Author of the commit.
+            public var author: Author? { __data["author"] }
             /// Timestamp of when the commit was authored.
             public var authoredDate: GitLabAPI.Time? { __data["authoredDate"] }
             /// Web URL of the commit.
@@ -141,6 +144,32 @@ nonisolated public struct MergeRequestCommitsQuery: GraphQLQuery {
             public var signature: Signature? { __data["signature"] }
             /// Pipelines of the commit ordered latest first.
             public var pipelines: Pipelines? { __data["pipelines"] }
+
+            /// Project.MergeRequest.Commits.Node.Author
+            ///
+            /// Parent Type: `UserCore`
+            nonisolated public struct Author: GitLabAPI.SelectionSet {
+              @_spi(Unsafe) public let __data: DataDict
+              @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+              @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.UserCore }
+              @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+                .field("__typename", String.self),
+                .field("avatarUrl", String?.self),
+                .field("name", String.self),
+                .field("username", String.self),
+              ] }
+              @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+                MergeRequestCommitsQuery.Data.Project.MergeRequest.Commits.Node.Author.self
+              ] }
+
+              /// URL of the user's avatar.
+              public var avatarUrl: String? { __data["avatarUrl"] }
+              /// Human-readable name of the user. Returns `****` if the user is a project bot and the requester does not have permission to view the project.
+              public var name: String { __data["name"] }
+              /// Username of the user. Unique within the instance of GitLab.
+              public var username: String { __data["username"] }
+            }
 
             /// Project.MergeRequest.Commits.Node.Signature
             ///
