@@ -587,6 +587,19 @@ class API {
 		if let message = object["message"] as? String {
 			return message
 		}
+		// GitLab validation errors: {"message": {"name": ["has already been taken"]}}
+		if let details = object["message"] as? [String: Any] {
+			let lines = details.keys.sorted().flatMap { key -> [String] in
+				let values =
+					details[key] as? [String]
+					?? (details[key] as? String).map { [$0] }
+					?? []
+				return values.map { "\(key) \($0)" }
+			}
+			if !lines.isEmpty {
+				return lines.joined(separator: ", ")
+			}
+		}
 		if let error = object["error"] as? String {
 			return error
 		}
