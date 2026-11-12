@@ -60,7 +60,7 @@ struct RoundIconButton: View {
 	private let action: () -> Void
 
 	init(
-		_ label: String, icon: String, role: ButtonRole? = nil,
+		_ label: String, icon: String,
 		action: @escaping () -> Void
 	) {
 		self.label = label

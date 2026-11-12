@@ -1,5 +1,5 @@
 //
-//  ScrollDismissIfAvailable.swift
+//  ViewModifiers.swift
 //  Tanuki
 //
 //  Created by Felix Schindler on 21.09.25.

@@ -253,7 +253,6 @@ struct MergeRequestLoader: View {
 									await reloadMergeRequest()
 								}
 							}
-							.modifier(LabelSpacingIfAvailable())
 							.font(.footnote)
 						}
 

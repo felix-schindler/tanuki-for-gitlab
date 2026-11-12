@@ -168,7 +168,6 @@ struct IssueLoader: View {
 									await reloadIssue()
 								}
 							}
-							.modifier(LabelSpacingIfAvailable())
 							.font(.footnote)
 						}
 

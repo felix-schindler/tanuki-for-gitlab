@@ -75,6 +75,7 @@ struct VotePillsView: View {
 				await vote("thumbsdown")
 			}
 		}
+		.modifier(LabelSpacingIfAvailable())
 		.controlSize(.small)
 		.adaptiveButtonStyle()
 		.disabled(projectId == nil)
