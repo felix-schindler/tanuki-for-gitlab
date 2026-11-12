@@ -15,7 +15,6 @@ struct Commit: Codable {
 	let title: String
 	let message: String
 	let authorName: String
-	/// Qualified because `GitLabAPI` also exports a `Date` custom scalar.
 	let authoredDate: Foundation.Date
 	let webUrl: String
 }

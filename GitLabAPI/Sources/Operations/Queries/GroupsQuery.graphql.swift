@@ -8,7 +8,7 @@ nonisolated public struct GroupsQuery: GraphQLQuery {
   public static let operationName: String = "Groups"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query Groups($topLevelOnly: Boolean, $ownedOnly: Boolean, $search: String, $parentPath: ID, $allAvailable: Boolean, $markedForDeletionOn: Date, $active: Boolean) { groups( topLevelOnly: $topLevelOnly ownedOnly: $ownedOnly search: $search parentPath: $parentPath allAvailable: $allAvailable markedForDeletionOn: $markedForDeletionOn active: $active ) { __typename nodes { __typename avatarUrl name fullPath visibility groupMembersCount projectsCount maxAccessLevel { __typename stringValue } } } }"#
+      #"query Groups($topLevelOnly: Boolean, $ownedOnly: Boolean, $search: String, $parentPath: ID, $allAvailable: Boolean, $markedForDeletionOn: Date, $active: Boolean) { groups( topLevelOnly: $topLevelOnly ownedOnly: $ownedOnly search: $search parentPath: $parentPath allAvailable: $allAvailable markedForDeletionOn: $markedForDeletionOn active: $active ) { __typename nodes { __typename avatarUrl name fullPath visibility maxAccessLevel { __typename stringValue } } } }"#
     ))
 
   public var topLevelOnly: GraphQLNullable<Bool>
@@ -103,8 +103,6 @@ nonisolated public struct GroupsQuery: GraphQLQuery {
           .field("name", String?.self),
           .field("fullPath", GitLabAPI.ID.self),
           .field("visibility", String?.self),
-          .field("groupMembersCount", Int.self),
-          .field("projectsCount", Int.self),
           .field("maxAccessLevel", MaxAccessLevel.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
@@ -119,10 +117,6 @@ nonisolated public struct GroupsQuery: GraphQLQuery {
         public var fullPath: GitLabAPI.ID { __data["fullPath"] }
         /// Visibility of the namespace.
         public var visibility: String? { __data["visibility"] }
-        /// Count of direct members of the group.
-        public var groupMembersCount: Int { __data["groupMembersCount"] }
-        /// Count of direct projects in the group.
-        public var projectsCount: Int { __data["projectsCount"] }
         /// Maximum access level of the current user in the group.
         public var maxAccessLevel: MaxAccessLevel { __data["maxAccessLevel"] }
 

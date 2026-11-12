@@ -8,7 +8,7 @@ nonisolated public struct GroupQuery: GraphQLQuery {
   public static let operationName: String = "Group"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query Group($fullPath: ID!) { group(fullPath: $fullPath) { __typename id avatarUrl name path fullName visibility description descendantGroupsCount groupMembersCount projectsCount requestAccessEnabled webUrl maxAccessLevel { __typename stringValue } userPermissions { __typename createProjects } parent { __typename name fullPath } } }"#
+      #"query Group($fullPath: ID!) { group(fullPath: $fullPath) { __typename id avatarUrl name path visibility description descendantGroupsCount groupMembersCount projectsCount requestAccessEnabled webUrl maxAccessLevel { __typename stringValue } userPermissions { __typename createProjects } parent { __typename name fullPath } } }"#
     ))
 
   public var fullPath: ID
@@ -48,7 +48,6 @@ nonisolated public struct GroupQuery: GraphQLQuery {
         .field("avatarUrl", String?.self),
         .field("name", String?.self),
         .field("path", String.self),
-        .field("fullName", String?.self),
         .field("visibility", String?.self),
         .field("description", String?.self),
         .field("descendantGroupsCount", Int.self),
@@ -72,8 +71,6 @@ nonisolated public struct GroupQuery: GraphQLQuery {
       public var name: String? { __data["name"] }
       /// Path of the namespace.
       public var path: String { __data["path"] }
-      /// Full name of the group.
-      public var fullName: String? { __data["fullName"] }
       /// Visibility of the namespace.
       public var visibility: String? { __data["visibility"] }
       /// Description of the namespace.
