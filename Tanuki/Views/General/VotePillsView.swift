@@ -45,18 +45,20 @@ struct VotePillsView: View {
 				body: ["name": EncodableValue.string(name)]
 			)
 			await onVoted()
+		} catch let APIError.http(status, _) where status == 409 {
+			await unvote(endpoint: endpoint, name: name)
 		} catch {
-			await unvote(endpoint: endpoint, name: name, originalError: error)
+			Notify.status(.error, "Failed to vote", error.localizedDescription)
 		}
 	}
 
-	private func unvote(endpoint: String, name: String, originalError: Error) async {
+	private func unvote(endpoint: String, name: String) async {
 		do {
 			let me = try await API.get(type: RestAPIUser.self, endpoint: "user")
 			let awards = try await API.get(
 				type: [AwardEmoji].self, endpoint: endpoint, query: ["per_page": "100"])
 			guard let mine = awards.first(where: { $0.name == name && $0.user.id == me.id }) else {
-				Notify.status(.error, "Failed to vote", originalError.localizedDescription)
+				Notify.status(.error, "Failed to vote", "Your vote could not be found.")
 				return
 			}
 			try await API.delete(endpoint: "\(endpoint)/\(mine.id)")
