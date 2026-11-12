@@ -8,12 +8,14 @@
 import GitLabAPI
 import SwiftUI
 
+private typealias EmailNode = CurrentUserEmailsQuery.Data.CurrentUser.Emails.Node
+
 struct EmailsLoader: View {
 	@State
-	private var emails: Result<[CurrentUserEmailsQuery.Data.CurrentUser.Emails.Node?], Error>? = nil
+	private var emails: Result<[EmailNode?], Error>? = nil
 
 	@State private var showAdd = false
-	@State private var newEmail = ""
+	@State private var emailToDelete: EmailNode?
 
 	private func loadEmails() async {
 		do {
@@ -37,7 +39,7 @@ struct EmailsLoader: View {
 		}
 	}
 
-	private func reloadEmails() async {
+	private func reloadEmails(notifySuccess: Bool = true) async {
 		do {
 			let response = try await Network.shared.apollo.fetch(
 				query: CurrentUserEmailsQuery(), cachePolicy: .networkOnly)
@@ -46,41 +48,29 @@ struct EmailsLoader: View {
 				self.emails = .success(emails)
 			}
 
-			Notify.status(.success)
+			if notifySuccess {
+				Notify.status(.success)
+			}
 		} catch let error {
 			self.emails = .failure(error)
 			Notify.status(.error)
 		}
 	}
 
-	private func addEmail() async {
-		do {
-			_ = try await API.req(
-				type: RestAPIEmail.self,
-				method: .post,
-				endpoint: "user/emails",
-				body: ["email": newEmail],
-				contentType: .formUrlEncoded
-			)
-
-			newEmail = ""
-			showAdd = false
-			await reloadEmails()
-		} catch let error {
-			Notify.status(.error, "Couldn't add email", error.localizedDescription)
-		}
-	}
-
-	private func deleteEmail(
-		_ email: CurrentUserEmailsQuery.Data.CurrentUser.Emails.Node
-	) async {
+	private func deleteEmail(_ email: EmailNode) async {
 		do {
 			guard let id = email.id.toIntId() else {
+				Notify.status(.error, "Couldn't delete email", "The email has no valid ID.")
 				return
 			}
 
 			try await API.delete(endpoint: "user/emails/\(id)")
-			await reloadEmails()
+
+			if case .success(let emails) = emails {
+				self.emails = .success(emails.filter { $0?.id != email.id })
+			}
+
+			Notify.status(.success, "Email address deleted", systemImage: "envelope")
 		} catch let error {
 			Notify.status(.error, "Couldn't delete email", error.localizedDescription)
 		}
@@ -112,9 +102,7 @@ struct EmailsLoader: View {
 									}
 								}.swipeActions(edge: .trailing, allowsFullSwipe: true) {
 									Button(role: .destructive) {
-										Task {
-											await deleteEmail(email)
-										}
+										emailToDelete = email
 									} label: {
 										Label("Delete", systemImage: "trash")
 									}
@@ -138,20 +126,38 @@ struct EmailsLoader: View {
 					showAdd = true
 				}
 			}
-		}.sheet(isPresented: $showAdd) {
-			NavigationStack {
-				Form {
-					TextField("user@example.com", text: $newEmail)
-						.textInputAutocapitalization(.never)
-						.keyboardType(.emailAddress)
-				}.toolbar {
-					AsyncButton("Save", systemImage: "checkmark") {
-						await addEmail()
-					}
-					.tint(.accentColor)
-					.disabled(newEmail.isEmpty)
-				}.navigationTitle("New Email")
+		}.sheet(
+			isPresented: $showAdd,
+			onDismiss: {
+				Task {
+					await reloadEmails(notifySuccess: false)
+				}
 			}
+		) {
+			NavigationStack {
+				NewEmailView()
+			}
+		}.confirmationDialog(
+			"Delete \(emailToDelete?.email ?? "email address")?",
+			isPresented: Binding(
+				get: { emailToDelete != nil },
+				set: { if !$0 { emailToDelete = nil } }
+			),
+			titleVisibility: .visible
+		) {
+			Button("Delete", role: .destructive) {
+				if let email = emailToDelete {
+					Task {
+						await deleteEmail(email)
+					}
+				}
+				emailToDelete = nil
+			}
+			Button("Cancel", role: .cancel) {
+				emailToDelete = nil
+			}
+		} message: {
+			Text("This address will be removed from your account. Your primary email can't be deleted.")
 		}.navigationTitle("Emails")
 	}
 }

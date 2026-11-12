@@ -71,6 +71,15 @@ struct RestAPIEmail: Codable {
 	let email: String
 }
 
+struct RestAPISshKey: Codable {
+	let id: Int
+	let title: String
+	let createdAt: Date
+	let lastUsedAt: Date?
+	let expiresAt: Date?
+	let key: String
+}
+
 // MARK: - Groups
 struct RestAPIGroup: Codable {
 	let id: Int

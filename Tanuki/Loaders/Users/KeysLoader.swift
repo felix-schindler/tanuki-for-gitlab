@@ -7,27 +7,35 @@
 
 import SwiftUI
 
-struct SshKey: Codable {
-	let id: Int
-	let title: String
-	let createdAt: Date
-	let lastUsedAt: Date?
-	let expiresAt: Date?
-	let key: String
-}
-
 struct KeysLoader: View {
 	@State
-	private var keys: Result<[SshKey], Error>? = nil
+	private var keys: Result<[RestAPISshKey], Error>? = nil
+
+	@State private var showAdd = false
+	@State private var keyToDelete: RestAPISshKey?
 
 	private func loadKeys() async {
 		do {
-			let temp = try await API.get(type: [SshKey].self, endpoint: "user/keys")
+			let temp = try await API.get(type: [RestAPISshKey].self, endpoint: "user/keys")
 
 			self.keys = .success(temp)
 		} catch let error {
 			self.keys = .failure(error)
 			Notify.status(.error)
+		}
+	}
+
+	private func deleteKey(_ key: RestAPISshKey) async {
+		do {
+			try await API.delete(endpoint: "user/keys/\(key.id)")
+
+			if case .success(let keys) = keys {
+				self.keys = .success(keys.filter { $0.id != key.id })
+			}
+
+			Notify.status(.success, "SSH key deleted", systemImage: "key")
+		} catch let error {
+			Notify.status(.error, "Couldn't delete SSH key", error.localizedDescription)
 		}
 	}
 
@@ -67,7 +75,15 @@ struct KeysLoader: View {
 											}
 										}.font(.footnote)
 									}
-								})
+								}
+							)
+							.swipeActions(edge: .trailing, allowsFullSwipe: true) {
+								Button(role: .destructive) {
+									keyToDelete = key
+								} label: {
+									Label("Delete", systemImage: "trash")
+								}
+							}
 						}
 					}
 				case .failure(let error):
@@ -80,6 +96,44 @@ struct KeysLoader: View {
 			await loadKeys()
 		}.refreshable {
 			await loadKeys()
+		}.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				Button("Add", systemImage: "plus") {
+					showAdd = true
+				}
+			}
+		}.sheet(
+			isPresented: $showAdd,
+			onDismiss: {
+				Task {
+					await loadKeys()
+				}
+			}
+		) {
+			NavigationStack {
+				NewSshKeyView()
+			}
+		}.confirmationDialog(
+			"Delete \(keyToDelete?.title ?? "SSH key")?",
+			isPresented: Binding(
+				get: { keyToDelete != nil },
+				set: { if !$0 { keyToDelete = nil } }
+			),
+			titleVisibility: .visible
+		) {
+			Button("Delete", role: .destructive) {
+				if let key = keyToDelete {
+					Task {
+						await deleteKey(key)
+					}
+				}
+				keyToDelete = nil
+			}
+			Button("Cancel", role: .cancel) {
+				keyToDelete = nil
+			}
+		} message: {
+			Text("This key will no longer be able to authenticate with this instance.")
 		}.navigationTitle("SSH Keys")
 	}
 }
