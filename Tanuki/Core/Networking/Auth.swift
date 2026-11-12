@@ -7,6 +7,7 @@
 
 import Alamofire
 import Apollo
+import AuthenticationServices
 import CryptoKit
 import Foundation
 import SwiftUI
@@ -83,6 +84,24 @@ class Auth {
 			SessionStore.shared.refresh()
 			throw error
 		}
+	}
+
+	/// Runs the GitLab.com OAuth flow and stores the resulting instance.
+	public static func loginWithOAuth(
+		using session: WebAuthenticationSession,
+		dismiss: DismissAction? = nil
+	) async throws {
+		let token = try await OAuth.authorize(using: session)
+		try await login(
+			instance: GitLabInstance(
+				host: "gitlab.com",
+				token: token.accessToken,
+				isOAuth: true,
+				refreshToken: token.refreshToken,
+				expiresAt: token.expiresAt
+			),
+			dismiss: dismiss
+		)
 	}
 
 	public static func logout(showSetup: Binding<Bool>? = nil) async {

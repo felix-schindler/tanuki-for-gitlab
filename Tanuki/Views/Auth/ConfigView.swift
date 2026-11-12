@@ -18,88 +18,88 @@ struct ConfigView: View {
 	@State
 	private var newToken = ""
 
+	@State
+	private var errorMessage: String?
+
 	var body: some View {
-		VStack {
-			Spacer()
-
-			Label("GitLab URL", systemImage: "link")
-				.font(.headline)
-			TextField("gitlab.com", text: self.$newHost)
-				.keyboardType(.URL)
-				.textInputAutocapitalization(.never)
-				.autocorrectionDisabled()
-
-			Label("Personal Access Token", systemImage: "key")
-				.padding(.top)
-				.font(.headline)
-			TextField("glpat-4Rzq-VKwapmWqj4MfBsi", text: self.$newToken)
-				.textInputAutocapitalization(.never)
-				.autocorrectionDisabled()
-
-			VStack {
-				Label("Requirements", systemImage: "checkmark.square")
-					.font(.headline)
-				Text("Access to the REST-API v4 and GraphQL API")
-
-				Text("Scopes")
-					.font(.subheadline)
-					.padding(.top, 1)
-				VStack(alignment: .leading) {
-					Label("`api`", systemImage: "checkmark.circle")
-					Label("`read_repository`", systemImage: "checkmark.circle")
-				}.font(.footnote)
-			}
-			.padding(.top)
-
-			Spacer()
-
-			AsyncButton(
-				action: {
-					do {
-						if newHost.contains("/") {
-							if let tempUrl = URL(string: newHost),
-								let _newHost = tempUrl.host
-							{
-								newHost = _newHost
-							} else {
-								Notify.status(.error, "Please only provide the host, not a URI")
-								return
-							}
-						}
-
-						let instance = GitLabInstance(
-							host: self.newHost,
-							token: self.newToken,
-							isOAuth: false
-						)
-						try await Auth.login(
-							instance: instance,
-							showSetup: showSetup,
-							dismiss: dismiss
-						)
-					} catch let error {
-						Notify.status(
-							.error,
-							"Failed to log in",
-							error.localizedDescription,
-							systemImage: "xmark"
-						)
-					}
-				},
-				label: {
-					Label("Save config", systemImage: "checkmark")
-						.frame(maxWidth: .infinity)
+		Form {
+			if let errorMessage {
+				Section {
+					Text(errorMessage)
+						.foregroundStyle(.red)
+						.font(.footnote)
+						.multilineTextAlignment(.center)
 				}
-			)
-			.tint(.accentColor)
-			.buttonBorderShape(.capsule)
-			.adaptiveButtonStyle()
-			.controlSize(.large)
+			}
+
+			Section(
+				content: {
+					TextField("gitlab.example.com", text: $newHost)
+						.keyboardType(.URL)
+						.textInputAutocapitalization(.never)
+						.autocorrectionDisabled()
+				},
+				header: {
+					Label("GitLab URL", systemImage: "link")
+				})
+
+			Section(
+				content: {
+					TextField("glpat-4Rzq-VKwapmWqj4MfBsi", text: $newToken)
+						.textInputAutocapitalization(.never)
+						.autocorrectionDisabled()
+				},
+				header: {
+					Label("Personal Access Token", systemImage: "key")
+				})
+
+			Section(
+				content: {
+					VStack(alignment: .leading, spacing: 4) {
+						Label("api", systemImage: "checkmark.circle")
+						Label("read_repository", systemImage: "checkmark.circle")
+					}.font(.footnote)
+				},
+				header: {
+					Label("Required scopes", systemImage: "checkmark.circle.fill")
+				},
+				footer: {
+					Text("The token needs access to the REST API v4 and the GraphQL API.")
+				})
+		}.toolbar {
+			AsyncButton("Save", systemImage: "checkmark") {
+				await save()
+			}.buttonStyle(.borderedProminent)
 		}
-		.padding()
-		.textFieldStyle(.roundedBorder)
+		.scrollDismissesKeyboard(.immediately)
 		.navigationTitle("Self-Hosted")
-		.scrollDismissesKeyboard(.interactively)
+	}
+
+	private func save() async {
+		errorMessage = nil
+
+		guard newToken.isNotEmpty else {
+			errorMessage = "Please provide a personal access token."
+			return
+		}
+
+		let trimmed = newHost.trimmingCharacters(in: .whitespacesAndNewlines)
+		let candidate = trimmed.contains("://") ? trimmed : "https://\(trimmed)"
+		guard let host = URL(string: candidate)?.host else {
+			errorMessage = "Please provide a valid URL, e.g. gitlab.example.com."
+			return
+		}
+
+		do {
+			let instance = GitLabInstance(host: host, token: newToken)
+			try await Auth.login(
+				instance: instance,
+				showSetup: showSetup,
+				dismiss: dismiss
+			)
+		} catch let error {
+			errorMessage = "Failed to log in: \(error.localizedDescription)"
+		}
 	}
 }
 

@@ -66,18 +66,9 @@ struct SetupView: View {
 		}
 	}
 
-	/// Presents the GitLab authorize page and stores the resulting instance.
 	private func login() async {
 		do {
-			let token = try await OAuth.authorize(using: webAuthenticationSession)
-			let instance = GitLabInstance(
-				host: "gitlab.com",
-				token: token.accessToken,
-				isOAuth: true,
-				refreshToken: token.refreshToken,
-				expiresAt: token.expiresAt
-			)
-			try await Auth.login(instance: instance)
+			try await Auth.loginWithOAuth(using: webAuthenticationSession)
 		} catch OAuthError.cancelled {
 			// The user dismissed the browser sheet on purpose.
 		} catch let error {

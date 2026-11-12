@@ -74,15 +74,15 @@ struct InstancesView: View {
 			}
 
 			Section {
-				NavigationLink(destination: ConfigView(showSetup: nil)) {
+				NavigationLink(destination: AddInstanceView()) {
 					Label("Add Instance", systemImage: "plus.circle")
 				}
 			}
-		}.task {
+		}.onAppear {
 			instances = InstanceManager.instances
 			selectedId = InstanceManager.selectedId
 		}.toolbar {
-			NavigationLink(destination: ConfigView(showSetup: nil)) {
+			NavigationLink(destination: AddInstanceView()) {
 				Label("Add Instance", systemImage: "plus")
 			}
 		}.navigationTitle("Instances")
