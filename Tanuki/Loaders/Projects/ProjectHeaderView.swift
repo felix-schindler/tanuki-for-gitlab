@@ -99,7 +99,7 @@ struct ProjectHeaderView: View {
 			ScrollView(.horizontal) {
 				HStack {
 					if let repositorySize = project.statistics?.repositorySize {
-						PillView(ByteFormatter.shared.format(repositorySize))
+						PillView(Int64(repositorySize).formatted(.byteCount(style: .file)))
 					}
 
 					if let createdAt = project.createdAt {

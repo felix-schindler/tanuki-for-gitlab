@@ -121,7 +121,6 @@ struct NewIssueView: View {
 			let ids = selectedAssignees.compactMap { $0.toIntId() }
 
 			if ids.isNotEmpty {
-				body["assignee_id"] = .int(ids.first!)
 				body["assignee_ids"] = .intArray(ids)
 			}
 		}
@@ -219,7 +218,7 @@ struct NewIssueView: View {
 			Section {
 				Picker("Type", selection: $type) {
 					ForEach(IssueType.allCases, id: \.rawValue) { type in
-						Text(type.rawValue.capitalized.replacing("_", with: " "))
+						Text(type.rawValue.capitalized.replacingOccurrences(of: "_", with: " "))
 							.tag(type)
 					}
 				}

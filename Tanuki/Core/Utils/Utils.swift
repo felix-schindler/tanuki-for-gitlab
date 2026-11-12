@@ -13,13 +13,6 @@ import SwiftUI
 import TanukiEmoji
 
 // MARK: - Cache helpers
-extension URLCache {
-	static let avatar = URLCache(
-		memoryCapacity: 100 * 1024 * 1024,  // 100 MB in RAM
-		diskCapacity: 300 * 1024 * 1024  // 300 MB on disk
-	)
-}
-
 enum FileCache {
 	private static var root: URL {
 		FileManager.default.temporaryDirectory
@@ -137,16 +130,6 @@ extension String {
 	/// Writes the string to clipboard
 	func copyToClipboard() {
 		UIPasteboard.general.string = self
-	}
-
-	func replacing(_ target: String, with replacement: String) -> String {
-		var result = self
-
-		while let range = result.range(of: target) {
-			result.replaceSubrange(range, with: replacement)
-		}
-
-		return result
 	}
 }
 

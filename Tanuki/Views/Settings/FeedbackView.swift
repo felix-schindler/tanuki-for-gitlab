@@ -35,9 +35,17 @@ struct FeedbackView: View {
 				host: "pb.schindlerfelix.de"
 			)
 
-			if let statusCode = res.response?.statusCode, statusCode == 200 || statusCode == 201 {
-				Notify.status(.success, "Thank you!", "Your feedback has been submitted")
-				dismiss()
+			if let statusCode = res.response?.statusCode {
+				if statusCode == 200 || statusCode == 201 {
+					Notify.status(.success, "Thank you!", "Your feedback has been submitted")
+					dismiss()
+				} else {
+					Notify.status(
+						.error, "Failed to submit feedback",
+						"The server responded with status \(statusCode)")
+				}
+			} else {
+				Notify.status(.error, "Failed to submit feedback", "The server didn't respond")
 			}
 		} catch let error {
 			Notify.status(.error, "Failed to submit feedback", error.localizedDescription)

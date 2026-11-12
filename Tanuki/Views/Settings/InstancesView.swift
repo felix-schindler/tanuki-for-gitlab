@@ -12,6 +12,24 @@ struct InstancesView: View {
 	private var instances: [GitLabInstance] = InstanceManager.instances
 	@State
 	private var selectedId: String? = InstanceManager.selectedId
+	@State
+	private var instanceToDelete: GitLabInstance?
+
+	private func delete(_ instance: GitLabInstance) {
+		let wasSelected = instance.id == InstanceManager.selectedId
+		InstanceManager.remove(instance)
+		instances = InstanceManager.instances
+		selectedId = InstanceManager.selectedId
+		if wasSelected {
+			Task {
+				if let next = InstanceManager.selected {
+					await Auth.switchInstance(to: next)
+				} else {
+					await Auth.logout()
+				}
+			}
+		}
+	}
 
 	var body: some View {
 		List {
@@ -50,19 +68,7 @@ struct InstancesView: View {
 						}
 						.swipeActions(edge: .trailing) {
 							Button(role: .destructive) {
-								let wasSelected = instance.id == InstanceManager.selectedId
-								InstanceManager.remove(instance)
-								instances = InstanceManager.instances
-								selectedId = InstanceManager.selectedId
-								if wasSelected {
-									Task {
-										if let next = InstanceManager.selected {
-											await Auth.switchInstance(to: next)
-										} else {
-											await Auth.logout()
-										}
-									}
-								}
+								instanceToDelete = instance
 							} label: {
 								Label("Delete", systemImage: "trash").labelStyle(.iconOnly)
 							}
@@ -81,6 +87,27 @@ struct InstancesView: View {
 		}.onAppear {
 			instances = InstanceManager.instances
 			selectedId = InstanceManager.selectedId
+		}.confirmationDialog(
+			"Delete \(instanceToDelete?.host ?? "instance")?",
+			isPresented: Binding(
+				get: { instanceToDelete != nil },
+				set: { if !$0 { instanceToDelete = nil } }
+			),
+			titleVisibility: .visible
+		) {
+			Button("Delete", role: .destructive) {
+				if let instance = instanceToDelete {
+					delete(instance)
+				}
+				instanceToDelete = nil
+			}
+			Button("Cancel", role: .cancel) {
+				instanceToDelete = nil
+			}
+		} message: {
+			Text(
+				"The account and its token will be removed from this device. You'll need to sign in again to add it back."
+			)
 		}.toolbar {
 			NavigationLink(destination: AddInstanceView()) {
 				Label("Add Instance", systemImage: "plus")

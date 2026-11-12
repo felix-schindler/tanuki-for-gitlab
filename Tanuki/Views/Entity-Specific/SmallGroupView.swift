@@ -51,7 +51,7 @@ struct SmallGroupView: View {
 
 					if let accessLevel = group._accessLevel {
 						Spacer()
-						PillView(accessLevel.replacing("_", with: " ").capitalized)
+						PillView(accessLevel.replacingOccurrences(of: "_", with: " ").capitalized)
 							.font(.footnote)
 					}
 				}

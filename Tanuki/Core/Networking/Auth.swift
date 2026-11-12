@@ -11,6 +11,7 @@ import AuthenticationServices
 import CryptoKit
 import Foundation
 import SwiftUI
+import TanukiShared
 import WebKit
 
 enum AuthError: LocalizedError {

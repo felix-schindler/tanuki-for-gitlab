@@ -28,7 +28,7 @@ struct NewGroupView: View {
 		}
 		var body: [String: EncodableValue] = [
 			"name": .string(name),
-			"path": .string(path.isEmpty ? name.lowercased().replacing(" ", with: "-") : path),
+			"path": .string(path.isEmpty ? name.lowercased().replacingOccurrences(of: " ", with: "-") : path),
 			"visibility": .string(visibility.rawValue),
 		]
 		if let parentId {

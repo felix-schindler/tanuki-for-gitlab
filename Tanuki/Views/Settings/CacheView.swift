@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct CacheView: View {
 	private let formatter: ByteCountFormatter

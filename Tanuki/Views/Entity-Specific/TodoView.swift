@@ -65,7 +65,7 @@ struct TodoView: View {
 						fgColor: .white
 					)
 					PillView(
-						"\(todo.targetType.rawValue.lowercased().capitalized) · \(todo.action.rawValue.replacing("_", with: " "))"
+						"\(todo.targetType.rawValue.lowercased().capitalized) · \(todo.action.rawValue.replacingOccurrences(of: "_", with: " "))"
 					)
 					PillView(Date.fromToString(todo.createdAt), icon: "clock")
 				}

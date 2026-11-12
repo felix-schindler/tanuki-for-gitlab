@@ -134,7 +134,7 @@ struct PipelineJobView: View {
 								Image(systemName: "square.and.arrow.down")
 							}
 							Text(
-								"\(artifact.name ?? "") (\(ByteFormatter.shared.format(Int64(artifact.size) ?? 0)))"
+								"\(artifact.name ?? "") (\((Int64(artifact.size) ?? 0).formatted(.byteCount(style: .file))))"
 							)
 							Spacer()
 						}

@@ -477,7 +477,7 @@ struct ProjectLoader: View {
 								].compactMap { $0 }.reduce(0, +)
 								AsyncButton(
 									sizeLabel > 0
-										? "Download archive (~\(ByteFormatter.shared.format(sizeLabel)))"
+										? "Download archive (~\(Int64(sizeLabel).formatted(.byteCount(style: .file))))"
 										: "Download archive",
 									systemImage: "archivebox"
 								) {

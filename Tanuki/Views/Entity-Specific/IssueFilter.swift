@@ -32,7 +32,7 @@ struct IssueFilterView: View {
 				Picker("Types", selection: self.$filter.types) {
 					Text("All").tag(nil as GitLabAPI.IssueType?)
 					ForEach(GitLabAPI.IssueType.allCases, id: \.self) { type in
-						Text(type.rawValue.replacing("_", with: " ").capitalized)
+						Text(type.rawValue.replacingOccurrences(of: "_", with: " ").capitalized)
 							.tag(type)
 					}
 				}

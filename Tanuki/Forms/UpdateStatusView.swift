@@ -69,7 +69,7 @@ struct UpdateStatusView: View {
 			Picker("Clear after", selection: $time) {
 				Text("Never").tag(nil as TimeSpan?)
 				ForEach(TimeSpan.allCases, id: \.self) { time in
-					Text(time.rawValue.replacing("_", with: " ")).tag(time)
+					Text(time.rawValue.replacingOccurrences(of: "_", with: " ")).tag(time)
 				}
 			}
 		}.toolbar {

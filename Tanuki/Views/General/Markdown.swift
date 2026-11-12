@@ -65,7 +65,7 @@ private struct HTMLMarkdown: View {
 		+ "#contents>:last-child{margin-bottom:0 !important;}"
 
 	public var body: some View {
-		MarkdownUI(body: content.emojized(), css: Self.compactCSS, styled: true)
+		MarkdownUI(body: content, css: Self.compactCSS, styled: true)
 			.onRendered { renderedHeight in
 				if renderedHeight > 0, abs(renderedHeight - height) > 1 {
 					height = renderedHeight

@@ -67,7 +67,7 @@ struct ConfigView: View {
 		}.toolbar {
 			AsyncButton("Save", systemImage: "checkmark") {
 				await save()
-			}.buttonStyle(.borderedProminent)
+			}
 		}
 		.scrollDismissesKeyboard(.immediately)
 		.navigationTitle("Self-Hosted")

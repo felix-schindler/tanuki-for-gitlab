@@ -8,14 +8,6 @@
 import Foundation
 import TanukiEmoji
 
-// MARK: - Cache helpers
-extension URLCache {
-	static let avatar = URLCache(
-		memoryCapacity: 20 * 1024 * 1024,  // 20 MB in RAM
-		diskCapacity: 100 * 1024 * 1024  // 100 MB on disk
-	)
-}
-
 // MARK: - URL helpers
 extension URL {
 	@MainActor

@@ -145,7 +145,8 @@ struct ProjectsLoader: View {
 							Picker("Min. Access Level", selection: $accessLevel) {
 								Text("None").tag(nil as AccessLevelEnum?)
 								ForEach(AccessLevelEnum.allCases, id: \.self) { accessLevel in
-									Text(accessLevel.rawValue.replacing("_", with: " ").capitalized).tag(accessLevel)
+									Text(accessLevel.rawValue.replacingOccurrences(of: "_", with: " ").capitalized).tag(
+										accessLevel)
 								}
 							}
 							Text("Return only projects where current user has at least the specified access level.")

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		DC0A6A552B8D148000C53D56 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = DC0A6A542B8D148000C53D56 /* CachedAsyncImage */; };
+		DC7E3B440000000000000004 /* TanukiShared in Frameworks */ = {isa = PBXBuildFile; productRef = DC7E3B440000000000000002 /* TanukiShared */; };
+		DC7E3B440000000000000005 /* TanukiShared in Frameworks */ = {isa = PBXBuildFile; productRef = DC7E3B440000000000000003 /* TanukiShared */; };
 		DC2511E22E7F4C7E0021371C /* Tanuki Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = DC2511D82E7F4C7D0021371C /* Tanuki Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DC3A24542B8C3F5800DB0E3F /* NVMColor in Frameworks */ = {isa = PBXBuildFile; productRef = DC3A24532B8C3F5800DB0E3F /* NVMColor */; };
 		DC42A2112C62D36E00B1EA85 /* HighlightedTextEditor in Frameworks */ = {isa = PBXBuildFile; productRef = DC42A2102C62D36E00B1EA85 /* HighlightedTextEditor */; };
@@ -82,6 +84,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC7E3B440000000000000005 /* TanukiShared in Frameworks */,
 				DC8978262E7F515800D42E4C /* ApolloAPI in Frameworks */,
 				DC89783D2E7F558300D42E4C /* CachedAsyncImage in Frameworks */,
 				DC8978222E7F514200D42E4C /* GitLabAPI in Frameworks */,
@@ -94,6 +97,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC7E3B440000000000000004 /* TanukiShared in Frameworks */,
 				DC5AD7DD2E69D6E50031FC7B /* Toast in Frameworks */,
 				DCD225042E696BC8002256F0 /* GitLabAPI in Frameworks */,
 				DC7E3B430000000000000005 /* TanukiEmoji in Frameworks */,
@@ -162,6 +166,7 @@
 			name = "Tanuki Watch App";
 			packageProductDependencies = (
 				DC8978212E7F514200D42E4C /* GitLabAPI */,
+				DC7E3B440000000000000003 /* TanukiShared */,
 				DC7E3B430000000000000002 /* TanukiEmoji */,
 				DC8978232E7F515800D42E4C /* Apollo */,
 				DC8978252E7F515800D42E4C /* ApolloAPI */,
@@ -191,6 +196,7 @@
 			name = Tanuki;
 			packageProductDependencies = (
 				DC3A24532B8C3F5800DB0E3F /* NVMColor */,
+				DC7E3B440000000000000002 /* TanukiShared */,
 				DCAE856D2FA0D20000F64C2B /* Textual */,
 				DCAE856E2FA0D20000F64C2B /* MarkdownView */,
 				DC0A6A542B8D148000C53D56 /* CachedAsyncImage */,
@@ -247,6 +253,7 @@
 				DC5AD7CD2E697E4B0031FC7B /* XCRemoteSwiftPackageReference "apollo-ios" */,
 				DC5AD7DB2E69D6E50031FC7B /* XCRemoteSwiftPackageReference "toast-swift" */,
 				DCD2F7012F8AF9740049850E /* XCRemoteSwiftPackageReference "Alamofire" */,
+				DC7E3B440000000000000001 /* XCLocalSwiftPackageReference "Shared" */,
 			);
 			productRefGroup = DC2704F62B8BC0F9003DAA84 /* Products */;
 			projectDirPath = "";
@@ -624,6 +631,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = GitLabAPI;
 		};
+		DC7E3B440000000000000001 /* XCLocalSwiftPackageReference "Shared" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Shared;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -790,6 +801,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DCD2F7012F8AF9740049850E /* XCRemoteSwiftPackageReference "Alamofire" */;
 			productName = Alamofire;
+		};
+		DC7E3B440000000000000002 /* TanukiShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC7E3B440000000000000001 /* XCLocalSwiftPackageReference "Shared" */;
+			productName = TanukiShared;
+		};
+		DC7E3B440000000000000003 /* TanukiShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC7E3B440000000000000001 /* XCLocalSwiftPackageReference "Shared" */;
+			productName = TanukiShared;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
