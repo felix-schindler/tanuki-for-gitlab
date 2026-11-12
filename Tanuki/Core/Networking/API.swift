@@ -71,20 +71,27 @@ class InstanceManager {
 	static var instances: [GitLabInstance] {
 		get {
 			let hosts = userDefaults.stringArray(forKey: hostsKey) ?? []
-			return hosts.compactMap { host in
-				guard let data = Keychain.data(for: host),
-					let instance = try? JSONDecoder().decode(GitLabInstance.self, from: data)
-				else {
+			let keychain: [GitLabInstance] = hosts.compactMap { host in
+				guard let data = Keychain.data(for: host) else {
 					return nil
 				}
-				return instance
+				return try? JSONDecoder().decode(GitLabInstance.self, from: data)
 			}
+			// Pre-Keychain install, or a Keychain that cannot be read: keep working
+			// instead of logging the user out.
+			if keychain.isEmpty, let legacy = legacyInstances() {
+				return legacy
+			}
+			return keychain
 		}
 		set {
 			let ids = Set(newValue.map(\.id))
 			let oldIds = userDefaults.stringArray(forKey: hostsKey) ?? []
 			for id in oldIds where !ids.contains(id) {
-				Keychain.remove(id)
+				// Only prune readable items: a locked-device read failure must not delete credentials.
+				if Keychain.data(for: id) != nil {
+					Keychain.remove(id)
+				}
 			}
 			for instance in newValue {
 				if let data = try? JSONEncoder().encode(instance) {
@@ -183,13 +190,25 @@ class InstanceManager {
 		WatchSync.shared.pushInstances()
 	}
 
-	private static func migrateInstancesToKeychain() {
+	private static func legacyInstances() -> [GitLabInstance]? {
 		guard let data = userDefaults.data(forKey: legacyInstancesKey),
 			let legacy = try? JSONDecoder().decode([GitLabInstance].self, from: data)
 		else {
+			return nil
+		}
+		return legacy
+	}
+
+	private static func migrateInstancesToKeychain() {
+		guard let legacy = legacyInstances(), !legacy.isEmpty else {
 			return
 		}
 		instances = legacy
+		// Drop the clear-text copy only once the Keychain write is proven, so a
+		// failure cannot log the user out on upgrade.
+		guard legacy.allSatisfy({ Keychain.data(for: $0.id) != nil }) else {
+			return
+		}
 		userDefaults.removeObject(forKey: legacyInstancesKey)
 	}
 
