@@ -12,8 +12,6 @@ private struct _Group: Group {
 	var _name: String?
 	var fullPath: String
 	var visibility: String?
-	var groupMembersCount: Int
-	var projectsCount: Int
 	var _accessLevel: String?
 }
 
@@ -28,32 +26,21 @@ struct SmallGroupView: View {
 					if let url = URL.fromAvatar(group.avatarUrl) {
 						AvatarImage(url, size: .medium)
 					}
+                    
+                    if let groupName = group._name?.emojized(), groupName.isNotEmpty {
+                        Text(groupName)
+                    } else {
+                        Text(group.fullPath)
+                    }
 
-					VStack(alignment: .leading) {
-						HStack {
-							if let groupName = group._name?.emojized(), groupName.isNotEmpty {
-								Text(groupName)
-							} else {
-								Text(group.fullPath)
-							}
-							if let visibility = group.visibility {
-								VisibilityIcon(visibility)
-							}
-						}
-
-						ScrollView(.horizontal) {
-							HStack {
-								PillView(String(group.groupMembersCount), icon: Icons.members.rawValue)
-								PillView(String(group.projectsCount), icon: Icons.projects.rawValue)
-							}
-						}.font(.footnote)
-					}
-
+                    Spacer()
 					if let accessLevel = group._accessLevel {
-						Spacer()
 						PillView(accessLevel.replacingOccurrences(of: "_", with: " ").capitalized)
 							.font(.footnote)
 					}
+                    if let visibility = group.visibility {
+                        VisibilityIcon(visibility)
+                    }
 				}
 			}
 		)
@@ -63,10 +50,10 @@ struct SmallGroupView: View {
 #Preview {
 	NavigationStack {
 		List {
-			SmallGroupView(group: _Group(fullPath: "gitlab-org", groupMembersCount: 1, projectsCount: 1))
-			SmallGroupView(group: _Group(fullPath: "gitlab-org", groupMembersCount: 1, projectsCount: 1))
+			SmallGroupView(group: _Group(fullPath: "gitlab-org"))
+			SmallGroupView(group: _Group(fullPath: "gitlab-org"))
 			SmallGroupView(
-				group: _Group(fullPath: "gitlab-org", groupMembersCount: 1, projectsCount: 1, _accessLevel: "No_Access")
+				group: _Group(fullPath: "gitlab-org", _accessLevel: "No_Access")
 			)
 		}.navigationTitle("Groups")
 	}

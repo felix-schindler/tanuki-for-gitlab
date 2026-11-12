@@ -94,8 +94,6 @@ struct GroupLoader: View {
 
 						ScrollView(.horizontal) {
 							HStack {
-								PillView("\(group.groupMembersCount)", icon: Icons.members.rawValue)
-
 								if let parent = group.parent {
 									NavigationLink(
 										destination: GroupLoader(fullPath: parent.fullPath),
@@ -103,14 +101,16 @@ struct GroupLoader: View {
 											Label(parent.name ?? parent.fullPath, systemImage: Icons.groups.rawValue)
 										}
 									)
+                                    .tint(.accentColor)
 									.controlSize(.mini)
 									.buttonBorderShape(.capsule)
 									.adaptiveButtonStyle()
 								}
-
-								if group.name != group.fullName {
-									PillView(group.fullName ?? group.path)
-								}
+                                
+                                if let accessLevel = group.maxAccessLevel.stringValue?.rawValue {
+                                    PillView(accessLevel.replacingOccurrences(of: "_", with: " ").capitalized)
+                                        .font(.footnote)
+                                }
 							}.font(.footnote)
 						}
 
@@ -165,14 +165,17 @@ struct GroupLoader: View {
 						DisclosureGroup(
 							content: {
 								if let groupId = group.id?.toIntId() {
-									NavigationLink(
-										"Members",
-										destination: MembersLoader(
-											fullPath: self.fullPath,
-											id: groupId,
-											type: .group
-										)
-									)
+                                    NavigationLink(destination: MembersLoader(
+                                        fullPath: self.fullPath,
+                                        id: groupId,
+                                        type: .group
+                                    ), label: {
+                                        HStack {
+                                            Text("Members")
+                                            Spacer()
+                                            Text(String(group.groupMembersCount))
+                                        }
+                                    })
 									NavigationLink(
 										"Labels",
 										destination: LabelsLoader(

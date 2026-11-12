@@ -13,8 +13,6 @@ query Groups($topLevelOnly: Boolean, $ownedOnly: Boolean, $search: String, $pare
       name
       fullPath
       visibility
-      groupMembersCount
-      projectsCount
       maxAccessLevel {
         stringValue
       }

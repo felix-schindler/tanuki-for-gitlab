@@ -5,7 +5,6 @@ query Group($fullPath: ID!) {
     avatarUrl
     name
     path
-    fullName
     visibility
     description
 

@@ -35,49 +35,49 @@ struct SmallCommitView: View {
 	}
 
 	private var main: some View {
-		HStack {
-			VStack(alignment: .leading) {
-				if let title = commit.title, title.isNotEmpty {
-					InlineMarkdown(title)
-				}
+        VStack(alignment: .leading) {
+            HStack {
+                if let title = commit.title, title.isNotEmpty {
+                    InlineMarkdown(title)
+                    Spacer()
+                }
+                
+                let isCommitVerified = commit._signatureVerificationStatus?.starts(with: "VERIFIED") ?? false
+                if commit._lastPipelineStatus != nil || isCommitVerified {
+                    HStack {
+                        if let status = commit._lastPipelineStatus {
+                            PipelineStatus(status)
+                        }
+                        
+                        if isCommitVerified {
+                            RoundIconButton(
+                                "Verified", icon: "checkmark.seal"
+                            ) {
+                                Haptics.shared.play(.light)
+                                showVerified = true
+                            }
+                            .tint(.green)
+                            .controlSize(.mini)
+                        }
+                    }
+                }
+            }
 
-				if commit.authorName != nil
-					&& commit.authoredDate != nil
-				{
-					ScrollView(.horizontal) {
-						HStack {
-							PillView(commit.authorName!, icon: Icons.users.rawValue)
-							PillView(Date.fromToString(commit.authoredDate!), icon: Icons.clock.rawValue)
-						}
-					}
-					.font(.footnote)
-				}
-			}
-
-			Spacer()
-
-			VStack {
-				HStack {
-					if let status = commit._lastPipelineStatus {
-						PipelineStatus(status)
-					}
-
-					if commit._signatureVerificationStatus?.starts(with: "VERIFIED") ?? false {
-						RoundIconButton(
-							"Verified", icon: "checkmark.seal"
-						) {
-							Haptics.shared.play(.light)
-							showVerified = true
-						}
-						.tint(.green)
-						.controlSize(.mini)
-					}
-				}
-
-				PillView(commit.shortId)
-					.textSelection(.enabled)
-					.font(.system(.footnote, design: .monospaced))
-			}
+            ScrollView(.horizontal) {
+                HStack {
+                    // TODO: Replace with `AuthorView`
+                    if let authorName = commit.authorName {
+                        PillView(authorName, icon: Icons.users.rawValue)
+                    }
+                    if let authoredDate = commit.authoredDate {
+                        PillView(Date.fromToString(authoredDate), icon: Icons.clock.rawValue)
+                    }
+                    PillView(commit.shortId)
+                        .textSelection(.enabled)
+                        .font(.system(.footnote, design: .monospaced))
+                }
+            }
+            .font(.footnote)
 		}.sheet(isPresented: $showVerified) {
 			VStack(alignment: .leading) {
 				PopupHeader(
