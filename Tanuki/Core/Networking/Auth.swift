@@ -166,7 +166,8 @@ class Auth {
 	}
 
 	private static func clearWebCookies(host: String) {
-		let cookieHost = host.split(separator: ":", maxSplits: 1).first.map(String.init) ?? host
+		// Cookies are keyed by domain, not by port or base path.
+		let cookieHost = URL(string: "https://\(host)")?.host() ?? host
 		let storage = HTTPCookieStorage.shared
 		if let url = URL(string: "https://\(cookieHost)") {
 			for cookie in storage.cookies(for: url) ?? [] {

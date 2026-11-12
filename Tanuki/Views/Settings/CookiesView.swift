@@ -16,6 +16,10 @@ struct CookiesView: View {
 		URL(string: "https://\(API.host)/users/sign_in")!
 	}
 
+	private var cookieHost: String {
+		URL(string: "https://\(API.host)")?.host() ?? API.host
+	}
+
 	var body: some View {
 		List {
 			if cookies.isEmpty {
@@ -72,7 +76,7 @@ struct CookiesView: View {
 	// Load cookies from WKWebsiteDataStore and persist them as property dictionaries
 	private func loadCookies() {
 		WKWebsiteDataStore.default().httpCookieStore.getAllCookies { all in
-			let host = API.host.lowercased()
+			let host = cookieHost.lowercased()
 			let filtered = all.filter { $0.domain.lowercased().contains(host) }
 			cookies = filtered
 			persistCookies(filtered)

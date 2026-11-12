@@ -460,11 +460,18 @@ class API {
 		if let schemeRange = value.range(of: "://") {
 			value = String(value[schemeRange.upperBound...])
 		}
-		if let slash = value.firstIndex(of: "/") {
-			value = String(value[..<slash])
+		if let fragment = value.firstIndex(of: "#") {
+			value = String(value[..<fragment])
 		}
-		value = value.lowercased()
-		guard !value.isEmpty, URL(string: "https://\(value)") != nil else {
+		if let query = value.firstIndex(of: "?") {
+			value = String(value[..<query])
+		}
+		// Keep the port and base path: a self-hosted instance may live on either.
+		value = value.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+		guard !value.isEmpty,
+			let url = URL(string: "https://\(value)"),
+			url.host()?.isNotEmpty == true
+		else {
 			return nil
 		}
 		return value

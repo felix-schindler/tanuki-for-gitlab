@@ -55,6 +55,34 @@ struct GitLabInstance: Codable, Identifiable, Equatable, Sendable {
 		}
 		return expiresAt < Date().addingTimeInterval(300)
 	}
+
+	/// Turns a pasted server URL into `host[:port][/basePath]`, dropping scheme, login,
+	/// query, fragment and a trailing `/`. Default ports are left out so they match links.
+	static func normalizedHost(from input: String) -> String? {
+		let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard trimmed.isNotEmpty else { return nil }
+
+		let candidate = trimmed.contains("://") ? trimmed : "https://\(trimmed)"
+		guard let url = URL(string: candidate),
+			let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https",
+			let parsedHost = url.host()?.lowercased(), parsedHost.isNotEmpty
+		else {
+			return nil
+		}
+
+		var authority = parsedHost
+		if let port = url.port, port != 443, port != 80 {
+			authority += ":\(port)"
+		}
+
+		var segments = url.pathComponents.filter { $0 != "/" && !$0.isEmpty }
+		// Pasting the REST root should still configure the instance itself.
+		if Array(segments.suffix(2)) == ["api", "v4"] {
+			segments.removeLast(2)
+		}
+
+		return segments.isEmpty ? authority : authority + "/" + segments.joined(separator: "/")
+	}
 }
 
 @MainActor

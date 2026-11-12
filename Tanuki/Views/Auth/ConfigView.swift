@@ -76,20 +76,19 @@ struct ConfigView: View {
 	private func save() async {
 		errorMessage = nil
 
-		guard newToken.isNotEmpty else {
+		let token = newToken.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard token.isNotEmpty else {
 			errorMessage = "Please provide a personal access token."
 			return
 		}
 
-		let trimmed = newHost.trimmingCharacters(in: .whitespacesAndNewlines)
-		let candidate = trimmed.contains("://") ? trimmed : "https://\(trimmed)"
-		guard let host = URL(string: candidate)?.host else {
+		guard let host = GitLabInstance.normalizedHost(from: newHost) else {
 			errorMessage = "Please provide a valid URL, e.g. gitlab.example.com."
 			return
 		}
 
 		do {
-			let instance = GitLabInstance(host: host, token: newToken)
+			let instance = GitLabInstance(host: host, token: token)
 			try await Auth.login(
 				instance: instance,
 				dismiss: dismiss

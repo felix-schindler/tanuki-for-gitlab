@@ -151,11 +151,18 @@ enum JumpURL {
 			let urlHost = hostWithPort(of: url)
 		else { throw JumpURLError.notALink(raw: trimmed) }
 
-		guard isSameHost(urlHost, host) else {
+		guard isSameHost(urlHost, authority(of: host)) else {
 			throw JumpURLError.wrongHost(urlHost: urlHost, expectedHost: host)
 		}
 
-		let segments = url.pathComponents.filter { $0 != "/" && !$0.isEmpty }
+		var segments = url.pathComponents.filter { $0 != "/" && !$0.isEmpty }
+		let basePath = basePathSegments(of: host)
+		if !basePath.isEmpty {
+			guard segments.starts(with: basePath) else {
+				throw JumpURLError.nothingToOpen(raw: trimmed, host: host)
+			}
+			segments.removeFirst(basePath.count)
+		}
 		guard !segments.isEmpty else {
 			throw JumpURLError.nothingToOpen(raw: trimmed, host: host)
 		}
@@ -251,6 +258,19 @@ enum JumpURL {
 		let urlPort = port(of: urlHost)
 		let expectedPort = port(of: expected).flatMap { $0 == "443" || $0 == "80" ? nil : $0 }
 		return urlPort == expectedPort
+	}
+
+	/// The configured instance without its base path: `host` or `host:port`.
+	private static func authority(of host: String) -> String {
+		host.split(separator: "/", maxSplits: 1, omittingEmptySubsequences: false)
+			.first.map { String($0) } ?? host
+	}
+
+	/// The base path the instance is mounted at, e.g. `["gitlab"]` for `host/gitlab`.
+	private static func basePathSegments(of host: String) -> [String] {
+		host.split(separator: "/", omittingEmptySubsequences: true)
+			.dropFirst()
+			.map { String($0) }
 	}
 
 	private static func stripPort(_ host: String) -> String {
