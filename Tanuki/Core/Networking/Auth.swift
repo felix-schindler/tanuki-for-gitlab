@@ -11,6 +11,7 @@ import AuthenticationServices
 import CryptoKit
 import Foundation
 import SwiftUI
+import WebKit
 
 enum AuthError: LocalizedError {
 	case notRefreshable
@@ -59,7 +60,7 @@ class Auth {
 	) async throws {
 		let previousInstance = InstanceManager.selected
 		InstanceManager.add(instance)
-		try await resetSessionCaches()
+		try await resetSessionCaches(host: instance.host)
 
 		do {
 			let user = try await API.get(
@@ -79,7 +80,7 @@ class Auth {
 			InstanceManager.remove(instance)
 			if let previousInstance {
 				InstanceManager.select(previousInstance)
-				try await resetSessionCaches()
+				try await resetSessionCaches(host: previousInstance.host)
 			}
 			SessionStore.shared.refresh()
 			throw error
@@ -105,12 +106,13 @@ class Auth {
 	}
 
 	public static func logout(showSetup: Binding<Bool>? = nil) async {
+		let host = InstanceManager.selected?.host ?? API.host
 		if let current = InstanceManager.selected {
 			InstanceManager.remove(current)
 		}
 
 		do {
-			try await resetSessionCaches()
+			try await resetSessionCaches(host: host)
 			Notify.status(.success, "Logged out")
 
 			if InstanceManager.selected == nil {
@@ -130,7 +132,7 @@ class Auth {
 		InstanceManager.select(instance)
 
 		do {
-			try await resetSessionCaches()
+			try await resetSessionCaches(host: instance.host)
 			let user = try await API.get(
 				type: RestAPIUser.self,
 				endpoint: "user"
@@ -151,11 +153,33 @@ class Auth {
 		}
 	}
 
-	private static func resetSessionCaches() async throws {
+	private static func resetSessionCaches(host: String) async throws {
 		URLCache.shared.removeAllCachedResponses()
 		URLCache.avatar.removeAllCachedResponses()
+		PersistedCookies.clear()
+		clearWebCookies(host: host)
 		Network.shared.resetApolloClient()
 		try await Network.shared.apollo.store.clearCache()
+	}
+
+	private static func clearWebCookies(host: String) {
+		let cookieHost = host.split(separator: ":", maxSplits: 1).first.map(String.init) ?? host
+		let storage = HTTPCookieStorage.shared
+		if let url = URL(string: "https://\(cookieHost)") {
+			for cookie in storage.cookies(for: url) ?? [] {
+				storage.deleteCookie(cookie)
+			}
+		}
+
+		let store = WKWebsiteDataStore.default().httpCookieStore
+		store.getAllCookies { cookies in
+			for cookie in cookies
+			where cookie.domain.trimmingCharacters(in: CharacterSet(charactersIn: "."))
+				.caseInsensitiveCompare(cookieHost) == .orderedSame
+			{
+				store.delete(cookie, completionHandler: nil)
+			}
+		}
 	}
 
 	// MARK: - Initial login (OAuth)
@@ -296,7 +320,7 @@ class Auth {
 		logger.warning("Token invalid (401) — removing instance \(instanceId)")
 		InstanceManager.remove(current)
 		do {
-			try await resetSessionCaches()
+			try await resetSessionCaches(host: current.host)
 		} catch {
 			logger.error("Failed to clear caches on logout — \(error.localizedDescription)")
 		}
