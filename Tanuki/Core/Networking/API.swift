@@ -326,7 +326,8 @@ class API {
 		contentType: ContentType = .json,
 		auth: Bool = true,
 		useBase: Bool = true,
-		host: String? = nil
+		host: String? = nil,
+		headers: [String: String] = [:]
 	) async throws -> AFDataResponse<Data> {
 		if auth {
 			await Auth.ensureValidToken()
@@ -343,7 +344,8 @@ class API {
 			contentType: contentType,
 			auth: auth,
 			useBase: useBase,
-			host: host
+			host: host,
+			headers: headers
 		)
 
 		if response.response?.statusCode == 401, let instanceId,
@@ -359,7 +361,8 @@ class API {
 				contentType: contentType,
 				auth: auth,
 				useBase: useBase,
-				host: host
+				host: host,
+				headers: headers
 			)
 		}
 
@@ -391,7 +394,8 @@ class API {
 		contentType: ContentType = .json,
 		auth: Bool = true,
 		useBase: Bool = true,
-		host: String? = nil
+		host: String? = nil,
+		headers: [String: String] = [:]
 	) async throws -> AFDataResponse<Data> {
 		let (url, headers) = API.urlAndHeaders(
 			method: method,
@@ -402,7 +406,8 @@ class API {
 			contentType: contentType,
 			auth: auth,
 			useBase: useBase,
-			host: host
+			host: host,
+			headers: headers
 		)
 
 		var parameters: Parameters?
@@ -457,7 +462,8 @@ class API {
 			contentType: .json,
 			auth: auth,
 			useBase: useBase,
-			host: host
+			host: host,
+			headers: [:]
 		)
 
 		let request = session.download(url, method: method, headers: headers, to: destination)
@@ -500,7 +506,8 @@ class API {
 		contentType: ContentType,
 		auth: Bool,
 		useBase: Bool,
-		host: String?
+		host: String?,
+		headers: [String: String]
 	) -> (url: String, headers: HTTPHeaders) {
 		let targetHost = host ?? API.host
 
@@ -518,7 +525,8 @@ class API {
 			url += "?" + queryString
 		}
 
-		var headers: HTTPHeaders = [.contentType(contentType.rawValue)]
+		var headers = HTTPHeaders(headers)
+		headers.add(.contentType(contentType.rawValue))
 		if auth && token.isNotEmpty {
 			headers.add(.authorization(bearerToken: token))
 		}
