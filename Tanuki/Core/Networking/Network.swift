@@ -56,25 +56,26 @@ final class Network {
 }
 
 @MainActor
-final class AuthorizationInterceptor: GraphQLInterceptor {
-	func intercept<Request: GraphQLRequest>(
-		request: Request,
-		next: NextInterceptorFunction<Request>
-	) async throws -> InterceptorResultStream<Request> {
+final class AuthorizationInterceptor: HTTPInterceptor {
+	func intercept(
+		request: URLRequest,
+		next: NextHTTPInterceptorFunction
+	) async throws -> HTTPResponse {
 		await Auth.ensureValidToken()
 
-		var req = request
-		req.addHeader(name: "Authorization", value: "Bearer \(API.token)")
-		let instanceId = API.currentInstance?.id
+		var request = request
+		request.setValue("Bearer \(API.token)", forHTTPHeaderField: "Authorization")
 
-		let stream = await next(req)
-		return await stream.mapErrors { error in
-			guard Auth.isUnauthorized(error), let instanceId else {
-				throw error
-			}
-			_ = await Auth.handleUnauthorized(instanceId: instanceId)
-			throw error
+		let response = try await next(request)
+		guard response.response.statusCode == 401,
+			let instanceId = API.currentInstance?.id,
+			let token = await Auth.handleUnauthorized(instanceId: instanceId)
+		else {
+			return response
 		}
+
+		request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+		return try await next(request)
 	}
 }
 
@@ -82,8 +83,15 @@ final class NetworkInterceptorProvider: InterceptorProvider {
 	nonisolated func graphQLInterceptors<Operation: GraphQLOperation>(for operation: Operation)
 		-> [any GraphQLInterceptor]
 	{
-		return [
-			AuthorizationInterceptor()
+		[]
+	}
+
+	nonisolated func httpInterceptors<Operation: GraphQLOperation>(for operation: Operation)
+		-> [any HTTPInterceptor]
+	{
+		[
+			AuthorizationInterceptor(),
+			ResponseCodeInterceptor(),
 		]
 	}
 }
