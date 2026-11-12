@@ -173,17 +173,14 @@ struct MilestonesLoader: View {
 			} else {
 				LoadingView("Loading Milestones", systemImage: "diamond")
 			}
-		}.task {
+		}.debouncedLoad(searchTitle) {
 			loadMilestones()
 		}.refreshable {
 			await reloadMilestones()
 		}.searchable(
 			text: Binding(get: { self.searchTitle ?? "" }, set: { self.searchTitle = $0.isNotEmpty ? $0 : nil }),
 			prompt: "Title"
-		).onChange(of: searchTitle) {
-			self.milestones = nil  // Show loading state
-			loadMilestones()
-		}.toolbar {
+		).toolbar {
 			HStack {
 				Button("Filter", systemImage: "line.3.horizontal.decrease") {
 					showFilters = true

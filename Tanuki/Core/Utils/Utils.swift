@@ -78,6 +78,38 @@ enum FileCache {
 	}
 }
 
+// MARK: - Load helpers
+extension View {
+	/// Runs `action` immediately, then again 300 ms after `value` stops changing.
+	/// Replaces the `.task { load() }` + `.onChange(of: value) { load() }` pair.
+	func debouncedLoad<Value: Equatable>(_ value: Value, action: @escaping () async -> Void) -> some View {
+		modifier(DebouncedLoad(value: value, action: action))
+	}
+}
+
+private struct DebouncedLoad<Value: Equatable>: ViewModifier {
+	let value: Value
+	let action: () async -> Void
+
+	@State
+	private var hasLoaded = false
+
+	func body(content: Content) -> some View {
+		content.task(id: value) {
+			if hasLoaded {
+				do {
+					try await Task.sleep(for: .milliseconds(300))
+				} catch {
+					return
+				}
+			} else {
+				hasLoaded = true
+			}
+			await action()
+		}
+	}
+}
+
 // MARK: - Array helpers
 extension Array {
 	var isNotEmpty: Bool {

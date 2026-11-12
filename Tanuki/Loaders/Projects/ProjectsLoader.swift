@@ -115,7 +115,7 @@ struct ProjectsLoader: View {
 			} else {
 				LoadingView("Loading Projects", systemImage: "app.gift.fill")
 			}
-		}.task {
+		}.debouncedLoad(search) {
 			loadProjects()
 		}.refreshable {
 			await reloadProjects()
@@ -226,10 +226,7 @@ struct ProjectsLoader: View {
 		}.searchable(
 			text: Binding(get: { self.search ?? "" }, set: { self.search = $0.isNotEmpty ? $0 : nil }),
 			prompt: "Name, path, or description"
-		).onChange(of: search) {
-			self.projects = nil  // Show loading state
-			loadProjects()
-		}.navigationTitle("Projects")
+		).navigationTitle("Projects")
 	}
 }
 

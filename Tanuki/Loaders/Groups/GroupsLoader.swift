@@ -109,7 +109,7 @@ struct GroupsLoader: View {
 			} else {
 				LoadingView("Loading Groups", systemImage: "scale.3d")
 			}
-		}.task {
+		}.debouncedLoad(search) {
 			loadGroups()
 		}.refreshable {
 			await reloadGroups()
@@ -192,10 +192,7 @@ struct GroupsLoader: View {
 		}.searchable(
 			text: Binding(get: { self.search ?? "" }, set: { self.search = $0.isNotEmpty ? $0 : nil }),
 			prompt: "Name or full path"
-		).onChange(of: search) {
-			self.groups = nil  // Show loading state
-			loadGroups()
-		}.navigationTitle("Groups")
+		).navigationTitle("Groups")
 	}
 }
 

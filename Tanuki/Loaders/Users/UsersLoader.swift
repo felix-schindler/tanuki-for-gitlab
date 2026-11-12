@@ -100,7 +100,7 @@ struct UsersLoader: View {
 			} else {
 				LoadingView("Loading Users", systemImage: "person.2")
 			}
-		}.task {
+		}.debouncedLoad(search) {
 			loadUsers()
 		}.refreshable {
 			await reloadUsers()
@@ -141,10 +141,7 @@ struct UsersLoader: View {
 		}.searchable(
 			text: Binding(get: { self.search ?? "" }, set: { self.search = $0.isNotEmpty ? $0 : nil }),
 			prompt: "Name, username, or primary email"
-		).onChange(of: search) {
-			self.users = nil  // Show loading state
-			loadUsers()
-		}.navigationTitle("Users")
+		).navigationTitle("Users")
 	}
 }
 

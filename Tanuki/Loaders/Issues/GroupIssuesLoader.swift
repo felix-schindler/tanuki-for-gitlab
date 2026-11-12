@@ -108,7 +108,7 @@ struct GroupIssuesLoader: View {
 			} else {
 				LoadingView("Loading Issues", systemImage: "smallcircle.circle", color: .green)
 			}
-		}.task {
+		}.debouncedLoad(filter.search) {
 			loadIssues()
 		}.refreshable {
 			await reloadIssues()
@@ -129,10 +129,7 @@ struct GroupIssuesLoader: View {
 		}.searchable(
 			text: Binding(get: { self.filter.search ?? "" }, set: { self.filter.search = $0.isNotEmpty ? $0 : nil }),
 			prompt: "Search issues"
-		).onChange(of: filter.search) {
-			self.issues = nil  // Show loading state
-			loadIssues()
-		}.navigationTitle("Issues")
+		).navigationTitle("Issues")
 	}
 }
 

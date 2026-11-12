@@ -194,7 +194,7 @@ struct UserMergeLoader: View {
 			} else {
 				LoadingView("Loading Merge Requests", image: "git-mr.symbols", color: .blue)
 			}
-		}.task {
+		}.debouncedLoad(filter.search) {
 			loadMergeRequests()
 		}.refreshable {
 			await reloadMergeRequests()
@@ -215,10 +215,7 @@ struct UserMergeLoader: View {
 		}.searchable(
 			text: Binding(get: { self.filter.search ?? "" }, set: { self.filter.search = $0.isNotEmpty ? $0 : nil }),
 			prompt: "Search merge requests"
-		).onChange(of: filter.search) {
-			self.mergeRequests = nil  // Show loading state
-			loadMergeRequests()
-		}.navigationTitle(self.navTitle)
+		).navigationTitle(self.navTitle)
 	}
 }
 
