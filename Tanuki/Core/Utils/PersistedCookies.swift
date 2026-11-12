@@ -11,13 +11,26 @@ enum PersistedCookies {
 	private static let account = "persistedCookies"
 
 	static func load() -> [[HTTPCookiePropertyKey: Any]] {
-		guard let data = Keychain.data(for: account),
+		guard let data = Keychain.data(for: account) ?? migrateFromUserDefaults(),
 			let dicts = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil)
 				as? [[HTTPCookiePropertyKey: Any]]
 		else {
 			return []
 		}
 		return dicts
+	}
+
+	/// Moves the pre-Keychain copy, which was stored in clear text, and deletes it.
+	private static func migrateFromUserDefaults() -> Data? {
+		guard let legacy = UserDefaults.standard.data(forKey: account) else {
+			return nil
+		}
+		Keychain.set(legacy, for: account)
+		guard Keychain.data(for: account) != nil else {
+			return legacy
+		}
+		UserDefaults.standard.removeObject(forKey: account)
+		return legacy
 	}
 
 	static func loadCookies() -> [HTTPCookie] {
