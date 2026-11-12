@@ -443,6 +443,17 @@ extension UserSnippetsQuery.Data.User.Snippets.Node: Snippet {
 	}
 }
 
+extension ProjectSnippetsQuery.Data.Project.Snippets.Node: Snippet {
+	var _author: MyAuthor? {
+		guard let authorData = author else { return nil }
+		return MyAuthor(
+			avatarUrl: authorData.avatarUrl,
+			name: authorData.name,
+			username: authorData.username
+		)
+	}
+}
+
 // MARK: - Groups
 protocol Group {
 	var avatarUrl: String? { get }

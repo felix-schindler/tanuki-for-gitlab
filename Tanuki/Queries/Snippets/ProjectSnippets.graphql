@@ -1,0 +1,18 @@
+query ProjectSnippets($fullPath: ID!) {
+  project(fullPath: $fullPath) {
+    snippets {
+      nodes {
+        id
+        title
+        visibilityLevel
+        author {
+          avatarUrl
+          name
+          username
+        }
+        createdAt
+        webUrl
+      }
+    }
+  }
+}

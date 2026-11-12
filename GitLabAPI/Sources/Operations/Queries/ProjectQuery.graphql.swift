@@ -8,7 +8,7 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
   public static let operationName: String = "Project"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query Project($fullPath: ID!) { project(fullPath: $fullPath) { __typename id avatarUrl name visibility description topics starCount forksCount issuesEnabled openIssuesCount mergeRequestsEnabled wikiEnabled jobsEnabled openMergeRequestsCount webUrl httpUrlToRepo sshUrlToRepo createdAt archived namespace { __typename id name fullPath } statistics { __typename commitCount repositorySize lfsObjectsSize } releases { __typename count } labels { __typename count } repository { __typename rootRef readme: blobs(paths: ["README.md", "README", "README.txt"], first: 1) { __typename nodes { __typename rawTextBlob } } license: blobs( paths: ["LICENSE", "LICENSE.txt", "LICENSE.md", "COPYING"] first: 1 ) { __typename nodes { __typename rawTextBlob } } contributing: blobs( paths: ["CONTRIBUTING", "CONTRIBUTING.txt", "CONTRIBUTING.md"] first: 1 ) { __typename nodes { __typename rawTextBlob } } tree { __typename lastCommit { __typename id title shortId authorName authoredDate webUrl signature { __typename verificationStatus } pipelines { __typename nodes { __typename status } } } } } languages { __typename name share color } userPermissions { __typename createIssue forkProject requestAccess } } }"#
+      #"query Project($fullPath: ID!) { project(fullPath: $fullPath) { __typename id avatarUrl name visibility description topics starCount forksCount issuesEnabled openIssuesCount mergeRequestsEnabled wikiEnabled snippetsEnabled jobsEnabled openMergeRequestsCount webUrl httpUrlToRepo sshUrlToRepo createdAt archived namespace { __typename id name fullPath } statistics { __typename commitCount repositorySize lfsObjectsSize } releases { __typename count } labels { __typename count } repository { __typename rootRef readme: blobs(paths: ["README.md", "README", "README.txt"], first: 1) { __typename nodes { __typename rawTextBlob } } license: blobs( paths: ["LICENSE", "LICENSE.txt", "LICENSE.md", "COPYING"] first: 1 ) { __typename nodes { __typename rawTextBlob } } contributing: blobs( paths: ["CONTRIBUTING", "CONTRIBUTING.txt", "CONTRIBUTING.md"] first: 1 ) { __typename nodes { __typename rawTextBlob } } tree { __typename lastCommit { __typename id title shortId authorName authoredDate webUrl signature { __typename verificationStatus } pipelines { __typename nodes { __typename status } } } } } languages { __typename name share color } userPermissions { __typename createIssue createSnippet forkProject requestAccess } } }"#
     ))
 
   public var fullPath: ID
@@ -56,6 +56,7 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
         .field("openIssuesCount", Int?.self),
         .field("mergeRequestsEnabled", Bool?.self),
         .field("wikiEnabled", Bool?.self),
+        .field("snippetsEnabled", Bool?.self),
         .field("jobsEnabled", Bool?.self),
         .field("openMergeRequestsCount", Int?.self),
         .field("webUrl", String?.self),
@@ -99,6 +100,8 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
       public var mergeRequestsEnabled: Bool? { __data["mergeRequestsEnabled"] }
       /// Indicates if Wikis are enabled for the current user
       public var wikiEnabled: Bool? { __data["wikiEnabled"] }
+      /// Indicates if Snippets are enabled for the current user
+      public var snippetsEnabled: Bool? { __data["snippetsEnabled"] }
       /// Indicates if CI/CD pipeline jobs are enabled for the current user.
       public var jobsEnabled: Bool? { __data["jobsEnabled"] }
       /// Number of open merge requests for the project.
@@ -539,6 +542,7 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
         @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
           .field("createIssue", Bool.self),
+          .field("createSnippet", Bool.self),
           .field("forkProject", Bool.self),
           .field("requestAccess", Bool.self),
         ] }
@@ -548,6 +552,8 @@ nonisolated public struct ProjectQuery: GraphQLQuery {
 
         /// If `true`, the user can perform `create_issue` on this resource
         public var createIssue: Bool { __data["createIssue"] }
+        /// If `true`, the user can perform `create_snippet` on this resource
+        public var createSnippet: Bool { __data["createSnippet"] }
         /// If `true`, the user can perform `fork_project` on this resource
         public var forkProject: Bool { __data["forkProject"] }
         /// If `true`, the user can perform `request_access` on this resource

@@ -12,6 +12,7 @@ query Project($fullPath: ID!) {
     openIssuesCount
     mergeRequestsEnabled
     wikiEnabled
+    snippetsEnabled
     jobsEnabled
     openMergeRequestsCount
     webUrl
@@ -78,6 +79,7 @@ query Project($fullPath: ID!) {
     }
     userPermissions {
       createIssue
+      createSnippet
       forkProject
       requestAccess
     }

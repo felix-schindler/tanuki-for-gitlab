@@ -10,11 +10,27 @@ import SwiftUI
 struct NewSnippetView: View {
 	@Environment(\.dismiss) private var dismiss
 
+	/// Project to create the snippet in; `nil` creates a personal snippet.
+	private let projectId: Int?
+	private let onCreated: () async -> Void
+
 	@State private var title = ""
 	@State private var fileName = ""
 	@State private var content = ""
 	@State private var description = ""
 	@State private var visibility = ProjectVisibility.private
+
+	init(projectId: Int? = nil, onCreated: @escaping () async -> Void = {}) {
+		self.projectId = projectId
+		self.onCreated = onCreated
+	}
+
+	private var endpoint: String {
+		if let projectId {
+			return "projects/\(projectId)/snippets"
+		}
+		return "snippets"
+	}
 
 	private func createSnippet() async {
 		guard title.isNotEmpty else {
@@ -40,10 +56,11 @@ struct NewSnippetView: View {
 			let snippet = try await API.req(
 				type: RestAPISnippet.self,
 				method: .post,
-				endpoint: "snippets",
+				endpoint: endpoint,
 				body: body
 			)
 			Notify.status(.success, "Snippet \(snippet.title) created.")
+			await onCreated()
 			dismiss()
 		} catch {
 			Notify.status(.error, error.localizedDescription)
@@ -73,7 +90,7 @@ struct NewSnippetView: View {
 				await createSnippet()
 			}.tint(.accentColor)
 		}
-		.navigationTitle("New Snippet")
+		.navigationTitle(projectId == nil ? "New Snippet" : "New Project Snippet")
 		.scrollDismissesKeyboard(.interactively)
 	}
 }

@@ -16,7 +16,8 @@ enum NavDest {
 		release,
 		member,
 		groupShare,
-		label
+		label,
+		snippet
 }
 
 struct ProjectLoadError: LocalizedError {
@@ -316,6 +317,14 @@ struct ProjectLoader: View {
 											destination: WikisLoader(projectId: projectId)
 										)
 									}
+
+									if project.snippetsEnabled ?? true {
+										NavigationLink(
+											"Snippets",
+											destination: ProjectSnippetsLoader(
+												fullPath: self.fullPath, projectId: projectId)
+										)
+									}
 								},
 								label: {
 									Label(
@@ -513,6 +522,13 @@ struct ProjectLoader: View {
 							navigationDestination = .release
 						}
 
+						if (project.snippetsEnabled ?? true) && project.userPermissions.createSnippet {
+							Button("Create Snippet", systemImage: "scissors") {
+								navigationActive = true
+								navigationDestination = .snippet
+							}
+						}
+
 						Button("Add new Member", systemImage: "person.badge.plus") {
 							navigationActive = true
 							navigationDestination = .member
@@ -550,6 +566,8 @@ struct ProjectLoader: View {
 					NewGroupShareView(id: projectId)
 				case .label:
 					NewLabelView(id: projectId, groupId: 0)
+				case .snippet:
+					NewSnippetView(projectId: projectId)
 				}
 			}
 		}

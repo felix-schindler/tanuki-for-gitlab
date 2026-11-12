@@ -64,7 +64,7 @@ struct UserSnippetsLoader: View {
 		}
 	}
 
-	private func reloadSnippets() async {
+	private func reloadSnippets(notify: Bool = true) async {
 		do {
 			if let username {
 				let response = try await Network.shared.apollo.fetch(
@@ -86,7 +86,9 @@ struct UserSnippetsLoader: View {
 				}
 			}
 
-			Notify.status(.success)
+			if notify {
+				Notify.status(.success)
+			}
 		} catch let error {
 			self.snippets = .failure(error)
 			Notify.status(.error)
@@ -154,7 +156,10 @@ struct UserSnippetsLoader: View {
 				}
 			}
 		}.navigationDestination(isPresented: $createSnippet) {
-			NewSnippetView()
+			NewSnippetView(
+				onCreated: {
+					await reloadSnippets(notify: false)
+				})
 		}.navigationTitle("Snippets")
 	}
 }
