@@ -8,7 +8,7 @@ nonisolated public struct CurrentUserTodosQuery: GraphQLQuery {
   public static let operationName: String = "CurrentUserTodos"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query CurrentUserTodos { currentUser { __typename todos { __typename nodes { __typename id body group { __typename id } state action author { __typename avatarUrl name username } targetEntity { __typename webUrl } project { __typename avatarUrl fullPath nameWithNamespace visibility archived } createdAt targetType } } } }"#
+      #"query CurrentUserTodos { currentUser { __typename todos { __typename nodes { __typename id body group { __typename fullPath } state action author { __typename avatarUrl name username } targetEntity { __typename webUrl } project { __typename avatarUrl fullPath nameWithNamespace visibility archived } createdAt targetType } } } }"#
     ))
 
   public init() {}
@@ -122,14 +122,14 @@ nonisolated public struct CurrentUserTodosQuery: GraphQLQuery {
             @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.Group }
             @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
               .field("__typename", String.self),
-              .field("id", GitLabAPI.ID?.self),
+              .field("fullPath", GitLabAPI.ID.self),
             ] }
             @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
               CurrentUserTodosQuery.Data.CurrentUser.Todos.Node.Group.self
             ] }
 
-            /// ID of the group.
-            public var id: GitLabAPI.ID? { __data["id"] }
+            /// Full path of the namespace.
+            public var fullPath: GitLabAPI.ID { __data["fullPath"] }
           }
 
           /// CurrentUser.Todos.Node.Author

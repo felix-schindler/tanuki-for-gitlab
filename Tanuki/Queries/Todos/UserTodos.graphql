@@ -5,7 +5,7 @@ query UserTodos($username: String!) {
         id
         body
         group {
-          id
+          fullPath
         }
         state
         action

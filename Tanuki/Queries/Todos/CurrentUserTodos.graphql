@@ -5,7 +5,7 @@ query CurrentUserTodos {
         id
         body
         group {
-          id
+          fullPath
         }
         state
         action

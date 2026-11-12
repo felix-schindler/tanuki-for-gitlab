@@ -658,7 +658,7 @@ extension UserTodosQuery.Data.User.Todos.Node: Todo {
 	}
 
 	var _groupPath: String? {
-		return group?.id
+		return group?.fullPath
 	}
 
 	var _author: MyAuthor {
@@ -687,7 +687,7 @@ extension CurrentUserTodosQuery.Data.CurrentUser.Todos.Node: Todo {
 	}
 
 	var _groupPath: String? {
-		return group?.id
+		return group?.fullPath
 	}
 
 	var _author: MyAuthor {
