@@ -10,7 +10,7 @@ import SwiftUI
 
 /// Resolves a bare `host/namespace/path` link to a project, group or user, and any
 /// `/-/…` sub-page to the matching project/group screen. GitLab can't tell a project
-/// path from a group (or user) path without a lookup, so this asks, in order.
+/// path from a group (or user) path without a lookup, so this asks for all three at once.
 struct EntityLoader: View {
 	private let fullPath: String
 	private let route: JumpRoute?
@@ -31,36 +31,26 @@ struct EntityLoader: View {
 
 	private func resolve() {
 		Task {
-			if let response = try? await Network.shared.apollo.fetch(
-				query: ProjectQuery(fullPath: fullPath), cachePolicy: .networkOnly),
-				let project = response.data?.project, let id = project.id.toIntId()
-			{
-				entity = .success(.project(id: id, rootRef: project.repository?.rootRef))
-				return
-			}
+			do {
+				let response = try await Network.shared.apollo.fetch(
+					query: EntityIdQuery(fullPath: fullPath, username: fullPath),
+					cachePolicy: .networkOnly)
 
-			if let response = try? await Network.shared.apollo.fetch(
-				query: GroupQuery(fullPath: fullPath), cachePolicy: .networkOnly),
-				let group = response.data?.group, let id = group.id?.toIntId()
-			{
-				entity = .success(.group(id: id))
-				return
+				if let project = response.data?.project, let id = project.id.toIntId() {
+					entity = .success(.project(id: id, rootRef: project.repository?.rootRef))
+				} else if let group = response.data?.group, let id = group.id?.toIntId() {
+					entity = .success(.group(id: id))
+				} else if route == nil, !fullPath.contains("/"), response.data?.user != nil {
+					entity = .success(.user(username: fullPath))
+				} else {
+					entity = .failure(
+						ProjectLoadError(
+							fullPath: fullPath,
+							messages: ["No project, group or user at this path."]))
+				}
+			} catch {
+				entity = .failure(error)
 			}
-
-			// Only a bare, single-segment path can be a username.
-			if route == nil, !fullPath.contains("/"),
-				let response = try? await Network.shared.apollo.fetch(
-					query: UserQuery(username: fullPath), cachePolicy: .networkOnly),
-				response.data?.user != nil
-			{
-				entity = .success(.user(username: fullPath))
-				return
-			}
-
-			entity = .failure(
-				ProjectLoadError(
-					fullPath: fullPath,
-					messages: ["No project, group or user at this path."]))
 		}
 	}
 

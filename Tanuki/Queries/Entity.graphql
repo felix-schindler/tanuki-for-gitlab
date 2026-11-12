@@ -1,0 +1,14 @@
+query EntityId($fullPath: ID!, $username: String!) {
+  project(fullPath: $fullPath) {
+    id
+    repository {
+      rootRef
+    }
+  }
+  group(fullPath: $fullPath) {
+    id
+  }
+  user(username: $username) {
+    id
+  }
+}
