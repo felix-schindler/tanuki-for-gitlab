@@ -10,9 +10,11 @@ import SwiftUI
 
 struct TodoView: View {
 	private let todo: Todo
+	private let onAction: () async -> Void
 
-	init(_ todo: Todo) {
+	init(_ todo: Todo, onAction: @escaping () async -> Void = {}) {
 		self.todo = todo
+		self.onAction = onAction
 	}
 
 	private func markDone() async {
@@ -23,6 +25,7 @@ struct TodoView: View {
 					.error, "Failed to mark todo as done", errors.joined(separator: ", "), systemImage: "xmark")
 			} else {
 				Notify.status(.success, "Todo marked as done", systemImage: "checkmark")
+				await onAction()
 			}
 		} catch let error {
 			Notify.status(.error, "Failed to mark todo as done", error.localizedDescription, systemImage: "xmark")

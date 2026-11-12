@@ -11,9 +11,11 @@ import SwiftUI
 
 struct ProjectHeaderView: View {
 	private let project: ProjectQuery.Data.Project
+	private let onAction: () async -> Void
 
-	init(_ project: ProjectQuery.Data.Project) {
+	init(_ project: ProjectQuery.Data.Project, onAction: @escaping () async -> Void = {}) {
 		self.project = project
+		self.onAction = onAction
 	}
 
 	private func star() async {
@@ -26,6 +28,7 @@ struct ProjectHeaderView: View {
 				type: RestAPIProject.self, method: .post,
 				endpoint: "projects/\(id)/star")
 			Notify.status(.success, "Project starred", systemImage: "star")
+			await onAction()
 		} catch APIError.http(let status, _) where status == 304 {
 			await unstar(id: id)
 		} catch let error {
@@ -39,6 +42,7 @@ struct ProjectHeaderView: View {
 				type: RestAPIProject.self, method: .post,
 				endpoint: "projects/\(id)/unstar")
 			Notify.status(.success, "Project unstarred", systemImage: "star")
+			await onAction()
 		} catch APIError.http(let status, _) where status == 304 {
 			Notify.status(.warning, "Project is not starred", systemImage: "star")
 		} catch let error {
@@ -56,6 +60,7 @@ struct ProjectHeaderView: View {
 				type: RestAPIProject.self, method: .post,
 				endpoint: "projects/\(id)/fork")
 			Notify.status(.success, "Project forked", systemImage: "tuningfork")
+			await onAction()
 		} catch let error {
 			Notify.status(.error, "Forking project failed", error.localizedDescription, systemImage: "xmark")
 		}

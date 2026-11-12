@@ -70,7 +70,9 @@ struct UserTodosLoader: View {
 					} else {
 						ForEach(todos, id: \.?.id) { maybeTodo in
 							if let todo = maybeTodo {
-								TodoView(todo)
+								TodoView(todo) {
+									await reloadTodos()
+								}
 							}
 						}
 					}

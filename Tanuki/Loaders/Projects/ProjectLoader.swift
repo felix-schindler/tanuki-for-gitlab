@@ -150,7 +150,9 @@ struct ProjectLoader: View {
 				switch project {
 				case .success(let project):
 					Section {
-						ProjectHeaderView(project)
+						ProjectHeaderView(project) {
+							await reloadProject()
+						}
 					}
 
 					if project.archived == true {
