@@ -275,26 +275,4 @@ struct JumpDiagnostics {
 	var summary: String {
 		error?.title ?? target?.describeTarget ?? "Nothing to open"
 	}
-
-	/// Multi-line, copyable report — this is what belongs in a bug report.
-	var report: String {
-		var lines = [
-			"Tanuki: could not open link from clipboard",
-			"Signed-in instance: \(host)",
-			"Clipboard: \(JumpURLError.excerpt(raw))",
-		]
-
-		if let error {
-			lines.append("Reason: \(error.message)")
-			if let hint = error.hint {
-				lines.append("Hint: \(hint)")
-			}
-		}
-
-		if let target {
-			lines.append("Target: \(target.describeTarget)")
-		}
-
-		return lines.joined(separator: "\n")
-	}
 }
