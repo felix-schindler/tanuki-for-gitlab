@@ -5,6 +5,8 @@
 //  Created by Felix Schindler on 02.11.21.
 //
 
+import Foundation
+import GitLabAPI
 import SwiftUI
 
 struct Commit: Codable {
@@ -13,7 +15,8 @@ struct Commit: Codable {
 	let title: String
 	let message: String
 	let authorName: String
-	let authoredDate: Date
+	/// Qualified because `GitLabAPI` also exports a `Date` custom scalar.
+	let authoredDate: Foundation.Date
 	let webUrl: String
 }
 
@@ -25,6 +28,41 @@ struct Branch: Codable {
 	let developersCanPush: Bool
 	let developersCanMerge: Bool
 	let canPush: Bool
+}
+
+/// Bridges the REST commit model to `SmallCommitView`, which is typed against the
+/// GraphQL commit selection.
+private struct RestCommit: NewCommit {
+	let commit: Commit
+	let verificationStatus: String?
+
+	var id: String { commit.id }
+	var shortId: String { commit.shortId }
+	var title: String? { commit.title }
+	var authorName: String? { commit.authorName }
+	var _author: MyAuthor? { nil }
+	var authoredDate: GitLabAPI.Time? { commit.authoredDate.ISO8601Format() }
+	var webUrl: String { commit.webUrl }
+	var _signatureVerificationStatus: String? { verificationStatus }
+	var _lastPipelineStatus: GraphQLEnum<GitLabAPI.PipelineStatusEnum>? { nil }
+}
+
+/// A REST commit rendered by `SmallCommitView`, adding the signature status that
+/// GraphQL would otherwise provide.
+private struct CommitRow: View {
+	let commit: Commit
+	let projectId: Int
+
+	@State
+	private var verificationStatus: String?
+
+	var body: some View {
+		SmallCommitView(RestCommit(commit: commit, verificationStatus: verificationStatus), projectId)
+			.task {
+				let signature = await CommitSignature.load(projectId: projectId, commitId: commit.id)
+				verificationStatus = signature?.verificationStatus.uppercased()
+			}
+	}
 }
 
 struct CommitsLoader: View {
@@ -119,37 +157,7 @@ struct CommitsLoader: View {
 						}
 						Section("Commits") {
 							ForEach(commits, id: \.id) { commit in
-								NavigationLink(
-									destination: DiffLoader(
-										projectId: self.projectId, commitSha: commit.id),
-									label: {
-										HStack {
-											VStack(alignment: .leading) {
-												InlineMarkdown(commit.title)
-													.fontWeight(.medium)
-
-												ScrollView(.horizontal) {
-													HStack {
-														PillView(commit.authorName, icon: Icons.users.rawValue)
-														PillView(
-															commit.authoredDate.toString(.short),
-															icon: Icons.clock.rawValue)
-													}
-												}.font(.footnote)
-											}
-											Spacer()
-											VStack {
-												SignatureLoader(
-													projectId: self.projectId, commitId: commit.id)
-												PillView(commit.shortId)
-													.textSelection(.enabled)
-													.font(.system(.footnote, design: .monospaced))
-											}
-										}.swipeActions {
-											ShareButton(URL(string: commit.webUrl)!)
-										}
-									}
-								)
+								CommitRow(commit: commit, projectId: self.projectId)
 							}
 						}
 					}
