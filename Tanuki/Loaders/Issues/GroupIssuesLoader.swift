@@ -28,19 +28,32 @@ struct GroupIssuesLoader: View {
 	@State
 	private var issues: Result<[SmallIssue?], Error>? = nil
 
+	private var query: GroupIssuesQuery {
+		GroupIssuesQuery(
+			fullPath: self.fullPath,
+			state: GraphFilter.toFilterEnum(self.filter.state),
+			search: GraphFilter.toFilter(self.filter.search),
+			confidential: GraphFilter.toFilter(self.filter.confidential),
+			subscribed: GraphFilter.toFilterEnum(self.filter.subscribed),
+			types: self.filter.types != nil ? .some([.case(self.filter.types!)]) : .none,
+			labels: GraphFilter.toFilter(self.filter.labelNames),
+			milestones: GraphFilter.toFilter(self.filter.milestoneTitles),
+			authorUsername: GraphFilter.toFilter(self.filter.author),
+			assigneeUsernames: GraphFilter.toFilter(self.filter.assignees),
+			createdAfter: GraphFilter.toFilterDate(self.filter.createdAfter),
+			createdBefore: GraphFilter.toFilterDate(self.filter.createdBefore),
+			updatedAfter: GraphFilter.toFilterDate(self.filter.updatedAfter),
+			updatedBefore: GraphFilter.toFilterDate(self.filter.updatedBefore),
+			includeSubgroups: .some(self.filter.includeSubgroups)
+		)
+	}
+
 	private func loadIssues() {
 		self.loadTask?.cancel()
 		self.loadTask = Task {
 			do {
 				let responses = try Network.shared.apollo.fetch(
-					query: GroupIssuesQuery(
-						fullPath: self.fullPath,
-						state: GraphFilter.toFilterEnum(self.filter.state),
-						search: GraphFilter.toFilter(self.filter.search),
-						confidential: GraphFilter.toFilter(self.filter.confidential),
-						subscribed: GraphFilter.toFilterEnum(self.filter.subscribed),
-						types: self.filter.types != nil ? .some([.case(self.filter.types!)]) : .none
-					),
+					query: self.query,
 					cachePolicy: .cacheAndNetwork
 				)
 
@@ -66,14 +79,7 @@ struct GroupIssuesLoader: View {
 	private func reloadIssues() async {
 		do {
 			let response = try await Network.shared.apollo.fetch(
-				query: GroupIssuesQuery(
-					fullPath: self.fullPath,
-					state: GraphFilter.toFilterEnum(self.filter.state),
-					search: GraphFilter.toFilter(self.filter.search),
-					confidential: GraphFilter.toFilter(self.filter.confidential),
-					subscribed: GraphFilter.toFilterEnum(self.filter.subscribed),
-					types: self.filter.types != nil ? .some([.case(self.filter.types!)]) : .none
-				),
+				query: self.query,
 				cachePolicy: .networkOnly
 			)
 
@@ -106,26 +112,18 @@ struct GroupIssuesLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Issues", systemImage: "smallcircle.circle", color: .green)
+				LoadingView("Loading Issues", systemImage: Icons.issues.rawValue, color: .green)
 			}
-		}.debouncedLoad(filter.search) {
+		}.debouncedLoad(filter) {
 			loadIssues()
 		}.refreshable {
 			await reloadIssues()
 		}.toolbar {
-			Button("Filter", systemImage: "line.3.horizontal.decrease") {
+			Button("Filter", systemImage: Icons.filter.rawValue) {
 				showFilters = true
 			}
-		}.sheet(isPresented: $showFilters, onDismiss: { self.showFilters = false }) {
-			NavigationStack {
-				IssueFilterView(filter: $filter)
-					.toolbar {
-						AsyncButton("Apply filter", systemImage: "checkmark") {
-							await reloadIssues()
-							showFilters = false
-						}
-					}
-			}
+		}.sheet(isPresented: $showFilters) {
+			IssueFilterView(filter: $filter, showsScope: true)
 		}.searchable(
 			text: Binding(get: { self.filter.search ?? "" }, set: { self.filter.search = $0.isNotEmpty ? $0 : nil }),
 			prompt: "Search issues"

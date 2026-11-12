@@ -16,6 +16,25 @@ struct HomeView: View {
 	@State
 	private var path = NavigationPath()
 
+	@State
+	private var versionWarning: String?
+
+	/// `/version` needs an authenticated token. A failing call (guest token,
+	/// restricted instance) just means no banner.
+	private func checkVersion() async {
+		guard let version = try? await API.get(type: RestAPIVersion.self, endpoint: "version"),
+			VersionGate.compareVersions(version.version, VersionGate.minimumRequiredVersion)
+				== .orderedAscending,
+			VersionGate.shouldShowVersionWarning(
+				for: API.host, serverVersion: version.version)
+		else {
+			versionWarning = nil
+			return
+		}
+
+		versionWarning = version.version
+	}
+
 	private func loadStarredProjects() {
 		do {
 			let responses = try Network.shared.apollo.fetch(
@@ -104,6 +123,22 @@ struct HomeView: View {
 
 	private var list: some View {
 		List {
+			if let versionWarning {
+				Section {
+					Label(
+						"This instance runs GitLab \(versionWarning). Tanuki needs GitLab \(VersionGate.minimumRequiredVersion) or later — some features may not work.",
+						systemImage: "exclamationmark.triangle.fill"
+					)
+					.swipeActions {
+						Button("Acknowledge", systemImage: "xmark") {
+							VersionGate.acknowledgeVersionWarning(
+								for: API.host, serverVersion: versionWarning)
+							self.versionWarning = nil
+						}
+					}
+				}
+			}
+
 			Section("Your work") {
 				NavigationLink(
 					destination: UserIssuesLoader(),
@@ -113,7 +148,7 @@ struct HomeView: View {
 								Text("Issues")
 							},
 							icon: {
-								Image(systemName: "smallcircle.circle")
+								Image(systemName: Icons.issues.rawValue)
 									.foregroundStyle(.green)
 							})
 					})
@@ -134,7 +169,7 @@ struct HomeView: View {
 								Text("Merge Requests")
 							},
 							icon: {
-								Image("git-mr.symbols")
+								Image(Images.mergeRequest.rawValue)
 									.resizable()
 									.scaledToFit()
 									.foregroundStyle(.blue)
@@ -149,7 +184,7 @@ struct HomeView: View {
 								Text("Projects")
 							},
 							icon: {
-								Image(systemName: "app.gift.fill")
+								Image(systemName: Icons.projects.rawValue)
 									.foregroundStyle(.gray)
 							})
 					}
@@ -163,7 +198,7 @@ struct HomeView: View {
 								Text("Snippets")
 							},
 							icon: {
-								Image(systemName: "scissors")
+								Image(systemName: Icons.snippets.rawValue)
 									.foregroundStyle(.purple)
 							})
 					}
@@ -177,7 +212,7 @@ struct HomeView: View {
 								Text("Groups")
 							},
 							icon: {
-								Image(systemName: "scale.3d")
+								Image(systemName: Icons.groups.rawValue)
 									.foregroundStyle(.red)
 							})
 					}
@@ -204,13 +239,15 @@ struct HomeView: View {
 							.frame(maxWidth: .infinity, minHeight: 100)
 					}
 				} else {
-					LoadingView("Loading starred Projects", systemImage: "star", color: .yellow)
+					LoadingView("Loading starred Projects", systemImage: Icons.star.rawValue, color: .yellow)
 				}
 			}
 		}.task {
 			loadStarredProjects()
+			await checkVersion()
 		}.refreshable {
 			await reloadStarredProjects()
+			await checkVersion()
 		}.toolbar {
 			ToolbarItem(placement: .topBarLeading) {
 				Button("Jump", systemImage: "arrow.right.page.on.clipboard") {
@@ -219,7 +256,7 @@ struct HomeView: View {
 			}
 			ToolbarItemGroup(placement: .topBarTrailing) {
 				NavigationLink(destination: EventsLoader()) {
-					Label("Activity", systemImage: "bell")
+					Label("Activity", systemImage: Icons.events.rawValue)
 				}.tint(.accentColor)
 				NavigationLink(destination: NewProjectView()) {
 					Label("New project", systemImage: "plus")

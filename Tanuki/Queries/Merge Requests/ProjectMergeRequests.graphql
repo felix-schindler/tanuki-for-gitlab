@@ -1,4 +1,19 @@
-query ProjectMergeRequests($fullPath: ID!, $state: MergeRequestState, $search: String, $draft: Boolean, $subscribed: SubscriptionStatus) {
+query ProjectMergeRequests(
+  $fullPath: ID!
+  $state: MergeRequestState
+  $search: String
+  $draft: Boolean
+  $subscribed: SubscriptionStatus
+  $labels: [String]
+  $milestone: String
+  $authorUsername: String
+  $assigneeUsername: String
+  $reviewerUsername: String
+  $createdAfter: Time
+  $createdBefore: Time
+  $updatedAfter: Time
+  $updatedBefore: Time
+) {
   project(fullPath: $fullPath) {
     mergeRequestsEnabled
 
@@ -7,6 +22,15 @@ query ProjectMergeRequests($fullPath: ID!, $state: MergeRequestState, $search: S
       search: $search
       draft: $draft
       subscribed: $subscribed
+      labelName: $labels
+      milestoneTitle: $milestone
+      authorUsername: $authorUsername
+      assigneeUsername: $assigneeUsername
+      reviewerUsername: $reviewerUsername
+      createdAfter: $createdAfter
+      createdBefore: $createdBefore
+      updatedAfter: $updatedAfter
+      updatedBefore: $updatedBefore
     ) {
       nodes {
         iid

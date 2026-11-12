@@ -7,6 +7,12 @@
 
 import Foundation
 
+// MARK: - Instance
+struct RestAPIVersion: Codable {
+	let version: String
+	let revision: String?
+}
+
 // MARK: - Authentication
 struct OAuthToken: Codable, Sendable {
 	let accessToken: String

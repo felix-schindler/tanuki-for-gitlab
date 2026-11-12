@@ -62,7 +62,8 @@ struct UserMergeLoader: View {
 			case .assigned:
 				let responses = try Network.shared.apollo.fetch(
 					query: UserAssignedMergeRequestsQuery(
-						state: .none, search: .none, draft: .none, subscribed: .none),
+						state: .none, search: .none, draft: .none, subscribed: .none, labels: .none, milestone: .none,
+						createdAfter: .none, createdBefore: .none, updatedAfter: .none, updatedBefore: .none),
 					cachePolicy: .cacheAndNetwork
 				)
 				for try await response in responses {
@@ -74,7 +75,8 @@ struct UserMergeLoader: View {
 			case .authored:
 				let responses = try Network.shared.apollo.fetch(
 					query: UserAuthoredMergeRequestsQuery(
-						state: .none, search: .none, draft: .none, subscribed: .none),
+						state: .none, search: .none, draft: .none, subscribed: .none, labels: .none, milestone: .none,
+						createdAfter: .none, createdBefore: .none, updatedAfter: .none, updatedBefore: .none),
 					cachePolicy: .cacheAndNetwork
 				)
 				for try await response in responses {
@@ -86,7 +88,8 @@ struct UserMergeLoader: View {
 			case .reviewRequested:
 				let responses = try Network.shared.apollo.fetch(
 					query: UserReviewRequestedMergeRequestsQuery(
-						state: .none, search: .none, draft: .none, subscribed: .none),
+						state: .none, search: .none, draft: .none, subscribed: .none, labels: .none, milestone: .none,
+						createdAfter: .none, createdBefore: .none, updatedAfter: .none, updatedBefore: .none),
 					cachePolicy: .cacheAndNetwork
 				)
 				for try await response in responses {
@@ -112,21 +115,24 @@ struct UserMergeLoader: View {
 			case .assigned:
 				let response = try await Network.shared.apollo.fetch(
 					query: UserAssignedMergeRequestsQuery(
-						state: .none, search: .none, draft: .none, subscribed: .none),
+						state: .none, search: .none, draft: .none, subscribed: .none, labels: .none, milestone: .none,
+						createdAfter: .none, createdBefore: .none, updatedAfter: .none, updatedBefore: .none),
 					cachePolicy: .networkOnly)
 				let nodes = response.data?.currentUser?.assignedMergeRequests?.nodes ?? []
 				self.mergeRequests = .success(capped(nodes.compactMap { $0 }))
 			case .authored:
 				let response = try await Network.shared.apollo.fetch(
 					query: UserAuthoredMergeRequestsQuery(
-						state: .none, search: .none, draft: .none, subscribed: .none),
+						state: .none, search: .none, draft: .none, subscribed: .none, labels: .none, milestone: .none,
+						createdAfter: .none, createdBefore: .none, updatedAfter: .none, updatedBefore: .none),
 					cachePolicy: .networkOnly)
 				let nodes = response.data?.currentUser?.authoredMergeRequests?.nodes ?? []
 				self.mergeRequests = .success(capped(nodes.compactMap { $0 }))
 			case .reviewRequested:
 				let response = try await Network.shared.apollo.fetch(
 					query: UserReviewRequestedMergeRequestsQuery(
-						state: .none, search: .none, draft: .none, subscribed: .none),
+						state: .none, search: .none, draft: .none, subscribed: .none, labels: .none, milestone: .none,
+						createdAfter: .none, createdBefore: .none, updatedAfter: .none, updatedBefore: .none),
 					cachePolicy: .networkOnly)
 				let nodes = response.data?.currentUser?.reviewRequestedMergeRequests?.nodes ?? []
 				self.mergeRequests = .success(capped(nodes.compactMap { $0 }))

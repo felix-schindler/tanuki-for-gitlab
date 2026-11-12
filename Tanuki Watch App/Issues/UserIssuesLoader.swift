@@ -28,7 +28,15 @@ struct UserIssuesLoader: View {
 			search: .none,
 			confidential: .none,
 			subscribed: .none,
-			types: .none
+			types: .none,
+			labels: .none,
+			milestones: .none,
+			authorUsername: .none,
+			assigneeUsernames: .none,
+			createdAfter: .none,
+			createdBefore: .none,
+			updatedAfter: .none,
+			updatedBefore: .none
 		)
 	}
 

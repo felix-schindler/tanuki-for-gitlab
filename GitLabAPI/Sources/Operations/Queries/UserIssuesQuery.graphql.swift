@@ -8,7 +8,7 @@ nonisolated public struct UserIssuesQuery: GraphQLQuery {
   public static let operationName: String = "UserIssues"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query UserIssues($username: String!, $state: IssuableState, $search: String, $confidential: Boolean, $subscribed: SubscriptionStatus, $types: [IssueType!]) { user(username: $username) { __typename projectMemberships { __typename nodes { __typename project { __typename fullPath issues( state: $state search: $search confidential: $confidential subscribed: $subscribed types: $types assigneeUsernames: [$username] authorUsername: $username ) { __typename nodes { __typename iid title reference(full: true) state upvotes downvotes userNotesCount author { __typename avatarUrl name username } createdAt webUrl } } } } } } }"#
+      #"query UserIssues($username: String!, $state: IssuableState, $search: String, $confidential: Boolean, $subscribed: SubscriptionStatus, $types: [IssueType!], $labels: [String], $milestones: [String], $createdAfter: Time, $createdBefore: Time, $updatedAfter: Time, $updatedBefore: Time) { user(username: $username) { __typename projectMemberships { __typename nodes { __typename project { __typename fullPath issues( state: $state search: $search confidential: $confidential subscribed: $subscribed types: $types labelName: $labels milestoneTitle: $milestones createdAfter: $createdAfter createdBefore: $createdBefore updatedAfter: $updatedAfter updatedBefore: $updatedBefore assigneeUsernames: [$username] authorUsername: $username ) { __typename nodes { __typename iid title reference(full: true) state upvotes downvotes userNotesCount author { __typename avatarUrl name username } createdAt webUrl } } } } } } }"#
     ))
 
   public var username: String
@@ -17,6 +17,12 @@ nonisolated public struct UserIssuesQuery: GraphQLQuery {
   public var confidential: GraphQLNullable<Bool>
   public var subscribed: GraphQLNullable<GraphQLEnum<SubscriptionStatus>>
   public var types: GraphQLNullable<[GraphQLEnum<IssueType>]>
+  public var labels: GraphQLNullable<[String?]>
+  public var milestones: GraphQLNullable<[String?]>
+  public var createdAfter: GraphQLNullable<Time>
+  public var createdBefore: GraphQLNullable<Time>
+  public var updatedAfter: GraphQLNullable<Time>
+  public var updatedBefore: GraphQLNullable<Time>
 
   public init(
     username: String,
@@ -24,7 +30,13 @@ nonisolated public struct UserIssuesQuery: GraphQLQuery {
     search: GraphQLNullable<String>,
     confidential: GraphQLNullable<Bool>,
     subscribed: GraphQLNullable<GraphQLEnum<SubscriptionStatus>>,
-    types: GraphQLNullable<[GraphQLEnum<IssueType>]>
+    types: GraphQLNullable<[GraphQLEnum<IssueType>]>,
+    labels: GraphQLNullable<[String?]>,
+    milestones: GraphQLNullable<[String?]>,
+    createdAfter: GraphQLNullable<Time>,
+    createdBefore: GraphQLNullable<Time>,
+    updatedAfter: GraphQLNullable<Time>,
+    updatedBefore: GraphQLNullable<Time>
   ) {
     self.username = username
     self.state = state
@@ -32,6 +44,12 @@ nonisolated public struct UserIssuesQuery: GraphQLQuery {
     self.confidential = confidential
     self.subscribed = subscribed
     self.types = types
+    self.labels = labels
+    self.milestones = milestones
+    self.createdAfter = createdAfter
+    self.createdBefore = createdBefore
+    self.updatedAfter = updatedAfter
+    self.updatedBefore = updatedBefore
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
@@ -40,7 +58,13 @@ nonisolated public struct UserIssuesQuery: GraphQLQuery {
     "search": search,
     "confidential": confidential,
     "subscribed": subscribed,
-    "types": types
+    "types": types,
+    "labels": labels,
+    "milestones": milestones,
+    "createdAfter": createdAfter,
+    "createdBefore": createdBefore,
+    "updatedAfter": updatedAfter,
+    "updatedBefore": updatedBefore
   ] }
 
   nonisolated public struct Data: GitLabAPI.SelectionSet {
@@ -132,6 +156,12 @@ nonisolated public struct UserIssuesQuery: GraphQLQuery {
                 "confidential": .variable("confidential"),
                 "subscribed": .variable("subscribed"),
                 "types": .variable("types"),
+                "labelName": .variable("labels"),
+                "milestoneTitle": .variable("milestones"),
+                "createdAfter": .variable("createdAfter"),
+                "createdBefore": .variable("createdBefore"),
+                "updatedAfter": .variable("updatedAfter"),
+                "updatedBefore": .variable("updatedBefore"),
                 "assigneeUsernames": [.variable("username")],
                 "authorUsername": .variable("username")
               ]),

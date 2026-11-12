@@ -8,31 +8,55 @@ nonisolated public struct UserReviewRequestedMergeRequestsQuery: GraphQLQuery {
   public static let operationName: String = "UserReviewRequestedMergeRequests"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query UserReviewRequestedMergeRequests($state: MergeRequestState, $search: String, $draft: Boolean, $subscribed: SubscriptionStatus) { currentUser { __typename reviewRequestedMergeRequests( state: $state search: $search draft: $draft subscribed: $subscribed ) { __typename count nodes { __typename project { __typename fullPath } iid title reference(full: true) state upvotes downvotes userNotesCount author { __typename avatarUrl name username } createdAt webUrl } } } }"#
+      #"query UserReviewRequestedMergeRequests($state: MergeRequestState, $search: String, $draft: Boolean, $subscribed: SubscriptionStatus, $labels: [String], $milestone: String, $createdAfter: Time, $createdBefore: Time, $updatedAfter: Time, $updatedBefore: Time) { currentUser { __typename reviewRequestedMergeRequests( state: $state search: $search draft: $draft subscribed: $subscribed labelName: $labels milestoneTitle: $milestone createdAfter: $createdAfter createdBefore: $createdBefore updatedAfter: $updatedAfter updatedBefore: $updatedBefore ) { __typename count nodes { __typename project { __typename fullPath } iid title reference(full: true) state upvotes downvotes userNotesCount author { __typename avatarUrl name username } createdAt webUrl } } } }"#
     ))
 
   public var state: GraphQLNullable<GraphQLEnum<MergeRequestState>>
   public var search: GraphQLNullable<String>
   public var draft: GraphQLNullable<Bool>
   public var subscribed: GraphQLNullable<GraphQLEnum<SubscriptionStatus>>
+  public var labels: GraphQLNullable<[String?]>
+  public var milestone: GraphQLNullable<String>
+  public var createdAfter: GraphQLNullable<Time>
+  public var createdBefore: GraphQLNullable<Time>
+  public var updatedAfter: GraphQLNullable<Time>
+  public var updatedBefore: GraphQLNullable<Time>
 
   public init(
     state: GraphQLNullable<GraphQLEnum<MergeRequestState>>,
     search: GraphQLNullable<String>,
     draft: GraphQLNullable<Bool>,
-    subscribed: GraphQLNullable<GraphQLEnum<SubscriptionStatus>>
+    subscribed: GraphQLNullable<GraphQLEnum<SubscriptionStatus>>,
+    labels: GraphQLNullable<[String?]>,
+    milestone: GraphQLNullable<String>,
+    createdAfter: GraphQLNullable<Time>,
+    createdBefore: GraphQLNullable<Time>,
+    updatedAfter: GraphQLNullable<Time>,
+    updatedBefore: GraphQLNullable<Time>
   ) {
     self.state = state
     self.search = search
     self.draft = draft
     self.subscribed = subscribed
+    self.labels = labels
+    self.milestone = milestone
+    self.createdAfter = createdAfter
+    self.createdBefore = createdBefore
+    self.updatedAfter = updatedAfter
+    self.updatedBefore = updatedBefore
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
     "state": state,
     "search": search,
     "draft": draft,
-    "subscribed": subscribed
+    "subscribed": subscribed,
+    "labels": labels,
+    "milestone": milestone,
+    "createdAfter": createdAfter,
+    "createdBefore": createdBefore,
+    "updatedAfter": updatedAfter,
+    "updatedBefore": updatedBefore
   ] }
 
   nonisolated public struct Data: GitLabAPI.SelectionSet {
@@ -64,7 +88,13 @@ nonisolated public struct UserReviewRequestedMergeRequestsQuery: GraphQLQuery {
           "state": .variable("state"),
           "search": .variable("search"),
           "draft": .variable("draft"),
-          "subscribed": .variable("subscribed")
+          "subscribed": .variable("subscribed"),
+          "labelName": .variable("labels"),
+          "milestoneTitle": .variable("milestone"),
+          "createdAfter": .variable("createdAfter"),
+          "createdBefore": .variable("createdBefore"),
+          "updatedAfter": .variable("updatedAfter"),
+          "updatedBefore": .variable("updatedBefore")
         ]),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [

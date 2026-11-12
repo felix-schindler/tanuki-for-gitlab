@@ -28,20 +28,50 @@ struct UserIssuesLoader: View {
 	@State
 	private var projectMemberships: Result<[IssueProjectMembership?], Error>? = nil
 
+	private var userQuery: UserIssuesQuery? {
+		guard let username else { return nil }
+
+		return UserIssuesQuery(
+			username: username,
+			state: GraphFilter.toFilterEnum(self.filter.state),
+			search: GraphFilter.toFilter(self.filter.search),
+			confidential: GraphFilter.toFilter(self.filter.confidential),
+			subscribed: GraphFilter.toFilterEnum(self.filter.subscribed),
+			types: self.filter.types != nil ? .some([.case(self.filter.types!)]) : .none,
+			labels: GraphFilter.toFilter(self.filter.labelNames),
+			milestones: GraphFilter.toFilter(self.filter.milestoneTitles),
+			createdAfter: GraphFilter.toFilterDate(self.filter.createdAfter),
+			createdBefore: GraphFilter.toFilterDate(self.filter.createdBefore),
+			updatedAfter: GraphFilter.toFilterDate(self.filter.updatedAfter),
+			updatedBefore: GraphFilter.toFilterDate(self.filter.updatedBefore)
+		)
+	}
+
+	private var currentUserQuery: CurrentUserIssuesQuery {
+		CurrentUserIssuesQuery(
+			state: GraphFilter.toFilterEnum(self.filter.state),
+			search: GraphFilter.toFilter(self.filter.search),
+			confidential: GraphFilter.toFilter(self.filter.confidential),
+			subscribed: GraphFilter.toFilterEnum(self.filter.subscribed),
+			types: self.filter.types != nil ? .some([.case(self.filter.types!)]) : .none,
+			labels: GraphFilter.toFilter(self.filter.labelNames),
+			milestones: GraphFilter.toFilter(self.filter.milestoneTitles),
+			authorUsername: GraphFilter.toFilter(self.filter.author),
+			assigneeUsernames: GraphFilter.toFilter(self.filter.assignees),
+			createdAfter: GraphFilter.toFilterDate(self.filter.createdAfter),
+			createdBefore: GraphFilter.toFilterDate(self.filter.createdBefore),
+			updatedAfter: GraphFilter.toFilterDate(self.filter.updatedAfter),
+			updatedBefore: GraphFilter.toFilterDate(self.filter.updatedBefore)
+		)
+	}
+
 	private func loadIssues() {
 		self.loadTask?.cancel()
 		self.loadTask = Task {
 			do {
-				if let username {
+				if let query = self.userQuery {
 					let responses = try Network.shared.apollo.fetch(
-						query: UserIssuesQuery(
-							username: username,
-							state: GraphFilter.toFilterEnum(self.filter.state),
-							search: GraphFilter.toFilter(self.filter.search),
-							confidential: GraphFilter.toFilter(self.filter.confidential),
-							subscribed: GraphFilter.toFilterEnum(self.filter.subscribed),
-							types: self.filter.types != nil ? .some([.case(self.filter.types!)]) : .none
-						), cachePolicy: .cacheAndNetwork)
+						query: query, cachePolicy: .cacheAndNetwork)
 
 					for try await response in responses {
 						if Task.isCancelled { return }
@@ -55,13 +85,7 @@ struct UserIssuesLoader: View {
 					}
 				} else {
 					let responses = try Network.shared.apollo.fetch(
-						query: CurrentUserIssuesQuery(
-							state: GraphFilter.toFilterEnum(self.filter.state),
-							search: GraphFilter.toFilter(self.filter.search),
-							confidential: GraphFilter.toFilter(self.filter.confidential),
-							subscribed: GraphFilter.toFilterEnum(self.filter.subscribed),
-							types: self.filter.types != nil ? .some([.case(self.filter.types!)]) : .none
-						), cachePolicy: .cacheAndNetwork)
+						query: self.currentUserQuery, cachePolicy: .cacheAndNetwork)
 
 					for try await response in responses {
 						if Task.isCancelled { return }
@@ -87,29 +111,16 @@ struct UserIssuesLoader: View {
 
 	func reloadIssues() async {
 		do {
-			if let username {
+			if let query = self.userQuery {
 				let response = try await Network.shared.apollo.fetch(
-					query: UserIssuesQuery(
-						username: username,
-						state: GraphFilter.toFilterEnum(self.filter.state),
-						search: GraphFilter.toFilter(self.filter.search),
-						confidential: GraphFilter.toFilter(self.filter.confidential),
-						subscribed: GraphFilter.toFilterEnum(self.filter.subscribed),
-						types: self.filter.types != nil ? .some([.case(self.filter.types!)]) : .none
-					), cachePolicy: .networkOnly)
+					query: query, cachePolicy: .networkOnly)
 
 				if let projectMemberships = response.data?.user?.projectMemberships?.nodes {
 					self.projectMemberships = .success(projectMemberships)
 				}
 			} else {
 				let response = try await Network.shared.apollo.fetch(
-					query: CurrentUserIssuesQuery(
-						state: GraphFilter.toFilterEnum(self.filter.state),
-						search: GraphFilter.toFilter(self.filter.search),
-						confidential: GraphFilter.toFilter(self.filter.confidential),
-						subscribed: GraphFilter.toFilterEnum(self.filter.subscribed),
-						types: self.filter.types != nil ? .some([.case(self.filter.types!)]) : .none
-					), cachePolicy: .networkOnly)
+					query: self.currentUserQuery, cachePolicy: .networkOnly)
 
 				if let projectMemberships = response.data?.currentUser?.projectMemberships?.nodes {
 					self.projectMemberships = .success(projectMemberships)
@@ -143,7 +154,7 @@ struct UserIssuesLoader: View {
 
 					if issues.isEmpty {
 						NoContentView(
-							"All caught up!", systemImage: "smallcircle.circle",
+							"All caught up!", systemImage: Icons.issues.rawValue,
 							description: "There are no Issues")
 					} else {
 						ForEach(0..<issues.count, id: \.self) { index in
@@ -155,26 +166,20 @@ struct UserIssuesLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Issues", systemImage: "smallcircle.circle", color: .green)
+				LoadingView("Loading Issues", systemImage: Icons.issues.rawValue, color: .green)
 			}
-		}.debouncedLoad(filter.search) {
+		}.debouncedLoad(filter) {
 			loadIssues()
 		}.refreshable {
 			await reloadIssues()
 		}.toolbar {
-			Button("Filter", systemImage: "line.3.horizontal.decrease") {
+			Button("Filter", systemImage: Icons.filter.rawValue) {
 				showFilters = true
 			}
-		}.sheet(isPresented: $showFilters, onDismiss: { self.showFilters = false }) {
-			NavigationStack {
-				IssueFilterView(filter: $filter)
-					.toolbar {
-						AsyncButton("Apply filter", systemImage: "checkmark") {
-							await reloadIssues()
-							showFilters = false
-						}
-					}
-			}
+		}.sheet(isPresented: $showFilters) {
+			// The current user's list can filter by people; a specific user's list
+			// is already pinned to that author and assignee.
+			IssueFilterView(filter: $filter, showsPeople: self.username == nil)
 		}.searchable(
 			text: Binding(get: { self.filter.search ?? "" }, set: { self.filter.search = $0.isNotEmpty ? $0 : nil }),
 			prompt: "Search issues"

@@ -9,4 +9,6 @@ import Foundation
 
 enum SettingsKey {
 	static let supportHtmlInMarkdown = "supportHtmlInMarkdown"
+	static let appearance = "appearance"
+	static let padTab = "padTab"
 }

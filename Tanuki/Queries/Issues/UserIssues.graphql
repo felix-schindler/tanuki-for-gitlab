@@ -1,4 +1,17 @@
-query UserIssues($username: String!, $state: IssuableState, $search: String, $confidential: Boolean, $subscribed: SubscriptionStatus, $types: [IssueType!]) {
+query UserIssues(
+  $username: String!
+  $state: IssuableState
+  $search: String
+  $confidential: Boolean
+  $subscribed: SubscriptionStatus
+  $types: [IssueType!]
+  $labels: [String]
+  $milestones: [String]
+  $createdAfter: Time
+  $createdBefore: Time
+  $updatedAfter: Time
+  $updatedBefore: Time
+) {
   user(username: $username) {
     projectMemberships {
       nodes {
@@ -10,6 +23,12 @@ query UserIssues($username: String!, $state: IssuableState, $search: String, $co
             confidential: $confidential
             subscribed: $subscribed
             types: $types
+            labelName: $labels
+            milestoneTitle: $milestones
+            createdAfter: $createdAfter
+            createdBefore: $createdBefore
+            updatedAfter: $updatedAfter
+            updatedBefore: $updatedBefore
             assigneeUsernames: [$username]
             authorUsername: $username
           ) {

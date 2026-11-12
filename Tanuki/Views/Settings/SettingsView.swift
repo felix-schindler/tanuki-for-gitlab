@@ -11,23 +11,37 @@ struct SettingsView: View {
 	@AppStorage(SettingsKey.supportHtmlInMarkdown)
 	private var supportHTML = false
 
+	@AppStorage(SettingsKey.appearance)
+	private var appearance = ""
+
 	public var body: some View {
 		List {
 			Section {
+				Picker(
+					"Appearance", systemImage: "circle.lefthalf.filled",
+					selection: $appearance
+				) {
+					Text("System").tag("")
+					Text("Light").tag("light")
+					Text("Dark").tag("dark")
+				}
+			}
+
+			Section {
 				NavigationLink(destination: CacheView()) {
-					Label("Cache", systemImage: "internaldrive")
+					Label("Cache", systemImage: Icons.cache.rawValue)
 				}
 				NavigationLink(destination: CookiesView()) {
 					Label(
 						title: { Text("Cookies") },
 						icon: {
-							Image("cookie.symbols")
+							Image(Images.cookie.rawValue)
 								.resizable()
 								.scaledToFit()
 						})
 				}
 				NavigationLink(destination: InstancesView()) {
-					Label("Instances", systemImage: "server.rack")
+					Label("Instances", systemImage: Icons.server.rawValue)
 				}
 			}
 
@@ -42,7 +56,7 @@ struct SettingsView: View {
 
 			Section {
 				NavigationLink(destination: FeedbackView()) {
-					Label("Feedback", systemImage: "exclamationmark.bubble")
+					Label("Feedback", systemImage: Icons.feedback.rawValue)
 				}
 				AppStoreReview()
 			}
@@ -52,10 +66,10 @@ struct SettingsView: View {
 					Label("Privacy Policy", systemImage: "hand.raised")
 				}
 				Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
-					Label("Terms of Use (EULA)", systemImage: "doc.text")
+					Label("Terms of Use (EULA)", systemImage: Icons.files.rawValue)
 				}
 				Link(destination: URL(string: "https://github.com/felix-schindler/tanuki-ios")!) {
-					Label("Source Code on GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
+					Label("Source Code on GitHub", systemImage: Icons.code.rawValue)
 				}
 			}
 		}

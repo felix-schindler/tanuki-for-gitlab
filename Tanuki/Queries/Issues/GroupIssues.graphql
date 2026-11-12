@@ -1,4 +1,20 @@
-query GroupIssues($fullPath: ID!, $state: IssuableState, $search: String, $confidential: Boolean, $subscribed: SubscriptionStatus, $types: [IssueType!]) {
+query GroupIssues(
+  $fullPath: ID!
+  $state: IssuableState
+  $search: String
+  $confidential: Boolean
+  $subscribed: SubscriptionStatus
+  $types: [IssueType!]
+  $labels: [String]
+  $milestones: [String]
+  $authorUsername: String
+  $assigneeUsernames: [String!]
+  $createdAfter: Time
+  $createdBefore: Time
+  $updatedAfter: Time
+  $updatedBefore: Time
+  $includeSubgroups: Boolean
+) {
   group(fullPath: $fullPath) {
     issues(
       state: $state
@@ -6,6 +22,15 @@ query GroupIssues($fullPath: ID!, $state: IssuableState, $search: String, $confi
       confidential: $confidential
       subscribed: $subscribed
       types: $types
+      labelName: $labels
+      milestoneTitle: $milestones
+      authorUsername: $authorUsername
+      assigneeUsernames: $assigneeUsernames
+      createdAfter: $createdAfter
+      createdBefore: $createdBefore
+      updatedAfter: $updatedAfter
+      updatedBefore: $updatedBefore
+      includeSubgroups: $includeSubgroups
     ) {
       nodes {
         iid

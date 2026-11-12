@@ -33,7 +33,17 @@ struct GroupMergeLoader: View {
 			state: GraphFilter.toFilterEnum(self.filter.state),
 			search: GraphFilter.toFilter(self.filter.search),
 			draft: GraphFilter.toFilter(self.filter.draft),
-			subscribed: GraphFilter.toFilterEnum(self.filter.subscribed)
+			subscribed: GraphFilter.toFilterEnum(self.filter.subscribed),
+			labels: GraphFilter.toFilter(self.filter.labelNames),
+			milestone: GraphFilter.toFilter(self.filter.milestoneTitle),
+			authorUsername: GraphFilter.toFilter(self.filter.author),
+			assigneeUsername: GraphFilter.toFilter(self.filter.assignee),
+			reviewerUsername: GraphFilter.toFilter(self.filter.reviewer),
+			createdAfter: GraphFilter.toFilterDate(self.filter.createdAfter),
+			createdBefore: GraphFilter.toFilterDate(self.filter.createdBefore),
+			updatedAfter: GraphFilter.toFilterDate(self.filter.updatedAfter),
+			updatedBefore: GraphFilter.toFilterDate(self.filter.updatedBefore),
+			includeSubgroups: .some(self.filter.includeSubgroups)
 		)
 	}
 
@@ -89,7 +99,7 @@ struct GroupMergeLoader: View {
 				switch mergeRequests {
 				case .success(let mrs):
 					if mrs.isEmpty {
-						NoContentView("There are no Merge Requests", image: "git-mr.symbols")
+						NoContentView("There are no Merge Requests", image: Images.mergeRequest.rawValue)
 					} else {
 						ForEach(mrs, id: \.?.reference) { maybeMerge in
 							if let mr = maybeMerge,
@@ -104,26 +114,18 @@ struct GroupMergeLoader: View {
 				}
 			} else {
 				LoadingView(
-					"Loading Merge Requests", image: "git-mr.symbols", color: .blue)
+					"Loading Merge Requests", image: Images.mergeRequest.rawValue, color: .blue)
 			}
-		}.debouncedLoad(filter.search) {
+		}.debouncedLoad(filter) {
 			loadMergeRequests()
 		}.refreshable {
 			await reloadMergeRequests()
 		}.toolbar {
-			Button("Filter", systemImage: "line.3.horizontal.decrease") {
+			Button("Filter", systemImage: Icons.filter.rawValue) {
 				showFilters = true
 			}
-		}.sheet(isPresented: $showFilters, onDismiss: { self.showFilters = false }) {
-			NavigationStack {
-				MergeRequestFilterView(filter: $filter)
-					.toolbar {
-						AsyncButton("Apply filter", systemImage: "checkmark") {
-							await reloadMergeRequests()
-							showFilters = false
-						}
-					}
-			}
+		}.sheet(isPresented: $showFilters) {
+			MergeRequestFilterView(filter: $filter, showsScope: true)
 		}.searchable(
 			text: Binding(get: { self.filter.search ?? "" }, set: { self.filter.search = $0.isNotEmpty ? $0 : nil }),
 			prompt: "Search merge requests"

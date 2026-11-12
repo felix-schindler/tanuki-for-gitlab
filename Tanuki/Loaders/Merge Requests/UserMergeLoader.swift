@@ -49,7 +49,13 @@ struct UserMergeLoader: View {
 			state: GraphFilter.toFilterEnum(self.filter.state),
 			search: GraphFilter.toFilter(self.filter.search),
 			draft: GraphFilter.toFilter(self.filter.draft),
-			subscribed: GraphFilter.toFilterEnum(self.filter.subscribed)
+			subscribed: GraphFilter.toFilterEnum(self.filter.subscribed),
+			labels: GraphFilter.toFilter(self.filter.labelNames),
+			milestone: GraphFilter.toFilter(self.filter.milestoneTitle),
+			createdAfter: GraphFilter.toFilterDate(self.filter.createdAfter),
+			createdBefore: GraphFilter.toFilterDate(self.filter.createdBefore),
+			updatedAfter: GraphFilter.toFilterDate(self.filter.updatedAfter),
+			updatedBefore: GraphFilter.toFilterDate(self.filter.updatedBefore)
 		)
 	}
 
@@ -58,7 +64,13 @@ struct UserMergeLoader: View {
 			state: GraphFilter.toFilterEnum(self.filter.state),
 			search: GraphFilter.toFilter(self.filter.search),
 			draft: GraphFilter.toFilter(self.filter.draft),
-			subscribed: GraphFilter.toFilterEnum(self.filter.subscribed)
+			subscribed: GraphFilter.toFilterEnum(self.filter.subscribed),
+			labels: GraphFilter.toFilter(self.filter.labelNames),
+			milestone: GraphFilter.toFilter(self.filter.milestoneTitle),
+			createdAfter: GraphFilter.toFilterDate(self.filter.createdAfter),
+			createdBefore: GraphFilter.toFilterDate(self.filter.createdBefore),
+			updatedAfter: GraphFilter.toFilterDate(self.filter.updatedAfter),
+			updatedBefore: GraphFilter.toFilterDate(self.filter.updatedBefore)
 		)
 	}
 
@@ -67,7 +79,13 @@ struct UserMergeLoader: View {
 			state: GraphFilter.toFilterEnum(self.filter.state),
 			search: GraphFilter.toFilter(self.filter.search),
 			draft: GraphFilter.toFilter(self.filter.draft),
-			subscribed: GraphFilter.toFilterEnum(self.filter.subscribed)
+			subscribed: GraphFilter.toFilterEnum(self.filter.subscribed),
+			labels: GraphFilter.toFilter(self.filter.labelNames),
+			milestone: GraphFilter.toFilter(self.filter.milestoneTitle),
+			createdAfter: GraphFilter.toFilterDate(self.filter.createdAfter),
+			createdBefore: GraphFilter.toFilterDate(self.filter.createdBefore),
+			updatedAfter: GraphFilter.toFilterDate(self.filter.updatedAfter),
+			updatedBefore: GraphFilter.toFilterDate(self.filter.updatedBefore)
 		)
 	}
 
@@ -179,7 +197,7 @@ struct UserMergeLoader: View {
 				switch mergeRequests {
 				case .success(let mergeRequests):
 					if mergeRequests.isEmpty {
-						NoContentView("There are no merge requests", image: "git-mr.symbols")
+						NoContentView("There are no merge requests", image: Images.mergeRequest.rawValue)
 					} else {
 						ForEach(mergeRequests, id: \.?.reference) {
 							maybeMerge in
@@ -192,26 +210,18 @@ struct UserMergeLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Merge Requests", image: "git-mr.symbols", color: .blue)
+				LoadingView("Loading Merge Requests", image: Images.mergeRequest.rawValue, color: .blue)
 			}
-		}.debouncedLoad(filter.search) {
+		}.debouncedLoad(filter) {
 			loadMergeRequests()
 		}.refreshable {
 			await reloadMergeRequests()
 		}.toolbar {
-			Button("Filter", systemImage: "line.3.horizontal.decrease") {
+			Button("Filter", systemImage: Icons.filter.rawValue) {
 				showFilters = true
 			}
-		}.sheet(isPresented: $showFilters, onDismiss: { self.showFilters = false }) {
-			NavigationStack {
-				MergeRequestFilterView(filter: $filter)
-					.toolbar {
-						AsyncButton("Apply filter", systemImage: "checkmark") {
-							await reloadMergeRequests()
-							showFilters = false
-						}
-					}
-			}
+		}.sheet(isPresented: $showFilters) {
+			MergeRequestFilterView(filter: $filter, showsPeople: false)
 		}.searchable(
 			text: Binding(get: { self.filter.search ?? "" }, set: { self.filter.search = $0.isNotEmpty ? $0 : nil }),
 			prompt: "Search merge requests"

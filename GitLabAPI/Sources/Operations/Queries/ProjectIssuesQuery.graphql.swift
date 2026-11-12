@@ -8,7 +8,7 @@ nonisolated public struct ProjectIssuesQuery: GraphQLQuery {
   public static let operationName: String = "ProjectIssues"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ProjectIssues($fullPath: ID!, $state: IssuableState, $search: String, $confidential: Boolean, $subscribed: SubscriptionStatus, $types: [IssueType!]) { project(fullPath: $fullPath) { __typename id issuesEnabled userPermissions { __typename createIssue } issues( state: $state search: $search confidential: $confidential subscribed: $subscribed types: $types ) { __typename nodes { __typename iid title reference(full: true) state upvotes downvotes userNotesCount author { __typename avatarUrl name username } createdAt webUrl } } } }"#
+      #"query ProjectIssues($fullPath: ID!, $state: IssuableState, $search: String, $confidential: Boolean, $subscribed: SubscriptionStatus, $types: [IssueType!], $labels: [String], $milestones: [String], $authorUsername: String, $assigneeUsernames: [String!], $createdAfter: Time, $createdBefore: Time, $updatedAfter: Time, $updatedBefore: Time) { project(fullPath: $fullPath) { __typename id issuesEnabled userPermissions { __typename createIssue } issues( state: $state search: $search confidential: $confidential subscribed: $subscribed types: $types labelName: $labels milestoneTitle: $milestones authorUsername: $authorUsername assigneeUsernames: $assigneeUsernames createdAfter: $createdAfter createdBefore: $createdBefore updatedAfter: $updatedAfter updatedBefore: $updatedBefore ) { __typename nodes { __typename iid title reference(full: true) state upvotes downvotes userNotesCount author { __typename avatarUrl name username } createdAt webUrl } } } }"#
     ))
 
   public var fullPath: ID
@@ -17,6 +17,14 @@ nonisolated public struct ProjectIssuesQuery: GraphQLQuery {
   public var confidential: GraphQLNullable<Bool>
   public var subscribed: GraphQLNullable<GraphQLEnum<SubscriptionStatus>>
   public var types: GraphQLNullable<[GraphQLEnum<IssueType>]>
+  public var labels: GraphQLNullable<[String?]>
+  public var milestones: GraphQLNullable<[String?]>
+  public var authorUsername: GraphQLNullable<String>
+  public var assigneeUsernames: GraphQLNullable<[String]>
+  public var createdAfter: GraphQLNullable<Time>
+  public var createdBefore: GraphQLNullable<Time>
+  public var updatedAfter: GraphQLNullable<Time>
+  public var updatedBefore: GraphQLNullable<Time>
 
   public init(
     fullPath: ID,
@@ -24,7 +32,15 @@ nonisolated public struct ProjectIssuesQuery: GraphQLQuery {
     search: GraphQLNullable<String>,
     confidential: GraphQLNullable<Bool>,
     subscribed: GraphQLNullable<GraphQLEnum<SubscriptionStatus>>,
-    types: GraphQLNullable<[GraphQLEnum<IssueType>]>
+    types: GraphQLNullable<[GraphQLEnum<IssueType>]>,
+    labels: GraphQLNullable<[String?]>,
+    milestones: GraphQLNullable<[String?]>,
+    authorUsername: GraphQLNullable<String>,
+    assigneeUsernames: GraphQLNullable<[String]>,
+    createdAfter: GraphQLNullable<Time>,
+    createdBefore: GraphQLNullable<Time>,
+    updatedAfter: GraphQLNullable<Time>,
+    updatedBefore: GraphQLNullable<Time>
   ) {
     self.fullPath = fullPath
     self.state = state
@@ -32,6 +48,14 @@ nonisolated public struct ProjectIssuesQuery: GraphQLQuery {
     self.confidential = confidential
     self.subscribed = subscribed
     self.types = types
+    self.labels = labels
+    self.milestones = milestones
+    self.authorUsername = authorUsername
+    self.assigneeUsernames = assigneeUsernames
+    self.createdAfter = createdAfter
+    self.createdBefore = createdBefore
+    self.updatedAfter = updatedAfter
+    self.updatedBefore = updatedBefore
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
@@ -40,7 +64,15 @@ nonisolated public struct ProjectIssuesQuery: GraphQLQuery {
     "search": search,
     "confidential": confidential,
     "subscribed": subscribed,
-    "types": types
+    "types": types,
+    "labels": labels,
+    "milestones": milestones,
+    "authorUsername": authorUsername,
+    "assigneeUsernames": assigneeUsernames,
+    "createdAfter": createdAfter,
+    "createdBefore": createdBefore,
+    "updatedAfter": updatedAfter,
+    "updatedBefore": updatedBefore
   ] }
 
   nonisolated public struct Data: GitLabAPI.SelectionSet {
@@ -76,7 +108,15 @@ nonisolated public struct ProjectIssuesQuery: GraphQLQuery {
           "search": .variable("search"),
           "confidential": .variable("confidential"),
           "subscribed": .variable("subscribed"),
-          "types": .variable("types")
+          "types": .variable("types"),
+          "labelName": .variable("labels"),
+          "milestoneTitle": .variable("milestones"),
+          "authorUsername": .variable("authorUsername"),
+          "assigneeUsernames": .variable("assigneeUsernames"),
+          "createdAfter": .variable("createdAfter"),
+          "createdBefore": .variable("createdBefore"),
+          "updatedAfter": .variable("updatedAfter"),
+          "updatedBefore": .variable("updatedBefore")
         ]),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [

@@ -1,10 +1,36 @@
-query GroupMergeRequests($fullPath: ID!, $state: MergeRequestState, $search: String, $draft: Boolean, $subscribed: SubscriptionStatus) {
+query GroupMergeRequests(
+  $fullPath: ID!
+  $state: MergeRequestState
+  $search: String
+  $draft: Boolean
+  $subscribed: SubscriptionStatus
+  $labels: [String]
+  $milestone: String
+  $authorUsername: String
+  $assigneeUsername: String
+  $reviewerUsername: String
+  $createdAfter: Time
+  $createdBefore: Time
+  $updatedAfter: Time
+  $updatedBefore: Time
+  $includeSubgroups: Boolean
+) {
   group(fullPath: $fullPath) {
     mergeRequests(
       state: $state
       search: $search
       draft: $draft
       subscribed: $subscribed
+      labelName: $labels
+      milestoneTitle: $milestone
+      authorUsername: $authorUsername
+      assigneeUsername: $assigneeUsername
+      reviewerUsername: $reviewerUsername
+      createdAfter: $createdAfter
+      createdBefore: $createdBefore
+      updatedAfter: $updatedAfter
+      updatedBefore: $updatedBefore
+      includeSubgroups: $includeSubgroups
     ) {
       nodes {
         iid
