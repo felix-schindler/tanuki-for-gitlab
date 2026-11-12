@@ -10,8 +10,6 @@ import SwiftUI
 struct ConfigView: View {
 	@Environment(\.dismiss) var dismiss
 
-	public private(set) var showSetup: Binding<Bool>? = nil
-
 	@State
 	private var newHost = "gitlab.com"
 
@@ -94,7 +92,6 @@ struct ConfigView: View {
 			let instance = GitLabInstance(host: host, token: newToken)
 			try await Auth.login(
 				instance: instance,
-				showSetup: showSetup,
 				dismiss: dismiss
 			)
 		} catch let error {
@@ -105,6 +102,6 @@ struct ConfigView: View {
 
 #Preview {
 	NavigationStack {
-		ConfigView(showSetup: .constant(true))
+		ConfigView()
 	}
 }

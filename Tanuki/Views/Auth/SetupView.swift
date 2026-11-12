@@ -48,7 +48,7 @@ struct SetupView: View {
 				.controlSize(.large)
 
 				NavigationLink(
-					destination: ConfigView(showSetup: nil),
+					destination: ConfigView(),
 					label: {
 						Text("Self-Hosted instance")
 							.frame(maxWidth: .infinity)

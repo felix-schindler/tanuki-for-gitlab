@@ -29,7 +29,7 @@ struct AddInstanceView: View {
 				AsyncButton(action: { await login() }) {
 					Label("GitLab.com (OAuth)", systemImage: "person.badge.key")
 				}
-				NavigationLink(destination: ConfigView(showSetup: nil)) {
+				NavigationLink(destination: ConfigView()) {
 					Label("Self-Hosted", systemImage: "server.rack")
 				}
 			} footer: {

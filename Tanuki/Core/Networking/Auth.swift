@@ -55,7 +55,6 @@ class Auth {
 
 	public static func login(
 		instance: GitLabInstance,
-		showSetup: Binding<Bool>? = nil,
 		dismiss: DismissAction? = nil
 	) async throws {
 		let previousInstance = InstanceManager.selected
@@ -73,7 +72,6 @@ class Auth {
 				"Welcome, \(user.username)",
 				systemImage: "checkmark"
 			)
-			showSetup?.wrappedValue = false
 			dismiss?()
 			SessionStore.shared.refresh()
 		} catch {
@@ -105,7 +103,7 @@ class Auth {
 		)
 	}
 
-	public static func logout(showSetup: Binding<Bool>? = nil) async {
+	public static func logout() async {
 		let host = InstanceManager.selected?.host ?? API.host
 		if let current = InstanceManager.selected {
 			InstanceManager.remove(current)
@@ -114,10 +112,6 @@ class Auth {
 		do {
 			try await resetSessionCaches(host: host)
 			Notify.status(.success, "Logged out")
-
-			if InstanceManager.selected == nil {
-				showSetup?.wrappedValue = true
-			}
 			SessionStore.shared.refresh()
 		} catch let error {
 			Notify.status(
