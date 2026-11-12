@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct Tanuki_Watch_Watch_AppApp: App {
 	init() {
+		InstanceManager.migrate()
 		WatchSync.shared.activate()
 	}
 

@@ -61,7 +61,8 @@ struct GitLabInstance: Codable, Identifiable, Equatable, Sendable {
 class InstanceManager {
 	private static let userDefaults = UserDefaults(suiteName: "group.de.schindlerfelix.GitLab")!
 	private static let legacyUserDefaults = UserDefaults(suiteName: "de.schindlerfelix.GitLab")
-	private static let instancesKey = "instances"
+	private static let hostsKey = "instanceHosts"
+	private static let legacyInstancesKey = "instances"
 	private static let selectedKey = "selectedInstance"
 	private static let legacyHostKey = "domain"
 	private static let legacyTokenKey = "token"
@@ -69,17 +70,28 @@ class InstanceManager {
 
 	static var instances: [GitLabInstance] {
 		get {
-			guard let data = userDefaults.data(forKey: instancesKey),
-				let instances = try? JSONDecoder().decode([GitLabInstance].self, from: data)
-			else {
-				return []
+			let hosts = userDefaults.stringArray(forKey: hostsKey) ?? []
+			return hosts.compactMap { host in
+				guard let data = Keychain.data(for: host),
+					let instance = try? JSONDecoder().decode(GitLabInstance.self, from: data)
+				else {
+					return nil
+				}
+				return instance
 			}
-			return instances
 		}
 		set {
-			if let data = try? JSONEncoder().encode(newValue) {
-				userDefaults.set(data, forKey: instancesKey)
+			let ids = Set(newValue.map(\.id))
+			let oldIds = userDefaults.stringArray(forKey: hostsKey) ?? []
+			for id in oldIds where !ids.contains(id) {
+				Keychain.remove(id)
 			}
+			for instance in newValue {
+				if let data = try? JSONEncoder().encode(instance) {
+					Keychain.set(data, for: instance.id)
+				}
+			}
+			userDefaults.set(newValue.map(\.id), forKey: hostsKey)
 		}
 	}
 
@@ -98,6 +110,7 @@ class InstanceManager {
 	}
 
 	static func migrate() {
+		migrateInstancesToKeychain()
 		removeInvalid()
 		guard !userDefaults.bool(forKey: migrationDoneKey) else { return }
 
@@ -168,6 +181,16 @@ class InstanceManager {
 		current[index] = instance
 		instances = current
 		WatchSync.shared.pushInstances()
+	}
+
+	private static func migrateInstancesToKeychain() {
+		guard let data = userDefaults.data(forKey: legacyInstancesKey),
+			let legacy = try? JSONDecoder().decode([GitLabInstance].self, from: data)
+		else {
+			return
+		}
+		instances = legacy
+		userDefaults.removeObject(forKey: legacyInstancesKey)
 	}
 
 	/// Drops instances without a token (the phantom the old `migrate()` created on

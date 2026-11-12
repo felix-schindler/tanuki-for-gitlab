@@ -8,10 +8,10 @@
 import Foundation
 
 enum PersistedCookies {
-	private static let key = "persistedCookies"
+	private static let account = "persistedCookies"
 
 	static func load() -> [[HTTPCookiePropertyKey: Any]] {
-		guard let data = UserDefaults.standard.data(forKey: key),
+		guard let data = Keychain.data(for: account),
 			let dicts = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil)
 				as? [[HTTPCookiePropertyKey: Any]]
 		else {
@@ -30,11 +30,11 @@ enum PersistedCookies {
 		if let data = try? PropertyListSerialization.data(
 			fromPropertyList: propertyDicts, format: .binary, options: 0)
 		{
-			UserDefaults.standard.set(data, forKey: key)
+			Keychain.set(data, for: account)
 		}
 	}
 
 	static func clear() {
-		UserDefaults.standard.removeObject(forKey: key)
+		Keychain.remove(account)
 	}
 }

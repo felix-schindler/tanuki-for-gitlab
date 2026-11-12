@@ -52,24 +52,46 @@ struct GitLabInstance: Codable, Identifiable, Equatable, Sendable {
 class InstanceManager {
 	private static let userDefaults: UserDefaults =
 		UserDefaults(suiteName: "group.de.schindlerfelix.GitLab") ?? .standard
-	private static let instancesKey = "instances"
+	private static let hostsKey = "instanceHosts"
+	private static let legacyInstancesKey = "instances"
 	private static let selectedKey = "selectedInstance"
 	private static let watchSelectedKey = "watchSelectedInstance"
 
 	static var instances: [GitLabInstance] {
 		get {
-			guard let data = userDefaults.data(forKey: instancesKey),
-				let instances = try? JSONDecoder().decode([GitLabInstance].self, from: data)
-			else {
-				return []
+			let hosts = userDefaults.stringArray(forKey: hostsKey) ?? []
+			return hosts.compactMap { host in
+				guard let data = Keychain.data(for: host),
+					let instance = try? JSONDecoder().decode(GitLabInstance.self, from: data)
+				else {
+					return nil
+				}
+				return instance
 			}
-			return instances
 		}
 		set {
-			if let data = try? JSONEncoder().encode(newValue) {
-				userDefaults.set(data, forKey: instancesKey)
+			let ids = Set(newValue.map(\.id))
+			let oldIds = userDefaults.stringArray(forKey: hostsKey) ?? []
+			for id in oldIds where !ids.contains(id) {
+				Keychain.remove(id)
 			}
+			for instance in newValue {
+				if let data = try? JSONEncoder().encode(instance) {
+					Keychain.set(data, for: instance.id)
+				}
+			}
+			userDefaults.set(newValue.map(\.id), forKey: hostsKey)
 		}
+	}
+
+	static func migrate() {
+		guard let data = userDefaults.data(forKey: legacyInstancesKey),
+			let legacy = try? JSONDecoder().decode([GitLabInstance].self, from: data)
+		else {
+			return
+		}
+		instances = legacy
+		userDefaults.removeObject(forKey: legacyInstancesKey)
 	}
 
 	static var selectedId: String? {
