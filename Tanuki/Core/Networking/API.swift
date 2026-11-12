@@ -254,6 +254,12 @@ class InstanceManager {
 	}
 }
 
+/// `WCSession` reply handlers are not declared `Sendable`, but calling one from
+/// the main actor after the hop is safe: WatchConnectivity serialises the delegate call.
+private struct SendableReply: @unchecked Sendable {
+	let call: ([String: Any]) -> Void
+}
+
 @MainActor
 final class WatchSync: NSObject, WCSessionDelegate {
 	static let shared = WatchSync()
@@ -295,6 +301,32 @@ final class WatchSync: NSObject, WCSessionDelegate {
 			if didActivate {
 				pushInstances()
 			}
+		}
+	}
+
+	nonisolated func session(
+		_ session: WCSession,
+		didReceiveMessage message: [String: Any],
+		replyHandler: @escaping ([String: Any]) -> Void
+	) {
+		guard message["requestToken"] as? Bool == true else {
+			replyHandler([:])
+			return
+		}
+
+		// The watch can't refresh on its own without invalidating this device's
+		// refresh token, so it asks for the current one after we've renewed it.
+		let reply = SendableReply(call: replyHandler)
+		Task { @MainActor in
+			await Auth.ensureValidToken()
+			var context: [String: Any] = [:]
+			if let data = try? self.encoder.encode(InstanceManager.instances) {
+				context["instances"] = data
+			}
+			if let selectedId = InstanceManager.selectedId {
+				context["selectedId"] = selectedId
+			}
+			reply.call(context)
 		}
 	}
 

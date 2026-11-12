@@ -211,24 +211,10 @@ enum WatchAuthError: LocalizedError {
 	}
 }
 
-private struct WatchOAuthToken: Decodable {
-	let accessToken: String
-	let refreshToken: String
-	let createdAt: Int
-	let expiresIn: Int
-
-	var expiresAt: Date {
-		Date(timeIntervalSince1970: TimeInterval(createdAt))
-			.addingTimeInterval(TimeInterval(expiresIn))
-	}
-}
-
 @MainActor
 final class WatchAuth {
-	static let clientID = "9ee458e1f3cca37c7d9c6651da1caa5d242ce9988e08471e7cba278cbe2eced2"
-	static let redirectUri = "tanuki://oauth/callback"
-
-	private static var refreshTask: Task<String, Error>?
+	/// One request in flight at a time, so several callers don't ask the phone twice.
+	private static var tokenTask: Task<String, Error>?
 
 	nonisolated static func isUnauthorized(_ error: Error) -> Bool {
 		if let responseError = error as? ResponseCodeInterceptor.ResponseCodeError {
@@ -237,129 +223,88 @@ final class WatchAuth {
 		return false
 	}
 
+	/// Renews the token on the iPhone. This process deliberately never calls
+	/// `oauth/token`: GitLab invalidates the previous refresh token on every
+	/// refresh, so two independent refreshes would log both devices out.
 	static func ensureValidToken() async {
 		guard let instance = InstanceManager.selected, instance.needsTokenRefresh else {
 			return
 		}
-		do {
-			_ = try await refreshAccessToken()
-		} catch {
-			if isUnrecoverable(error) {
-				removeInstance(id: instance.id)
-			}
-		}
-	}
-
-	static func refreshAccessToken() async throws -> String {
-		if let refreshTask {
-			return try await refreshTask.value
-		}
-
-		guard let instance = InstanceManager.selected,
-			instance.isOAuth,
-			let refreshToken = instance.refreshToken,
-			refreshToken.isNotEmpty
-		else {
-			throw WatchAuthError.sessionExpired
-		}
-
-		let host = instance.host
-		let task = Task<String, Error> {
-			try await performRefresh(host: host, refreshToken: refreshToken)
-		}
-		refreshTask = task
-
-		do {
-			let accessToken = try await task.value
-			refreshTask = nil
-			return accessToken
-		} catch {
-			refreshTask = nil
-			throw error
-		}
+		_ = try? await requestAccessToken()
 	}
 
 	static func handleUnauthorized(instanceId: String) async -> String? {
 		guard let current = InstanceManager.selected, current.id == instanceId else {
 			return nil
 		}
-		guard current.isOAuth, current.refreshToken?.isNotEmpty == true else {
-			removeInstance(id: instanceId)
+		guard current.isOAuth else {
+			// A personal access token can't be renewed here. Keep the account and
+			// let the iPhone remove it when it decides the session is gone.
 			return nil
 		}
+		let token = try? await requestAccessToken()
+		guard InstanceManager.selected?.id == instanceId else { return nil }
+		return token
+	}
+
+	static func requestAccessToken() async throws -> String {
+		if let tokenTask {
+			return try await tokenTask.value
+		}
+		let task = Task<String, Error> {
+			try await fetchTokenFromPhone()
+		}
+		tokenTask = task
+
 		do {
-			let token = try await refreshAccessToken()
-			guard InstanceManager.selected?.id == instanceId else { return nil }
+			let token = try await task.value
+			tokenTask = nil
 			return token
 		} catch {
-			if isUnrecoverable(error) {
-				removeInstance(id: instanceId)
-			}
-			return nil
+			tokenTask = nil
+			throw error
 		}
 	}
 
-	private static func performRefresh(host: String, refreshToken: String) async throws -> String {
-		var components = URLComponents()
-		components.queryItems = [
-			URLQueryItem(name: "client_id", value: clientID),
-			URLQueryItem(name: "refresh_token", value: refreshToken),
-			URLQueryItem(name: "grant_type", value: "refresh_token"),
-			URLQueryItem(name: "redirect_uri", value: redirectUri),
-		]
-		guard let tokenURL = URL(string: "https://\(host)/oauth/token"),
-			let body = components.percentEncodedQuery?.data(using: .utf8)
-		else {
+	private static func fetchTokenFromPhone() async throws -> String {
+		let session = WCSession.default
+		if session.activationState != .activated {
+			WatchSync.shared.activate()
+		}
+		guard WCSession.isSupported(), session.isReachable else {
 			throw WatchAuthError.sessionExpired
 		}
 
-		var request = URLRequest(url: tokenURL)
-		request.httpMethod = "POST"
-		request.setValue(
-			"application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-		request.httpBody = body
+		let payload: (instances: Data?, selectedId: String?) = try await withCheckedThrowingContinuation {
+			continuation in
+			session.sendMessage(
+				["requestToken": true],
+				replyHandler: { reply in
+					continuation.resume(
+						returning: (
+							instances: reply["instances"] as? Data,
+							selectedId: reply["selectedId"] as? String
+						)
+					)
+				},
+				errorHandler: { _ in
+					continuation.resume(throwing: WatchAuthError.sessionExpired)
+				}
+			)
+		}
 
-		let (data, response) = try await URLSession.shared.data(for: request)
-		guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-			let status = (response as? HTTPURLResponse)?.statusCode
-			if status == 400 || status == 401 {
-				throw WatchAuthError.sessionExpired
-			}
+		guard let data = payload.instances,
+			let instances = try? JSONDecoder().decode([GitLabInstance].self, from: data)
+		else {
 			throw WatchAuthError.refreshFailed
 		}
-
-		let decoder = JSONDecoder()
-		decoder.keyDecodingStrategy = .convertFromSnakeCase
-		let token = try decoder.decode(WatchOAuthToken.self, from: data)
-
-		if InstanceManager.selected?.host == host {
-			InstanceManager.update(
-				GitLabInstance(
-					host: host,
-					token: token.accessToken,
-					isOAuth: true,
-					refreshToken: token.refreshToken,
-					expiresAt: token.expiresAt
-				)
-			)
-			Network.shared.resetApolloClient()
-		}
-		return token.accessToken
-	}
-
-	private static func removeInstance(id: String) {
-		guard let instance = InstanceManager.instances.first(where: { $0.id == id }) else {
-			return
-		}
-		InstanceManager.remove(instance)
+		InstanceManager.overwrite(instances: instances, selectedId: payload.selectedId)
 		Network.shared.resetApolloClient()
-	}
 
-	nonisolated private static func isUnrecoverable(_ error: Error) -> Bool {
-		if let authError = error as? WatchAuthError, case .sessionExpired = authError {
-			return true
+		guard let token = InstanceManager.selected?.token, token.isNotEmpty else {
+			throw WatchAuthError.sessionExpired
 		}
-		return false
+		return token
 	}
 }
 
