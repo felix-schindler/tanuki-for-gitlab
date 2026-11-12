@@ -8,7 +8,6 @@
 
 import Foundation
 import GitLabAPI
-import NVMColor
 import SwiftUI
 import TanukiEmoji
 

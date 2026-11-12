@@ -47,15 +47,6 @@
       }
     },
     {
-      "identity" : "nvm-color",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/NVMNovem/nvm-color",
-      "state" : {
-        "revision" : "80cf6140a29a88197f9bee51918843d706dc6034",
-        "version" : "1.2.5"
-      }
-    },
-    {
       "identity" : "swift-concurrency-extras",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-concurrency-extras",

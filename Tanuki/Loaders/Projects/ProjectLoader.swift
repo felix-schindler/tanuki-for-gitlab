@@ -7,7 +7,6 @@
 //
 
 import GitLabAPI
-import NVMColor
 import SwiftUI
 
 enum NavDest {

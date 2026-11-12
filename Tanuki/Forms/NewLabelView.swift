@@ -27,9 +27,19 @@ struct NewLabelView: View {
 	@State private var prio: Int = -1
 
 	private func saveNewLabel() async {
+		guard let hex = color.hex else {
+			Notify.status(
+				.error,
+				"Couldn't create Label",
+				"The color couldn't be converted to a hex value.",
+				systemImage: "exclamationmark.triangle"
+			)
+			return
+		}
+
 		var query: [String: String] = [
 			"name": title,
-			"color": "#\(color.hex!.dropLast(2))",
+			"color": "#\(hex)",
 		]
 
 		if description != "" {
