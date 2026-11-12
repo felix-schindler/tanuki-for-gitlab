@@ -43,8 +43,8 @@ struct SmallGroupView: View {
 
 						ScrollView(.horizontal) {
 							HStack {
-								PillView(String(group.groupMembersCount), icon: "person.2")
-								PillView(String(group.projectsCount), icon: "app.gift.fill")
+								PillView(String(group.groupMembersCount), icon: Icons.members.rawValue)
+								PillView(String(group.projectsCount), icon: Icons.projects.rawValue)
 							}
 						}.font(.footnote)
 					}

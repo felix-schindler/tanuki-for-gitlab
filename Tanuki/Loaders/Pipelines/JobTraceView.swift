@@ -79,7 +79,7 @@ struct JobTraceView: View {
 				switch trace {
 				case .success(let text):
 					if text.isEmpty {
-						NoContentView("No log output", systemImage: "doc.text")
+						NoContentView("No log output", systemImage: Icons.files.rawValue)
 					} else {
 						if firstLoadedByte > 0 {
 							Button("Load older", systemImage: "arrow.up") {
@@ -100,7 +100,7 @@ struct JobTraceView: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading log", systemImage: "doc.text")
+				LoadingView("Loading log", systemImage: Icons.files.rawValue)
 			}
 		}.task {
 			await loadTrace()
@@ -108,7 +108,7 @@ struct JobTraceView: View {
 			await loadTrace()
 		}.toolbar {
 			if case .success(let text) = trace, text.isNotEmpty {
-				Button("Copy log", systemImage: "doc.on.doc") {
+				Button("Copy log", systemImage: Icons.copy.rawValue) {
 					text.copyToClipboard()
 					Notify.status(.success, "Copied to clipboard", systemImage: "checkmark")
 				}

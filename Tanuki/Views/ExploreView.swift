@@ -18,7 +18,7 @@ struct ExploreView: View {
 							Text("Projects")
 						},
 						icon: {
-							Image(systemName: "app.gift.fill")
+							Image(systemName: Icons.projects.rawValue)
 								.foregroundStyle(.gray)
 						}
 					)
@@ -32,7 +32,7 @@ struct ExploreView: View {
 							Text("Groups")
 						},
 						icon: {
-							Image(systemName: "scale.3d")
+							Image(systemName: Icons.groups.rawValue)
 								.foregroundStyle(.red)
 						}
 					)
@@ -45,7 +45,7 @@ struct ExploreView: View {
 							Text("Users")
 						},
 						icon: {
-							Image(systemName: "person.2")
+							Image(systemName: Icons.members.rawValue)
 								.foregroundStyle(.cyan)
 						}
 					)

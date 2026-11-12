@@ -185,7 +185,7 @@ struct ProjectLoader: View {
 											}
 										},
 										icon: {
-											Image(systemName: "smallcircle.circle")
+											Image(systemName: Icons.issues.rawValue)
 												.foregroundStyle(.green)
 										})
 								}
@@ -207,7 +207,7 @@ struct ProjectLoader: View {
 											}
 										},
 										icon: {
-											Image("git-mr.symbols")
+											Image(Images.mergeRequest.rawValue)
 												.resizable()
 												.scaledToFit()
 												.foregroundStyle(.blue)
@@ -270,7 +270,7 @@ struct ProjectLoader: View {
 									)
 								},
 								label: {
-									Label("Manage", systemImage: "person.2")
+									Label("Manage", systemImage: Icons.members.rawValue)
 								}
 							)
 						}
@@ -329,7 +329,7 @@ struct ProjectLoader: View {
 								label: {
 									Label(
 										"Code",
-										systemImage: "chevron.left.forwardslash.chevron.right"
+										systemImage: Icons.code.rawValue
 									)
 								}
 							)
@@ -356,7 +356,7 @@ struct ProjectLoader: View {
 								)
 							},
 							label: {
-								Label("Build", systemImage: "flag")
+								Label("Build", systemImage: Icons.flag.rawValue)
 							})
 					}
 
@@ -415,7 +415,7 @@ struct ProjectLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Project \(self.fullPath)", systemImage: "app.gift.fill")
+				LoadingView("Loading Project \(self.fullPath)", systemImage: Icons.projects.rawValue)
 			}
 		}.task {
 			loadProject()
@@ -455,7 +455,7 @@ struct ProjectLoader: View {
 								if let httpUrl = project.httpUrlToRepo {
 									Button(
 										"Copy HTTP url",
-										systemImage: "doc.on.doc"
+										systemImage: Icons.copy.rawValue
 									) {
 										httpUrl.copyToClipboard()
 										Notify.status(
@@ -467,7 +467,7 @@ struct ProjectLoader: View {
 								if let sshUrl = project.sshUrlToRepo {
 									Button(
 										"Copy SSH url",
-										systemImage: "doc.on.doc"
+										systemImage: Icons.copy.rawValue
 									) {
 										sshUrl.copyToClipboard()
 										Notify.status(
@@ -487,9 +487,9 @@ struct ProjectLoader: View {
 								].compactMap { $0 }.reduce(0, +)
 								AsyncButton(
 									sizeLabel > 0
-										? "Download archive (~\(Int64(sizeLabel).formatted(.byteCount(style: .file))))"
+										? "Download archive (~\(ByteFormatter.shared.format(Int64(sizeLabel))))"
 										: "Download archive",
-									systemImage: "archivebox"
+									systemImage: Icons.archive.rawValue
 								) {
 									await downloadArchive(projectId, ref: project.repository?.rootRef)
 								}
@@ -499,13 +499,13 @@ struct ProjectLoader: View {
 
 					Menu("Create", systemImage: "plus") {
 						if project.userPermissions.createIssue {
-							Button("Create Issue", systemImage: "smallcircle.circle") {
+							Button("Create Issue", systemImage: Icons.issues.rawValue) {
 								navigationActive = true
 								navigationDestination = .issue
 							}
 						}
 
-						Button("Create Milestone", systemImage: "diamond") {
+						Button("Create Milestone", systemImage: Icons.milestones.rawValue) {
 							navigationActive = true
 							navigationDestination = .milestone
 						}
@@ -517,13 +517,13 @@ struct ProjectLoader: View {
 							}
 						}
 
-						Button("Create Release", systemImage: "flag") {
+						Button("Create Release", systemImage: Icons.flag.rawValue) {
 							navigationActive = true
 							navigationDestination = .release
 						}
 
 						if (project.snippetsEnabled ?? true) && project.userPermissions.createSnippet {
-							Button("Create Snippet", systemImage: "scissors") {
+							Button("Create Snippet", systemImage: Icons.snippets.rawValue) {
 								navigationActive = true
 								navigationDestination = .snippet
 							}
@@ -539,7 +539,7 @@ struct ProjectLoader: View {
 							navigationDestination = .groupShare
 						}
 
-						Button("Create Label", systemImage: "tag") {
+						Button("Create Label", systemImage: Icons.tag.rawValue) {
 							navigationActive = true
 							navigationDestination = .label
 						}

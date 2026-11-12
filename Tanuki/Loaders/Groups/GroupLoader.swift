@@ -94,13 +94,13 @@ struct GroupLoader: View {
 
 						ScrollView(.horizontal) {
 							HStack {
-								PillView("\(group.groupMembersCount)", icon: "person.2")
+								PillView("\(group.groupMembersCount)", icon: Icons.members.rawValue)
 
 								if let parent = group.parent {
 									NavigationLink(
 										destination: GroupLoader(fullPath: parent.fullPath),
 										label: {
-											Label(parent.name ?? parent.fullPath, systemImage: "scale.3d")
+											Label(parent.name ?? parent.fullPath, systemImage: Icons.groups.rawValue)
 										}
 									)
 									.controlSize(.mini)
@@ -135,7 +135,7 @@ struct GroupLoader: View {
 											}
 										},
 										icon: {
-											Image(systemName: "app.gift.fill")
+											Image(systemName: Icons.projects.rawValue)
 												.foregroundStyle(.gray)
 										}
 									)
@@ -155,7 +155,7 @@ struct GroupLoader: View {
 											}
 										},
 										icon: {
-											Image(systemName: "scale.3d")
+											Image(systemName: Icons.groups.rawValue)
 												.foregroundStyle(.red)
 										}
 									)
@@ -207,7 +207,7 @@ struct GroupLoader: View {
 									))
 							},
 							label: {
-								Label("Manage", systemImage: "person.2")
+								Label("Manage", systemImage: Icons.members.rawValue)
 							}
 						)
 
@@ -240,15 +240,15 @@ struct GroupLoader: View {
 									destination: GroupMergeLoader(fullPath: self.fullPath))
 							},
 							label: {
-								Label("Code", systemImage: "chevron.left.forwardslash.chevron.right")
+								Label("Code", systemImage: Icons.code.rawValue)
 							}
 						)
 					}.navigationTitle(group.path)
 				case .failure(let error):
-					FailedView(error.localizedDescription, icon: "scale.3d")
+					FailedView(error.localizedDescription, icon: Icons.groups.rawValue)
 				}
 			} else {
-				LoadingView("Loading Group \(self.fullPath)", systemImage: "scale.3d")
+				LoadingView("Loading Group \(self.fullPath)", systemImage: Icons.groups.rawValue)
 			}
 		}.task {
 			loadGroup()
@@ -269,7 +269,7 @@ struct GroupLoader: View {
 								}
 							}
 
-							Button("Create subgroup", systemImage: "scale.3d") {
+							Button("Create subgroup", systemImage: Icons.groups.rawValue) {
 								createSubgroup = true
 							}
 

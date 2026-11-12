@@ -58,7 +58,7 @@ struct CurrentUserTodosLoader: View {
 					if todos.isEmpty {
 						NoContentView(
 							"All caught up!",
-							systemImage: "checkmark.square",
+							systemImage: Icons.todos.rawValue,
 							description: "There are no Todos"
 						)
 					} else {
@@ -74,7 +74,7 @@ struct CurrentUserTodosLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading your Todos", systemImage: "checkmark.square")
+				LoadingView("Loading your Todos", systemImage: Icons.todos.rawValue)
 			}
 		}.task {
 			loadTodos()

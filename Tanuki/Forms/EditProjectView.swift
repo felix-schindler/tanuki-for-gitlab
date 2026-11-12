@@ -56,11 +56,11 @@ struct EditProjectView: View {
 			TextField("Description (optional)", text: $description, axis: .vertical)
 
 			Picker("Visibility Level", selection: $visibility) {
-				Label("Private", systemImage: "lock")
+				Label("Private", systemImage: Icons.lock.rawValue)
 					.tag(ProjectVisibility.private)
-				Label("Public", systemImage: "globe")
+				Label("Public", systemImage: Icons.globe.rawValue)
 					.tag(ProjectVisibility.public)
-				Label("Internal", systemImage: "shield.lefthalf.filled")
+				Label("Internal", systemImage: Icons.shield.rawValue)
 					.tag(ProjectVisibility.internal)
 			}
 		}.toolbar {

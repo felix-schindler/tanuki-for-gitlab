@@ -81,7 +81,7 @@ struct NoteView: View {
 							} else {
 								PillView(
 									Date.fromToString(note.createdAt, dateStyle: .short, timeStyle: .short),
-									icon: "clock")
+									icon: Icons.clock.rawValue)
 							}
 						}
 					}.font(.footnote)

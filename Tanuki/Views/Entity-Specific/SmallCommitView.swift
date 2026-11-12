@@ -46,8 +46,8 @@ struct SmallCommitView: View {
 				{
 					ScrollView(.horizontal) {
 						HStack {
-							PillView(commit.authorName!, icon: "person")
-							PillView(Date.fromToString(commit.authoredDate!), icon: "clock")
+							PillView(commit.authorName!, icon: Icons.users.rawValue)
+							PillView(Date.fromToString(commit.authoredDate!), icon: Icons.clock.rawValue)
 						}
 					}
 					.font(.footnote)

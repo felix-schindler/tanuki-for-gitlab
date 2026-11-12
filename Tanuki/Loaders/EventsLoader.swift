@@ -80,7 +80,8 @@ struct EventsLoader: View {
 								ScrollView(.horizontal) {
 									HStack {
 										AuthorView(event.author)
-										PillView(event.createdAt.toString(timeStyle: .short), icon: "clock")
+										PillView(
+											event.createdAt.toString(timeStyle: .short), icon: Icons.clock.rawValue)
 									}
 								}.font(.footnote)
 								Text(getStupidText(event: event))
@@ -91,7 +92,7 @@ struct EventsLoader: View {
 					FailedView(failure.localizedDescription)
 				}
 			} else {
-				LoadingView("Loading events", systemImage: "bell")
+				LoadingView("Loading events", systemImage: Icons.events.rawValue)
 			}
 		}.task {
 			await getEvents()

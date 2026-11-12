@@ -76,7 +76,7 @@ struct PipelineLoader: View {
 					Section("Jobs") {
 						let stages = pipeline.stages?.nodes?.compactMap { $0 } ?? []
 						if stages.isEmpty {
-							NoContentView("No jobs", systemImage: "flag")
+							NoContentView("No jobs", systemImage: Icons.flag.rawValue)
 						} else {
 							ForEach(stages, id: \.name) { stage in
 								let jobs = stage.jobs?.nodes?.compactMap { $0 } ?? []
@@ -96,7 +96,7 @@ struct PipelineLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading pipeline", systemImage: "flag")
+				LoadingView("Loading pipeline", systemImage: Icons.flag.rawValue)
 			}
 		}.task {
 			loadPipeline()

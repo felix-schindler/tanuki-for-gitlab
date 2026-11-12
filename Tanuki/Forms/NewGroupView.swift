@@ -58,9 +58,9 @@ struct NewGroupView: View {
 				.autocorrectionDisabled()
 				.textInputAutocapitalization(.never)
 			Picker("Visibility Level", selection: $visibility) {
-				Label("Private", systemImage: "lock").tag(ProjectVisibility.private)
-				Label("Public", systemImage: "globe").tag(ProjectVisibility.public)
-				Label("Internal", systemImage: "shield.lefthalf.filled").tag(ProjectVisibility.internal)
+				Label("Private", systemImage: Icons.lock.rawValue).tag(ProjectVisibility.private)
+				Label("Public", systemImage: Icons.globe.rawValue).tag(ProjectVisibility.public)
+				Label("Internal", systemImage: Icons.shield.rawValue).tag(ProjectVisibility.internal)
 			}
 			TextField("Description (optional)", text: $description, axis: .vertical)
 		}.toolbar {

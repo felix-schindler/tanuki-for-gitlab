@@ -95,7 +95,7 @@ struct GroupsLoader: View {
 				switch groups {
 				case .success(let groups):
 					if groups.isEmpty {
-						NoContentView("There are no groups", systemImage: "scale.3d")
+						NoContentView("There are no groups", systemImage: Icons.groups.rawValue)
 					} else {
 						ForEach(groups, id: \.self?.fullPath) { group in
 							if let group {
@@ -107,7 +107,7 @@ struct GroupsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Groups", systemImage: "scale.3d")
+				LoadingView("Loading Groups", systemImage: Icons.groups.rawValue)
 			}
 		}.debouncedLoad(search) {
 			loadGroups()
@@ -115,7 +115,7 @@ struct GroupsLoader: View {
 			await reloadGroups()
 		}.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
-				Button("Filter", systemImage: "line.3.horizontal.decrease") {
+				Button("Filter", systemImage: Icons.filter.rawValue) {
 					showFilters = true
 				}
 			}

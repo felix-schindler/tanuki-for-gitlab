@@ -79,13 +79,13 @@ struct MrCommitsLoader: View {
 					} else {
 						NoContentView(
 							"There are no commits in this MR",
-							systemImage: "circle.and.line.horizontal")
+							systemImage: Icons.commits.rawValue)
 					}
 				case .failure(let error):
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Commits", systemImage: "circle.and.line.horizontal")
+				LoadingView("Loading Commits", systemImage: Icons.commits.rawValue)
 			}
 		}.task {
 			loadCommits()

@@ -9,22 +9,14 @@ import SwiftUI
 import TanukiShared
 
 struct CacheView: View {
-	private let formatter: ByteCountFormatter
-
 	@State private var urlMemoryUsage = URLCache.shared.currentMemoryUsage
 	@State private var urlDiskUsage = URLCache.shared.currentDiskUsage
 
 	@State private var avatarMemoryUsage = URLCache.avatar.currentMemoryUsage
 	@State private var avatarDiskUsage = URLCache.avatar.currentDiskUsage
 
-	public init() {
-		self.formatter = ByteCountFormatter()
-		self.formatter.allowedUnits = [.useKB, .useMB, .useGB]
-		self.formatter.countStyle = .file
-	}
-
 	private func formatBytes(_ bytes: Int) -> String {
-		return formatter.string(fromByteCount: Int64(bytes))
+		return ByteFormatter.shared.format(Int64(bytes))
 	}
 
 	public var body: some View {

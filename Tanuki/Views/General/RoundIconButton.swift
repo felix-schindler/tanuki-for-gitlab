@@ -31,7 +31,7 @@ struct ShareButton: View {
 
 	public var body: some View {
 		ShareLink(item: url) {
-			Label("Share", systemImage: "square.and.arrow.up")
+			Label("Share", systemImage: Icons.share.rawValue)
 		}
 	}
 }
@@ -88,10 +88,10 @@ struct RoundIconButton: View {
 		VStack {
 			RoundIconButton("Up", icon: "arrow.up", action: {})
 			RoundIconButton(
-				"Filters", icon: "line.3.horizontal.decrease", action: {})
+				"Filters", icon: Icons.filter.rawValue, action: {})
 			RoundIconButton("Add", icon: "plus") {
 			}
-			RoundIconButton("Events", icon: "bell", action: {})
+			RoundIconButton("Events", icon: Icons.events.rawValue, action: {})
 			CloseButton({})
 			RoundIconButton("Cancel", icon: "xmark", action: {})
 				.tint(.secondary)

@@ -42,7 +42,7 @@ struct LoadingView: View {
 
 #Preview {
 	List {
-		LoadingView("Loading Project", systemImage: "app.gift.fill")
-		LoadingView("Loading MR", image: "git-mr.symbols")
+		LoadingView("Loading Project", systemImage: Icons.projects.rawValue)
+		LoadingView("Loading MR", image: Images.mergeRequest.rawValue)
 	}
 }

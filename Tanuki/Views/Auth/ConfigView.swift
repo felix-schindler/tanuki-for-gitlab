@@ -48,7 +48,7 @@ struct ConfigView: View {
 						.autocorrectionDisabled()
 				},
 				header: {
-					Label("Personal Access Token", systemImage: "key")
+					Label("Personal Access Token", systemImage: Icons.key.rawValue)
 				})
 
 			Section(

@@ -22,7 +22,7 @@ struct NewEmailView: View {
 
 	private func addEmail() async {
 		guard canSubmit else {
-			Notify.status(.error, "Please enter a valid email address.", systemImage: "envelope")
+			Notify.status(.error, "Please enter a valid email address.", systemImage: Icons.email.rawValue)
 			return
 		}
 
@@ -35,7 +35,7 @@ struct NewEmailView: View {
 				contentType: .formUrlEncoded
 			)
 
-			Notify.status(.success, "Verification email sent", systemImage: "envelope")
+			Notify.status(.success, "Verification email sent", systemImage: Icons.email.rawValue)
 			self.dismiss()
 		} catch let error {
 			Notify.status(.error, "Couldn't add email", error.localizedDescription)

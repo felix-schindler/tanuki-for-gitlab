@@ -97,7 +97,7 @@ struct DiffLoader: View {
 				switch diffs {
 				case .success(let diffs):
 					if diffs.isEmpty {
-						NoContentView("There are no changes", systemImage: "plusminus")
+						NoContentView("There are no changes", systemImage: Icons.diffStats.rawValue)
 					} else {
 						ForEach(diffs, id: \.oldPath) { diff in
 							Section(
@@ -151,7 +151,7 @@ struct DiffLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Diffs", systemImage: "plusminus")
+				LoadingView("Loading Diffs", systemImage: Icons.diffStats.rawValue)
 			}
 		}.task {
 			await loadDiffs()

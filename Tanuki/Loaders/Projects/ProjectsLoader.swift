@@ -101,7 +101,7 @@ struct ProjectsLoader: View {
 				switch projects {
 				case .success(let projects):
 					if projects.isEmpty {
-						NoContentView("There are no projects", systemImage: "app.gift.fill")
+						NoContentView("There are no projects", systemImage: Icons.projects.rawValue)
 					} else {
 						ForEach(projects, id: \.?.fullPath) { project in
 							if let project {
@@ -113,14 +113,14 @@ struct ProjectsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Projects", systemImage: "app.gift.fill")
+				LoadingView("Loading Projects", systemImage: Icons.projects.rawValue)
 			}
 		}.debouncedLoad(search) {
 			loadProjects()
 		}.refreshable {
 			await reloadProjects()
 		}.toolbar {
-			Button("Filter", systemImage: "line.3.horizontal.decrease") {
+			Button("Filter", systemImage: Icons.filter.rawValue) {
 				showFilters = true
 			}
 		}.sheet(isPresented: $showFilters, onDismiss: { showFilters = false }) {

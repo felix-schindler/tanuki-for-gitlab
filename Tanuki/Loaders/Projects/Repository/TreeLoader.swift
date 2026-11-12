@@ -178,7 +178,7 @@ struct TreeLoader: View {
 											refName: self.refName
 										),
 										label: {
-											Label(file.name, systemImage: "doc.text")
+											Label(file.name, systemImage: Icons.files.rawValue)
 										}
 									)
 								}

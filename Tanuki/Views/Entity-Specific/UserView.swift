@@ -205,7 +205,7 @@ struct UserView: View {
 							Text("Issues")
 						},
 						icon: {
-							Image(systemName: "smallcircle.circle")
+							Image(systemName: Icons.issues.rawValue)
 								.foregroundStyle(.green)
 						}
 					)
@@ -223,7 +223,7 @@ struct UserView: View {
 							}
 						},
 						icon: {
-							Image(systemName: "scale.3d")
+							Image(systemName: Icons.groups.rawValue)
 								.foregroundStyle(.red)
 						}
 					)
@@ -236,7 +236,7 @@ struct UserView: View {
 							Text("Projects")
 						},
 						icon: {
-							Image(systemName: "app.gift.fill")
+							Image(systemName: Icons.projects.rawValue)
 								.foregroundStyle(.gray)
 						})
 				})
@@ -260,7 +260,7 @@ struct UserView: View {
 							Text("Snippets")
 						},
 						icon: {
-							Image(systemName: "scissors")
+							Image(systemName: Icons.snippets.rawValue)
 								.foregroundStyle(.purple)
 						}
 					)
@@ -279,13 +279,13 @@ struct UserView: View {
 					queryType: .user
 				),
 				label: {
-					Label("Timelogs", systemImage: "hourglass")
+					Label("Timelogs", systemImage: Icons.timeTracking.rawValue)
 				}
 			)
 			NavigationLink(
 				destination: UserTodosLoader(username: user.username),
 				label: {
-					Label("Todos", systemImage: "checkmark.square")
+					Label("Todos", systemImage: Icons.todos.rawValue)
 				}
 			)
 		}

@@ -181,7 +181,7 @@ struct FileLoader: View {
 			if case .failed(let error) = phase {
 				FailedView(error)
 			} else if Formats.audioFormats.contains(fileExtension) {
-				unavailable("Can't preview this \(fileExtension) audio file", systemImage: "play")
+				unavailable("Can't preview this \(fileExtension) audio file", systemImage: Icons.play.rawValue)
 			} else if Formats.binaryFormats.contains(fileExtension) {
 				unavailable("Can't preview this \(fileExtension) file", systemImage: "doc.zipper")
 			} else if isLoaded, let localURL {
@@ -258,7 +258,7 @@ struct FileLoader: View {
 
 			switch phase {
 			case .ready(let size):
-				Text(size.formatted(.byteCount(style: .file)))
+				Text(ByteFormatter.shared.format(size))
 					.font(.title2.bold())
 				Button {
 					Task {
@@ -271,9 +271,11 @@ struct FileLoader: View {
 			case .downloading(let received, let total):
 				ProgressView(value: Double(received) / Double(total))
 					.frame(maxWidth: 220)
-				Text("\(received.formatted(.byteCount(style: .file))) of \(total.formatted(.byteCount(style: .file)))")
-					.font(.callout)
-					.monospacedDigit()
+				Text(
+					"\(ByteFormatter.shared.format(received)) of \(ByteFormatter.shared.format(total))"
+				)
+				.font(.callout)
+				.monospacedDigit()
 			default:
 				ProgressView()
 			}

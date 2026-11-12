@@ -99,7 +99,7 @@ struct PipelineJobView: View {
 								destination: JobTraceView(
 									fullPath: fullPath, jobId: jobId, jobName: job.name ?? "Job")
 							) {
-								Label("Log", systemImage: "doc.text")
+								Label("Log", systemImage: Icons.files.rawValue)
 							}
 						}
 						if job.retryable {
@@ -108,7 +108,7 @@ struct PipelineJobView: View {
 							}
 						}
 						if job.playable {
-							AsyncButton("Play", systemImage: "play") {
+							AsyncButton("Play", systemImage: Icons.play.rawValue) {
 								await jobAction("play")
 							}
 						}
@@ -134,7 +134,7 @@ struct PipelineJobView: View {
 								Image(systemName: "square.and.arrow.down")
 							}
 							Text(
-								"\(artifact.name ?? "") (\((Int64(artifact.size) ?? 0).formatted(.byteCount(style: .file))))"
+								"\(artifact.name ?? "") (\(ByteFormatter.shared.format(Int64(artifact.size) ?? 0)))"
 							)
 							Spacer()
 						}

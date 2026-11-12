@@ -86,7 +86,7 @@ struct UsersLoader: View {
 				switch users {
 				case .success(let users):
 					if users.isEmpty {
-						NoContentView("There are no users", systemImage: "person.2")
+						NoContentView("There are no users", systemImage: Icons.members.rawValue)
 					} else {
 						ForEach(users, id: \.self?.username) { user in
 							if let user {
@@ -98,14 +98,14 @@ struct UsersLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Users", systemImage: "person.2")
+				LoadingView("Loading Users", systemImage: Icons.members.rawValue)
 			}
 		}.debouncedLoad(search) {
 			loadUsers()
 		}.refreshable {
 			await reloadUsers()
 		}.toolbar {
-			Button("Filter", systemImage: "line.3.horizontal.decrease") {
+			Button("Filter", systemImage: Icons.filter.rawValue) {
 				showFilters = true
 			}
 		}.sheet(isPresented: $showFilters, onDismiss: { showFilters = false }) {

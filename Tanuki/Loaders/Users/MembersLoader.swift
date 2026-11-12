@@ -111,7 +111,7 @@ struct MembersLoader: View {
 					if memberships.isEmpty {
 						NoContentView(
 							"This project has no members",
-							systemImage: "person.2"
+							systemImage: Icons.members.rawValue
 						)
 					} else {
 						ForEach(memberships, id: \.?.id) { maybeMember in
@@ -159,7 +159,9 @@ struct MembersLoader: View {
 															AuthorView(author)
 														}
 														if let createdAt = member.createdAt {
-															PillView(Date.fromToString(createdAt), icon: "clock")
+															PillView(
+																Date.fromToString(createdAt), icon: Icons.clock.rawValue
+															)
 														}
 														if let expiresAt = member.expiresAt {
 															PillView(
@@ -180,7 +182,7 @@ struct MembersLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Members", systemImage: "person.2")
+				LoadingView("Loading Members", systemImage: Icons.members.rawValue)
 			}
 		}.task {
 			loadMembers()

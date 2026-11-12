@@ -86,7 +86,7 @@ struct CommitsLoader: View {
 			if isLoading {
 				LoadingView(
 					"Loading branches and commits",
-					systemImage: "chevron.left.forwardslash.chevron.right"
+					systemImage: Icons.code.rawValue
 				)
 			} else if let commits {
 				switch commits {
@@ -94,7 +94,7 @@ struct CommitsLoader: View {
 					if commits.isEmpty {
 						NoContentView(
 							"You'll see your commits after you pushed something to branch \(refName)",
-							systemImage: "chevron.left.forwardslash.chevron.right"
+							systemImage: Icons.code.rawValue
 						)
 					} else {
 						HStack {
@@ -130,8 +130,10 @@ struct CommitsLoader: View {
 
 												ScrollView(.horizontal) {
 													HStack {
-														PillView(commit.authorName, icon: "person")
-														PillView(commit.authoredDate.toString(.short), icon: "clock")
+														PillView(commit.authorName, icon: Icons.users.rawValue)
+														PillView(
+															commit.authoredDate.toString(.short),
+															icon: Icons.clock.rawValue)
 													}
 												}.font(.footnote)
 											}

@@ -52,7 +52,7 @@ struct NewSshKeyView: View {
 				body: body
 			)
 
-			Notify.status(.success, "Added \(added.title)", systemImage: "key")
+			Notify.status(.success, "Added \(added.title)", systemImage: Icons.key.rawValue)
 			self.dismiss()
 		} catch let error {
 			Notify.status(.error, "Couldn't add SSH key", error.localizedDescription)

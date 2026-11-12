@@ -56,7 +56,7 @@ struct WikisLoader: View {
 									title: page.title
 								)
 							) {
-								Label(page.title.emojized(), systemImage: "doc.text")
+								Label(page.title.emojized(), systemImage: Icons.files.rawValue)
 							}
 						}
 					}
@@ -113,13 +113,13 @@ struct WikiPageLoader: View {
 					} else {
 						NoContentView(
 							"This page is empty",
-							systemImage: "doc.text")
+							systemImage: Icons.files.rawValue)
 					}
 				case .failure(let error):
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Page", systemImage: "doc.text")
+				LoadingView("Loading Page", systemImage: Icons.files.rawValue)
 			}
 		}.task {
 			await loadPage()

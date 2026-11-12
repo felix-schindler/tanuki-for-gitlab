@@ -70,7 +70,7 @@ struct TodoView: View {
 					PillView(
 						"\(todo.targetType.rawValue.lowercased().capitalized) · \(todo.action.rawValue.replacingOccurrences(of: "_", with: " "))"
 					)
-					PillView(Date.fromToString(todo.createdAt), icon: "clock")
+					PillView(Date.fromToString(todo.createdAt), icon: Icons.clock.rawValue)
 				}
 			}.font(.footnote)
 

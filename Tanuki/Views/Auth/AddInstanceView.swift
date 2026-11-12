@@ -30,7 +30,7 @@ struct AddInstanceView: View {
 					Label("GitLab.com (OAuth)", systemImage: "person.badge.key")
 				}
 				NavigationLink(destination: ConfigView()) {
-					Label("Self-Hosted", systemImage: "server.rack")
+					Label("Self-Hosted", systemImage: Icons.server.rawValue)
 				}
 			} footer: {
 				Text("OAuth opens gitlab.com in a browser. Self-hosted instances sign in with a personal access token.")

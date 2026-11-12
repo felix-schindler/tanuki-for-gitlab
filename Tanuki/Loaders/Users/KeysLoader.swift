@@ -33,7 +33,7 @@ struct KeysLoader: View {
 				self.keys = .success(keys.filter { $0.id != key.id })
 			}
 
-			Notify.status(.success, "SSH key deleted", systemImage: "key")
+			Notify.status(.success, "SSH key deleted", systemImage: Icons.key.rawValue)
 		} catch let error {
 			Notify.status(.error, "Couldn't delete SSH key", error.localizedDescription)
 		}
@@ -47,7 +47,7 @@ struct KeysLoader: View {
 					if keys.isEmpty {
 						NoContentView(
 							"You'll see your SSH keys after you added them",
-							systemImage: "key"
+							systemImage: Icons.key.rawValue
 						)
 					} else {
 						ForEach(keys, id: \.id) { key in
@@ -90,7 +90,7 @@ struct KeysLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading SSH Keys", systemImage: "key")
+				LoadingView("Loading SSH Keys", systemImage: Icons.key.rawValue)
 			}
 		}.task {
 			await loadKeys()

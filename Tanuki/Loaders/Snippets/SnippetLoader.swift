@@ -134,7 +134,7 @@ struct SnippetLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Snippet", systemImage: "scissors")
+				LoadingView("Loading Snippet", systemImage: Icons.snippets.rawValue)
 			}
 		}.task {
 			loadSnippet()
@@ -155,7 +155,7 @@ struct SnippetLoader: View {
 							if let httpUrl = snippet.httpUrlToRepo {
 								Button(
 									"Copy HTTP url",
-									systemImage: "doc.on.doc"
+									systemImage: Icons.copy.rawValue
 								) {
 									httpUrl.copyToClipboard()
 									Notify.status(
@@ -166,7 +166,7 @@ struct SnippetLoader: View {
 							if let sshUrl = snippet.sshUrlToRepo {
 								Button(
 									"Copy SSH url",
-									systemImage: "doc.on.doc"
+									systemImage: Icons.copy.rawValue
 								) {
 									sshUrl.copyToClipboard()
 									Notify.status(

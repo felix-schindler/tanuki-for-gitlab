@@ -116,10 +116,8 @@ struct PipelineHeaderView: View {
 }
 
 /// Formats seconds, `nil` in → `nil` out so callers can hide the row.
+@MainActor
 func durationString(_ seconds: Int?) -> String? {
 	guard let seconds, seconds >= 0 else { return nil }
-	let formatter = DateComponentsFormatter()
-	formatter.allowedUnits = [.hour, .minute, .second]
-	formatter.unitsStyle = .abbreviated
-	return formatter.string(from: Double(seconds))
+	return TimeFormatter.shared.format(Int64(seconds))
 }

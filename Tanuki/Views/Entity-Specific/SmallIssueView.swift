@@ -32,10 +32,10 @@ struct SmallIssueView: View {
 					ScrollView(.horizontal) {
 						HStack {
 							AuthorView(issue._author)
-							PillView(Date.fromToString(issue.createdAt), icon: "clock")
-							PillView(String(issue.upvotes), icon: "hand.thumbsup")
-							PillView(String(issue.downvotes), icon: "hand.thumbsdown")
-							PillView(String(issue.userNotesCount), icon: "note.text")
+							PillView(Date.fromToString(issue.createdAt), icon: Icons.clock.rawValue)
+							PillView(String(issue.upvotes), icon: Icons.upvote.rawValue)
+							PillView(String(issue.downvotes), icon: Icons.downvote.rawValue)
+							PillView(String(issue.userNotesCount), icon: Icons.comments.rawValue)
 						}
 					}.font(.footnote)
 				}.swipeActions {

@@ -36,7 +36,7 @@ struct InstancesView: View {
 			if instances.isEmpty {
 				NoContentView(
 					"No Instances",
-					systemImage: "server.rack",
+					systemImage: Icons.server.rawValue,
 					description: "Add a GitLab instance to get started"
 				)
 			} else {

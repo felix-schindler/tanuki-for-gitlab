@@ -139,7 +139,7 @@ struct MilestonesLoader: View {
 				switch milestones {
 				case .success(let milestones):
 					if milestones.isEmpty {
-						NoContentView("There are no milestones", systemImage: "diamond")
+						NoContentView("There are no milestones", systemImage: Icons.milestones.rawValue)
 					} else {
 						ForEach(milestones, id: \.?.iid) { milestone in
 							if let milestone {
@@ -149,7 +149,7 @@ struct MilestonesLoader: View {
 											Text(milestone.title.emojized())
 										},
 										icon: {
-											Image(systemName: "diamond")
+											Image(systemName: Icons.milestones.rawValue)
 												.foregroundStyle(
 													milestone.state == .closed
 														? .red
@@ -171,7 +171,7 @@ struct MilestonesLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Milestones", systemImage: "diamond")
+				LoadingView("Loading Milestones", systemImage: Icons.milestones.rawValue)
 			}
 		}.debouncedLoad(searchTitle) {
 			loadMilestones()
@@ -182,7 +182,7 @@ struct MilestonesLoader: View {
 			prompt: "Title"
 		).toolbar {
 			HStack {
-				Button("Filter", systemImage: "line.3.horizontal.decrease") {
+				Button("Filter", systemImage: Icons.filter.rawValue) {
 					showFilters = true
 				}
 				NavigationLink(

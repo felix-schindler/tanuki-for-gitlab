@@ -37,14 +37,14 @@ struct BranchesLoader: View {
 					if branches.isEmpty {
 						NoContentView(
 							"You'll see your branches after you pushed them",
-							systemImage: "chevron.left.forwardslash.chevron.right"
+							systemImage: Icons.code.rawValue
 						)
 					} else {
 						ForEach(branches, id: \.name) { branch in
 							VStack(alignment: .leading) {
 								HStack {
 									if branch.protected {
-										Image(systemName: "lock")
+										Image(systemName: Icons.lock.rawValue)
 									}
 									Text(branch.name.emojized())
 										.font(.headline)
@@ -54,7 +54,7 @@ struct BranchesLoader: View {
 									HStack {
 										PillView(branch.commit.shortId)
 											.font(.system(.footnote, design: .monospaced))
-										PillView(branch.commit.authoredDate.toString(), icon: "clock")
+										PillView(branch.commit.authoredDate.toString(), icon: Icons.clock.rawValue)
 									}
 								}.font(.footnote)
 								Text(branch.commit.title.emojized())
@@ -68,7 +68,7 @@ struct BranchesLoader: View {
 			} else {
 				LoadingView(
 					"Loading Branches",
-					systemImage: "chevron.left.forwardslash.chevron.right"
+					systemImage: Icons.code.rawValue
 				)
 			}
 		}.task {

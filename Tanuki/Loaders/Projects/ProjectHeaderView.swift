@@ -27,7 +27,7 @@ struct ProjectHeaderView: View {
 			_ = try await API.req(
 				type: RestAPIProject.self, method: .post,
 				endpoint: "projects/\(id)/star")
-			Notify.status(.success, "Project starred", systemImage: "star")
+			Notify.status(.success, "Project starred", systemImage: Icons.star.rawValue)
 			await onAction()
 		} catch APIError.http(let status, _) where status == 304 {
 			await unstar(id: id)
@@ -41,10 +41,10 @@ struct ProjectHeaderView: View {
 			_ = try await API.req(
 				type: RestAPIProject.self, method: .post,
 				endpoint: "projects/\(id)/unstar")
-			Notify.status(.success, "Project unstarred", systemImage: "star")
+			Notify.status(.success, "Project unstarred", systemImage: Icons.star.rawValue)
 			await onAction()
 		} catch APIError.http(let status, _) where status == 304 {
-			Notify.status(.warning, "Project is not starred", systemImage: "star")
+			Notify.status(.warning, "Project is not starred", systemImage: Icons.star.rawValue)
 		} catch let error {
 			Notify.status(.error, "Unstarring project failed", error.localizedDescription, systemImage: "xmark")
 		}
@@ -59,7 +59,7 @@ struct ProjectHeaderView: View {
 			_ = try await API.req(
 				type: RestAPIProject.self, method: .post,
 				endpoint: "projects/\(id)/fork")
-			Notify.status(.success, "Project forked", systemImage: "tuningfork")
+			Notify.status(.success, "Project forked", systemImage: Icons.fork.rawValue)
 			await onAction()
 		} catch let error {
 			Notify.status(.error, "Forking project failed", error.localizedDescription, systemImage: "xmark")
@@ -88,7 +88,7 @@ struct ProjectHeaderView: View {
 			HStack {
 				if let topics = project.topics, topics.isNotEmpty {
 					HStack(spacing: 5) {
-						Label("Tags", systemImage: "tag")
+						Label("Tags", systemImage: Icons.tag.rawValue)
 							.labelStyle(.iconOnly)
 						ScrollView(.horizontal) {
 							HStack {
@@ -104,7 +104,7 @@ struct ProjectHeaderView: View {
 			ScrollView(.horizontal) {
 				HStack {
 					if let repositorySize = project.statistics?.repositorySize {
-						PillView(Int64(repositorySize).formatted(.byteCount(style: .file)))
+						PillView(ByteFormatter.shared.format(Int64(repositorySize)))
 					}
 
 					if let createdAt = project.createdAt {
@@ -122,7 +122,7 @@ struct ProjectHeaderView: View {
 								label: {
 									Label(
 										namespace.name,
-										systemImage: "person"
+										systemImage: Icons.users.rawValue
 									)
 								}
 							)
@@ -134,7 +134,7 @@ struct ProjectHeaderView: View {
 								label: {
 									Label(
 										namespace.name,
-										systemImage: "scale.3d"
+										systemImage: Icons.groups.rawValue
 									)
 								}
 							)
@@ -147,7 +147,7 @@ struct ProjectHeaderView: View {
 
 					AsyncButton(
 						String(project.starCount),
-						systemImage: "star"
+						systemImage: Icons.star.rawValue
 					) {
 						await star()
 					}
@@ -157,7 +157,7 @@ struct ProjectHeaderView: View {
 					if project.userPermissions.forkProject {
 						AsyncButton(
 							String(project.forksCount),
-							systemImage: "tuningfork"
+							systemImage: Icons.fork.rawValue
 						) {
 							await fork()
 						}
@@ -166,7 +166,7 @@ struct ProjectHeaderView: View {
 					} else {
 						PillView(
 							String(project.forksCount),
-							icon: "tuningfork"
+							icon: Icons.fork.rawValue
 						)
 					}
 				}

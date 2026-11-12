@@ -70,7 +70,7 @@ struct EmailsLoader: View {
 				self.emails = .success(emails.filter { $0?.id != email.id })
 			}
 
-			Notify.status(.success, "Email address deleted", systemImage: "envelope")
+			Notify.status(.success, "Email address deleted", systemImage: Icons.email.rawValue)
 		} catch let error {
 			Notify.status(.error, "Couldn't delete email", error.localizedDescription)
 		}
@@ -84,7 +84,7 @@ struct EmailsLoader: View {
 					if emails.isEmpty {
 						NoContentView(
 							"You'll see your email addresses after you added them",
-							systemImage: "envelope"
+							systemImage: Icons.email.rawValue
 						)
 					} else {
 						ForEach(emails, id: \.self?.id) { email in
@@ -114,7 +114,7 @@ struct EmailsLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Emails", systemImage: "envelope")
+				LoadingView("Loading Emails", systemImage: Icons.email.rawValue)
 			}
 		}.task {
 			await loadEmails()

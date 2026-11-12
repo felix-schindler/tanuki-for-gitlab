@@ -101,7 +101,7 @@ struct UserSnippetsLoader: View {
 				switch snippets {
 				case .success(let snippets):
 					if snippets.isEmpty {
-						NoContentView("There are no snippets", systemImage: "scissors")
+						NoContentView("There are no snippets", systemImage: Icons.snippets.rawValue)
 					} else {
 						ForEach(snippets, id: \.self?.id) { maybeSnippet in
 							if let snippet = maybeSnippet {
@@ -127,7 +127,9 @@ struct UserSnippetsLoader: View {
 															AuthorView(author)
 														}
 
-														PillView(Date.fromToString(snippet.createdAt), icon: "clock")
+														PillView(
+															Date.fromToString(snippet.createdAt),
+															icon: Icons.clock.rawValue)
 													}.font(.footnote)
 												}
 											}
@@ -140,10 +142,10 @@ struct UserSnippetsLoader: View {
 						}
 					}
 				case .failure(let error):
-					FailedView(error.localizedDescription, icon: "scissors")
+					FailedView(error.localizedDescription, icon: Icons.snippets.rawValue)
 				}
 			} else {
-				LoadingView("Loading Snippets", systemImage: "scissors")
+				LoadingView("Loading Snippets", systemImage: Icons.snippets.rawValue)
 			}
 		}.task {
 			loadSnippets()

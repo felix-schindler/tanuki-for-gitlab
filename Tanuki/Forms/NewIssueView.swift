@@ -177,7 +177,7 @@ struct NewIssueView: View {
 					switch memberships {
 					case .success(let memberships):
 						if memberships.isEmpty {
-							NoContentView("There are no project members", systemImage: "person.2")
+							NoContentView("There are no project members", systemImage: Icons.members.rawValue)
 						} else {
 							Menu("Select Assignees") {
 								ForEach(memberships, id: \.?.id) { member in
@@ -211,7 +211,7 @@ struct NewIssueView: View {
 						FailedView(error)
 					}
 				} else {
-					LoadingView("Loading project members", systemImage: "person.2")
+					LoadingView("Loading project members", systemImage: Icons.members.rawValue)
 				}
 			}
 

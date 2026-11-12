@@ -51,7 +51,7 @@ struct NoContentView: View {
 	List {
 		NoContentView(
 			"All caught up!",
-			systemImage: "checkmark.square",
+			systemImage: Icons.todos.rawValue,
 			description: "There are no Todos"
 		)
 		NoContentView(
@@ -61,12 +61,12 @@ struct NoContentView: View {
 		)
 		NoContentView(
 			"All caught up!",
-			image: "git-mr-closed.symbols",
+			image: Images.mergeRequestClosed.rawValue,
 			description: "There are no Todos"
 		)
 		NoContentView(
 			"All caught up!",
-			image: "git-mr.symbols",
+			image: Images.mergeRequest.rawValue,
 			description: "There are no Todos"
 		)
 	}

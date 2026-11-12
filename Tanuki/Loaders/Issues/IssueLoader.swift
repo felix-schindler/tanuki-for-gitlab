@@ -235,7 +235,7 @@ struct IssueLoader: View {
 										}
 									},
 									icon: {
-										Image(systemName: "tag")
+										Image(systemName: Icons.tag.rawValue)
 									}
 								)
 							}
@@ -243,8 +243,9 @@ struct IssueLoader: View {
 							if let milestone = issue.milestone {
 								Label(
 									milestone.title.emojized(),
-									systemImage: "diamond"
+									systemImage: Icons.milestones.rawValue
 								)
+								.labelStyle(TrailingIconLabelStyle())
 							}
 
 							if issue.humanTimeEstimate != nil
@@ -263,7 +264,7 @@ struct IssueLoader: View {
 										}
 									},
 									icon: {
-										Image(systemName: "hourglass")
+										Image(systemName: Icons.timeTracking.rawValue)
 									})
 							}
 						}
@@ -287,7 +288,7 @@ struct IssueLoader: View {
 								}
 
 								if issue.state == .opened {
-									AsyncButton("Close issue", systemImage: "smallcircle.circle") {
+									AsyncButton("Close issue", systemImage: Icons.issues.rawValue) {
 										await self.changeState(.close)
 									}.tint(.blue)
 								} else if issue.state == .closed {
@@ -334,14 +335,14 @@ struct IssueLoader: View {
 						}
 					} else {
 						NoContentView(
-							"Issue was not found", systemImage: "smallcircle.circle")
+							"Issue was not found", systemImage: Icons.issues.rawValue)
 					}
 				case .failure(let error):
 					FailedView(error)
 				}
 			} else {
 				LoadingView(
-					"Loading Issue #\(self.iid)", systemImage: "smallcircle.circle", color: .green)
+					"Loading Issue #\(self.iid)", systemImage: Icons.issues.rawValue, color: .green)
 			}
 		}.task {
 			loadIssue()

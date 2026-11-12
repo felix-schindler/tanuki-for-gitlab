@@ -70,10 +70,10 @@ struct VotePillsView: View {
 
 	var body: some View {
 		HStack {
-			AsyncButton("\(upvotes)", systemImage: "hand.thumbsup") {
+			AsyncButton("\(upvotes)", systemImage: Icons.upvote.rawValue) {
 				await vote("thumbsup")
 			}
-			AsyncButton("\(downvotes)", systemImage: "hand.thumbsdown") {
+			AsyncButton("\(downvotes)", systemImage: Icons.downvote.rawValue) {
 				await vote("thumbsdown")
 			}
 		}

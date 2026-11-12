@@ -60,17 +60,17 @@ struct CurrentUserLoader: View {
 
 					Section("Account") {
 						NavigationLink(destination: KeysLoader()) {
-							Label("SSH keys", systemImage: "key")
+							Label("SSH keys", systemImage: Icons.key.rawValue)
 						}
 						NavigationLink(destination: EmailsLoader()) {
-							Label("Email addresses", systemImage: "envelope")
+							Label("Email addresses", systemImage: Icons.email.rawValue)
 						}
 					}
 				case .failure(let error):
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Profile", systemImage: "person")
+				LoadingView("Loading Profile", systemImage: Icons.users.rawValue)
 			}
 		}.task {
 			await loadUser()
@@ -81,7 +81,7 @@ struct CurrentUserLoader: View {
 				NavigationLink(
 					destination: SettingsView(),
 					label: {
-						Label("Settings", systemImage: "gear")
+						Label("Settings", systemImage: Icons.settings.rawValue)
 					})
 			}
 
