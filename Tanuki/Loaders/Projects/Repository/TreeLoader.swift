@@ -25,6 +25,9 @@ struct TreeLoader: View {
 	@State
 	private var branches: [Branch]? = nil
 
+	@State
+	private var loadTask: Task<Void, Never>?
+
 	init(projectId: Int, fullPath: String, refName: String, folderPath: String? = nil) {
 		self.projectId = projectId
 		self.fullPath = fullPath
@@ -33,6 +36,8 @@ struct TreeLoader: View {
 	}
 
 	private func loadTree() {
+		loadTask?.cancel()
+
 		let ref: GraphQLNullable<String>
 		let path: GraphQLNullable<String>
 
@@ -54,14 +59,21 @@ struct TreeLoader: View {
 				cachePolicy: .cacheAndNetwork
 			)
 
-			Task {
-				for try await response in responses {
-					if let tree = response.data?.project?.repository?.tree {
-						self.tree = .success(tree)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
+			loadTask = Task {
+				do {
+					for try await response in responses {
+						if Task.isCancelled { return }
+						if let tree = response.data?.project?.repository?.tree {
+							self.tree = .success(tree)
+						} else if let errors = response.errors {
+							for error in errors {
+								Notify.status(.error, error.localizedDescription)
+							}
 						}
+					}
+				} catch {
+					if !Task.isCancelled {
+						Notify.status(.error, error.localizedDescription)
 					}
 				}
 			}

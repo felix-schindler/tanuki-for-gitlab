@@ -50,6 +50,9 @@ struct CommitsLoader: View {
 	@State
 	private var isLoading = false
 
+	@State
+	private var loadTask: Task<Void, Never>?
+
 	private func loadCommits() async {
 		do {
 			let temp = try await API.get(
@@ -58,8 +61,10 @@ struct CommitsLoader: View {
 				query: ["ref_name": refName]
 			)
 
+			if Task.isCancelled { return }
 			self.commits = .success(temp)
 		} catch let error {
+			if Task.isCancelled { return }
 			self.commits = .failure(error)
 			Notify.status(.error)
 		}
@@ -101,7 +106,8 @@ struct CommitsLoader: View {
 									}
 								}.pickerStyle(.menu)
 									.onChange(of: refName) {
-										Task {
+										loadTask?.cancel()
+										loadTask = Task {
 											await loadCommits()
 										}
 									}
