@@ -28,16 +28,18 @@ struct NoContentView: View {
 		VStack {
 			self.image
 				.resizable()
-				.scaledToFit()
+				.scaledToFill()
 				.foregroundStyle(.secondary)
 				.frame(width: 40, height: 40)
 				.padding(.bottom, 10)
 			Text(self.msg)
 				.font(.title2.bold())
+				.multilineTextAlignment(.center)
 			if let description {
 				Text(description)
 					.font(.callout)
 					.foregroundStyle(.secondary)
+					.multilineTextAlignment(.center)
 			}
 		}
 		.padding()
