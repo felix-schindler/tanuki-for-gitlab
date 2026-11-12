@@ -57,38 +57,62 @@ class InstanceManager {
 	private static let selectedKey = "selectedInstance"
 	private static let watchSelectedKey = "watchSelectedInstance"
 
+	/// Keychain reads and JSON decoding are too slow to repeat for every API
+	/// property access; cache them until the shared host list changes.
+	private static var cachedInstances: (hosts: [String], instances: [GitLabInstance])?
+
 	static var instances: [GitLabInstance] {
 		get {
 			let hosts = userDefaults.stringArray(forKey: hostsKey) ?? []
-			let keychain: [GitLabInstance] = hosts.compactMap { host in
-				guard let data = Keychain.data(for: host) else {
-					return nil
-				}
-				return try? JSONDecoder().decode(GitLabInstance.self, from: data)
+			if let cachedInstances, cachedInstances.hosts == hosts {
+				return cachedInstances.instances
 			}
-			// Pre-Keychain install, or a Keychain that cannot be read: keep working
-			// instead of logging the user out.
-			if keychain.isEmpty, let legacy = legacyInstances() {
-				return legacy
+
+			let decoded = loadInstances(hosts: hosts)
+			// A host list that yields nothing is more likely a locked Keychain than
+			// deleted accounts: don't cache it, so the next read can recover.
+			if !hosts.isEmpty && decoded.isEmpty {
+				return decoded
 			}
-			return keychain
+			cachedInstances = (hosts, decoded)
+			return decoded
 		}
 		set {
-			let ids = Set(newValue.map(\.id))
-			let oldIds = userDefaults.stringArray(forKey: hostsKey) ?? []
-			for id in oldIds where !ids.contains(id) {
-				// Only prune readable items: a locked-device read failure must not delete credentials.
-				if Keychain.data(for: id) != nil {
-					Keychain.remove(id)
-				}
-			}
-			for instance in newValue {
-				if let data = try? JSONEncoder().encode(instance) {
-					Keychain.set(data, for: instance.id)
-				}
-			}
-			userDefaults.set(newValue.map(\.id), forKey: hostsKey)
+			cachedInstances = (newValue.map(\.id), newValue)
+			persist(newValue)
 		}
+	}
+
+	private static func loadInstances(hosts: [String]) -> [GitLabInstance] {
+		let keychain: [GitLabInstance] = hosts.compactMap { host in
+			guard let data = Keychain.data(for: host) else {
+				return nil
+			}
+			return try? JSONDecoder().decode(GitLabInstance.self, from: data)
+		}
+		// Pre-Keychain install, or a Keychain that cannot be read: keep working
+		// instead of logging the user out.
+		if keychain.isEmpty, let legacy = legacyInstances() {
+			return legacy
+		}
+		return keychain
+	}
+
+	private static func persist(_ instances: [GitLabInstance]) {
+		let ids = Set(instances.map(\.id))
+		let oldIds = userDefaults.stringArray(forKey: hostsKey) ?? []
+		for id in oldIds where !ids.contains(id) {
+			// Only prune readable items: a locked-device read failure must not delete credentials.
+			if Keychain.data(for: id) != nil {
+				Keychain.remove(id)
+			}
+		}
+		for instance in instances {
+			if let data = try? JSONEncoder().encode(instance) {
+				Keychain.set(data, for: instance.id)
+			}
+		}
+		userDefaults.set(instances.map(\.id), forKey: hostsKey)
 	}
 
 	static func migrate() {

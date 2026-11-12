@@ -23,6 +23,11 @@ struct TanukiApp: App {
 	init() {
 		InstanceManager.migrate()
 		WatchSync.shared.activate()
+		// Downloads are kept for a day, but only purged on a finished download or
+		// when Settings is opened. Do it at launch, off the main thread.
+		Task.detached(priority: .utility) {
+			FileCache.purge()
+		}
 	}
 
 	private func restorePersistedCookies() {
