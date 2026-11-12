@@ -8,7 +8,7 @@ nonisolated public struct ProjectReleasesQuery: GraphQLQuery {
   public static let operationName: String = "ProjectReleasesQuery"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ProjectReleasesQuery($fullPath: ID!) { project(fullPath: $fullPath) { __typename releases { __typename nodes { __typename id name description tagName releasedAt author { __typename avatarUrl name username } commit { __typename shortId } milestones { __typename nodes { __typename id title } } assets { __typename count links { __typename nodes { __typename id name url } } sources { __typename nodes { __typename url format } } } } } } }"#
+      #"query ProjectReleasesQuery($fullPath: ID!) { project(fullPath: $fullPath) { __typename releases { __typename nodes { __typename id name description tagName releasedAt author { __typename avatarUrl name username } commit { __typename shortId } milestones { __typename nodes { __typename id title } } assets { __typename count links { __typename nodes { __typename id name url directAssetUrl directAssetPath } } sources { __typename nodes { __typename url format } } } } } } }"#
     ))
 
   public var fullPath: ID
@@ -261,6 +261,8 @@ nonisolated public struct ProjectReleasesQuery: GraphQLQuery {
                   .field("id", GitLabAPI.ID.self),
                   .field("name", String?.self),
                   .field("url", String?.self),
+                  .field("directAssetUrl", String?.self),
+                  .field("directAssetPath", String?.self),
                 ] }
                 @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
                   ProjectReleasesQuery.Data.Project.Releases.Node.Assets.Links.Node.self
@@ -272,6 +274,10 @@ nonisolated public struct ProjectReleasesQuery: GraphQLQuery {
                 public var name: String? { __data["name"] }
                 /// URL of the link.
                 public var url: String? { __data["url"] }
+                /// Direct asset URL of the link.
+                public var directAssetUrl: String? { __data["directAssetUrl"] }
+                /// Relative path for the direct asset link.
+                public var directAssetPath: String? { __data["directAssetPath"] }
               }
             }
 

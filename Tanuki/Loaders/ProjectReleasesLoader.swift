@@ -58,13 +58,57 @@ struct ProjectReleasesLoader: View {
 		}
 	}
 
+	private func assetFileName(directAssetPath: String?, linkName: String?, url: URL) -> String? {
+		if let directAssetPath, directAssetPath.isNotEmpty {
+			let name = URL(fileURLWithPath: directAssetPath).lastPathComponent
+			if name.isNotEmpty {
+				return name
+			}
+		}
+
+		let name = url.lastPathComponent
+		if name.isNotEmpty {
+			return name
+		}
+
+		return linkName
+	}
+
+	/// Release asset links can point at the instance (`directAssetUrl`) or at an
+	/// external host; both are downloaded so the share sheet offers the file.
+	@ViewBuilder
+	private func assetRow(name: String?, urlString: String?, directAssetPath: String?) -> some View {
+		if let urlString, let url = URL(string: urlString) {
+			DownloadButton(
+				url: url,
+				fileName: assetFileName(
+					directAssetPath: directAssetPath, linkName: name, url: url)
+			) {
+				Label(name ?? url.lastPathComponent, systemImage: Icons.download.rawValue)
+			}
+		} else {
+			Text(name ?? "Link")
+		}
+	}
+
+	@ViewBuilder
+	private func sourceRow(format: String?, urlString: String?) -> some View {
+		if let urlString, let url = URL(string: urlString) {
+			DownloadButton(url: url) {
+				Label(
+					"Source code (\(format ?? "unknown"))",
+					systemImage: Icons.archive.rawValue)
+			}
+		}
+	}
+
 	public var body: some View {
 		List {
 			if let releases {
 				switch releases {
 				case .success(let releases):
 					if releases.isEmpty {
-						NoContentView("There are no releases", systemImage: "flag")
+						NoContentView("There are no releases", systemImage: Icons.flag.rawValue)
 					} else {
 						ForEach(releases, id: \.?.id) { maybeRelease in
 							if let release = maybeRelease {
@@ -80,11 +124,11 @@ struct ProjectReleasesLoader: View {
 													if let releasedAt = release.releasedAt {
 														PillView(
 															Date.fromToString(releasedAt, timeStyle: .short),
-															icon: "clock")
+															icon: Icons.clock.rawValue)
 													}
 
 													if let tagName = release.tagName {
-														PillView(tagName, icon: "tag")
+														PillView(tagName, icon: Icons.tag.rawValue)
 													}
 
 													if let milestones = release.milestones?.nodes {
@@ -93,7 +137,7 @@ struct ProjectReleasesLoader: View {
 															if let milestone = maybeMilestone {
 																PillView(
 																	milestone.title.emojized(),
-																	icon: "diamond"
+																	icon: Icons.milestones.rawValue
 																)
 															}
 														}
@@ -123,41 +167,31 @@ struct ProjectReleasesLoader: View {
 													if let links = assets.links?.nodes {
 														ForEach(links, id: \.?.id) { maybeLink in
 															if let link = maybeLink {
-																if let url = URL(
-																	string: link.url ?? "")
-																{
-																	Link(
-																		link.name ?? "Link",
-																		destination: url
-																	)
-																	.controlSize(.mini)
-																	.buttonBorderShape(.capsule)
-																	.adaptiveButtonStyle()
-																}
+																let urlString =
+																	link.directAssetUrl
+																	?? link.url
+
+																assetRow(
+																	name: link.name,
+																	urlString: urlString,
+																	directAssetPath: link
+																		.directAssetPath
+																)
 															}
 														}
 													}
-
 													if let sources = assets.sources?.nodes {
 														ForEach(sources, id: \.?.url) {
 															maybeSource in
-															if let url = URL(
-																string: maybeSource?.url ?? "")
-															{
-																Link(
-																	"Source code (\(maybeSource?.format ?? "unknown"))",
-																	destination: url
-																)
-																.controlSize(.mini)
-																.buttonBorderShape(.capsule)
-																.adaptiveButtonStyle()
+															if let source = maybeSource {
+																sourceRow(
+																	format: source.format,
+																	urlString: source.url)
 															}
 														}
 													}
 												}
 											)
-										}
-										if (release.assets?.count ?? 0) > 0 {
 										}
 									},
 									header: {
@@ -170,7 +204,7 @@ struct ProjectReleasesLoader: View {
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Releases", systemImage: "flag")
+				LoadingView("Loading Releases", systemImage: Icons.flag.rawValue)
 			}
 		}.task {
 			loadReleases()

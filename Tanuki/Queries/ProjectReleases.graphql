@@ -32,6 +32,8 @@ query ProjectReleasesQuery($fullPath: ID!) {
               id
               name
               url
+              directAssetUrl
+              directAssetPath
             }
           }
           sources {

@@ -602,6 +602,72 @@ class API {
 		return fileURL
 	}
 
+	/// Streams an absolute URL to disk, for release assets and archives that are
+	/// not API paths.
+	///
+	/// The bearer token is only attached when the URL targets the configured
+	/// instance over HTTPS, so a release asset hosted somewhere else never
+	/// receives credentials.
+	public static func download(
+		from remoteURL: URL,
+		to destination: @escaping DownloadRequest.Destination,
+		onProgress: (@MainActor @Sendable (_ received: Int64, _ total: Int64) -> Void)? = nil
+	) async throws -> URL {
+		let isInstance = API.isInstanceURL(remoteURL)
+		if isInstance {
+			await Auth.ensureValidToken()
+		}
+
+		var headers = HTTPHeaders()
+		if isInstance, token.isNotEmpty {
+			headers.add(.authorization(bearerToken: token))
+		}
+
+		let request = session.download(remoteURL, method: .get, headers: headers, to: destination)
+
+		if let onProgress {
+			request.downloadProgress { progress in
+				MainActor.assumeIsolated {
+					onProgress(progress.completedUnitCount, progress.totalUnitCount)
+				}
+			}
+		}
+
+		let response = await request.serializingDownloadedFileURL().response
+
+		if let error = response.error {
+			logger.error("✗ GET \(remoteURL.absoluteString) — \(error.localizedDescription)")
+			throw error
+		}
+
+		if let status = response.response?.statusCode, !(200..<300).contains(status) {
+			logger.error("✗ \(status) GET \(remoteURL.absoluteString) — no error message")
+			throw APIError.http(status: status, message: nil)
+		}
+
+		guard let fileURL = response.fileURL else {
+			throw APIError.emptyResponse
+		}
+
+		logger.info("← GET \(remoteURL.absoluteString) (\(fileURL.fileSize()) bytes)")
+
+		return fileURL
+	}
+
+	/// True when `url` targets the configured instance over HTTPS. Used to decide
+	/// whether a request may carry the bearer token.
+	public static func isInstanceURL(_ url: URL) -> Bool {
+		guard url.scheme?.lowercased() == "https",
+			let host = url.host()?.lowercased(),
+			let instanceURL = URL(string: "https://\(API.host)"),
+			let instanceHost = instanceURL.host()?.lowercased()
+		else {
+			return false
+		}
+
+		return host == instanceHost && (url.port ?? 443) == (instanceURL.port ?? 443)
+	}
+
 	private static func urlAndHeaders(
 		method: HTTPMethod,
 		endpoint: String,
