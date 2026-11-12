@@ -26,21 +26,21 @@ struct SmallGroupView: View {
 					if let url = URL.fromAvatar(group.avatarUrl) {
 						AvatarImage(url, size: .medium)
 					}
-                    
-                    if let groupName = group._name?.emojized(), groupName.isNotEmpty {
-                        Text(groupName)
-                    } else {
-                        Text(group.fullPath)
-                    }
 
-                    Spacer()
+					if let groupName = group._name?.emojized(), groupName.isNotEmpty {
+						Text(groupName)
+					} else {
+						Text(group.fullPath)
+					}
+
+					Spacer()
 					if let accessLevel = group._accessLevel {
 						PillView(accessLevel.replacingOccurrences(of: "_", with: " ").capitalized)
 							.font(.footnote)
 					}
-                    if let visibility = group.visibility {
-                        VisibilityIcon(visibility)
-                    }
+					if let visibility = group.visibility {
+						VisibilityIcon(visibility)
+					}
 				}
 			}
 		)

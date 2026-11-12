@@ -101,16 +101,16 @@ struct GroupLoader: View {
 											Label(parent.name ?? parent.fullPath, systemImage: Icons.groups.rawValue)
 										}
 									)
-                                    .tint(.accentColor)
+									.tint(.accentColor)
 									.controlSize(.mini)
 									.buttonBorderShape(.capsule)
 									.adaptiveButtonStyle()
 								}
-                                
-                                if let accessLevel = group.maxAccessLevel.stringValue?.rawValue {
-                                    PillView(accessLevel.replacingOccurrences(of: "_", with: " ").capitalized)
-                                        .font(.footnote)
-                                }
+
+								if let accessLevel = group.maxAccessLevel.stringValue?.rawValue {
+									PillView(accessLevel.replacingOccurrences(of: "_", with: " ").capitalized)
+										.font(.footnote)
+								}
 							}.font(.footnote)
 						}
 
@@ -165,17 +165,19 @@ struct GroupLoader: View {
 						DisclosureGroup(
 							content: {
 								if let groupId = group.id?.toIntId() {
-                                    NavigationLink(destination: MembersLoader(
-                                        fullPath: self.fullPath,
-                                        id: groupId,
-                                        type: .group
-                                    ), label: {
-                                        HStack {
-                                            Text("Members")
-                                            Spacer()
-                                            Text(String(group.groupMembersCount))
-                                        }
-                                    })
+									NavigationLink(
+										destination: MembersLoader(
+											fullPath: self.fullPath,
+											id: groupId,
+											type: .group
+										),
+										label: {
+											HStack {
+												Text("Members")
+												Spacer()
+												Text(String(group.groupMembersCount))
+											}
+										})
 									NavigationLink(
 										"Labels",
 										destination: LabelsLoader(
