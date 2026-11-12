@@ -165,6 +165,25 @@ struct MergeRequestLoader: View {
 		}
 	}
 
+	// GitLab rebases asynchronously; the request only starts the job, so reload
+	// right away to pick up `rebaseInProgress` and let pull-to-refresh catch the
+	// new status.
+	private func rebase(_ projectId: Int) async {
+		do {
+			_ = try await API.raw(
+				method: .put,
+				endpoint: "projects/\(projectId)/merge_requests/\(self.iid)/rebase"
+			)
+
+			Notify.status(
+				.success, "Rebase started", "The branch is rebased in the background.",
+				systemImage: "arrow.triangle.2.circlepath")
+			await reloadMergeRequest()
+		} catch let error {
+			Notify.status(.error, "Failed to rebase", error.localizedDescription)
+		}
+	}
+
 	public var body: some View {
 		List {
 			if let project {
@@ -363,7 +382,7 @@ struct MergeRequestLoader: View {
 										}
 									},
 									icon: {
-										Image(systemName: "tag")
+										Image(systemName: Icons.tag.rawValue)
 									}
 								)
 							}
@@ -371,8 +390,9 @@ struct MergeRequestLoader: View {
 							if let milestone = mr.milestone {
 								Label(
 									milestone.title,
-									systemImage: "diamond"
+									systemImage: Icons.milestones.rawValue
 								)
+								.labelStyle(TrailingIconLabelStyle())
 							}
 
 							if mr.humanTimeEstimate != nil
@@ -387,7 +407,7 @@ struct MergeRequestLoader: View {
 										}
 									},
 									icon: {
-										Image(systemName: "hourglass")
+										Image(systemName: Icons.timeTracking.rawValue)
 									}
 								)
 							}
@@ -417,7 +437,7 @@ struct MergeRequestLoader: View {
 												}
 											},
 											icon: {
-												Image(systemName: "doc.text")
+												Image(systemName: Icons.files.rawValue)
 											}
 										)
 									} else {
@@ -432,7 +452,7 @@ struct MergeRequestLoader: View {
 									iid: self.iid
 								),
 								label: {
-									Label("Changed files overview", systemImage: "plusminus")
+									Label("Changed files overview", systemImage: Icons.diffStats.rawValue)
 								}
 							)
 
@@ -442,7 +462,7 @@ struct MergeRequestLoader: View {
 									iid: self.iid
 								),
 								label: {
-									Label("Commits", systemImage: "circle.and.line.horizontal")
+									Label("Commits", systemImage: Icons.commits.rawValue)
 								}
 							)
 						}
@@ -510,6 +530,15 @@ struct MergeRequestLoader: View {
 										}.tint(Self.isDraft(mr.title) ? .green : .orange)
 
 										AsyncButton(
+											mr.rebaseInProgress == true ? "Rebasing branch…" : "Rebase branch",
+											systemImage: "arrow.triangle.2.circlepath"
+										) {
+											await rebase(projectId)
+										}
+										.tint(.blue)
+										.disabled(mr.rebaseInProgress == true)
+
+										AsyncButton(
 											action: {
 												await changeState(projectId, state: "close")
 											},
@@ -519,7 +548,7 @@ struct MergeRequestLoader: View {
 														Text("Close MR")
 													},
 													icon: {
-														Image("git-mr-closed.symbols")
+														Image(Images.mergeRequestClosed.rawValue)
 															.resizable()
 															.scaledToFit()
 													})
@@ -536,7 +565,7 @@ struct MergeRequestLoader: View {
 														Text("Reopen MR")
 													},
 													icon: {
-														Image("git-mr.symbols")
+														Image(Images.mergeRequest.rawValue)
 															.resizable()
 															.scaledToFit()
 													})
@@ -571,13 +600,13 @@ struct MergeRequestLoader: View {
 							}
 						}
 					} else {
-						NoContentView("Can't find merge request", image: "git-mr.symbols")
+						NoContentView("Can't find merge request", image: Images.mergeRequest.rawValue)
 					}
 				case .failure(let error):
 					FailedView(error)
 				}
 			} else {
-				LoadingView("Loading Merge Request !\(self.iid)", image: "git-mr.symbols", color: .blue)
+				LoadingView("Loading Merge Request !\(self.iid)", image: Images.mergeRequest.rawValue, color: .blue)
 			}
 		}.task {
 			loadMergeRequest()

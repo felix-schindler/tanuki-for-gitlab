@@ -40,6 +40,7 @@ query MergeRequest($fullPath: ID!, $iid: String!) {
       mergeStatusEnum
       conflicts
       detailedMergeStatus
+      rebaseInProgress
 
       assignees {
         nodes {

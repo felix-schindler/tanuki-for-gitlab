@@ -8,7 +8,7 @@ nonisolated public struct MergeRequestQuery: GraphQLQuery {
   public static let operationName: String = "MergeRequest"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query MergeRequest($fullPath: ID!, $iid: String!) { project(fullPath: $fullPath) { __typename id avatarUrl mergeRequest(iid: $iid) { __typename iid title description reference(full: true) state sourceBranch targetBranch sourceProject { __typename fullPath } diffStatsSummary { __typename additions deletions fileCount } upvotes downvotes userNotesCount author { __typename avatarUrl name username } userPermissions { __typename canApprove canMerge updateMergeRequest createNote } createdAt webUrl approved mergeStatusEnum conflicts detailedMergeStatus assignees { __typename nodes { __typename avatarUrl username } } reviewers { __typename nodes { __typename avatarUrl username } } labels { __typename nodes { __typename title color textColor } } milestone { __typename iid title } humanTimeEstimate humanTotalTimeSpent notes { __typename nodes { __typename id author { __typename avatarUrl name username } maxAccessLevelOfAuthor body system systemNoteIconName createdAt updatedAt } } } } }"#
+      #"query MergeRequest($fullPath: ID!, $iid: String!) { project(fullPath: $fullPath) { __typename id avatarUrl mergeRequest(iid: $iid) { __typename iid title description reference(full: true) state sourceBranch targetBranch sourceProject { __typename fullPath } diffStatsSummary { __typename additions deletions fileCount } upvotes downvotes userNotesCount author { __typename avatarUrl name username } userPermissions { __typename canApprove canMerge updateMergeRequest createNote } createdAt webUrl approved mergeStatusEnum conflicts detailedMergeStatus rebaseInProgress assignees { __typename nodes { __typename avatarUrl username } } reviewers { __typename nodes { __typename avatarUrl username } } labels { __typename nodes { __typename title color textColor } } milestone { __typename iid title } humanTimeEstimate humanTotalTimeSpent notes { __typename nodes { __typename id author { __typename avatarUrl name username } maxAccessLevelOfAuthor body system systemNoteIconName createdAt updatedAt } } } } }"#
     ))
 
   public var fullPath: ID
@@ -97,6 +97,7 @@ nonisolated public struct MergeRequestQuery: GraphQLQuery {
           .field("mergeStatusEnum", GraphQLEnum<GitLabAPI.MergeStatus>?.self),
           .field("conflicts", Bool.self),
           .field("detailedMergeStatus", GraphQLEnum<GitLabAPI.DetailedMergeStatus>?.self),
+          .field("rebaseInProgress", Bool.self),
           .field("assignees", Assignees?.self),
           .field("reviewers", Reviewers?.self),
           .field("labels", Labels?.self),
@@ -149,6 +150,8 @@ nonisolated public struct MergeRequestQuery: GraphQLQuery {
         public var conflicts: Bool { __data["conflicts"] }
         /// Detailed merge status of the merge request.
         public var detailedMergeStatus: GraphQLEnum<GitLabAPI.DetailedMergeStatus>? { __data["detailedMergeStatus"] }
+        /// Indicates if there is a rebase currently in progress for the merge request.
+        public var rebaseInProgress: Bool { __data["rebaseInProgress"] }
         /// Assignees of the merge request.
         public var assignees: Assignees? { __data["assignees"] }
         /// Users from whom a review has been requested.
