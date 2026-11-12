@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct AuthorView: View {
 	private let author: MyAuthor
