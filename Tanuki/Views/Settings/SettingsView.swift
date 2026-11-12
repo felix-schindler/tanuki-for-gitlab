@@ -36,8 +36,6 @@ struct SettingsView: View {
 						title: { Text("Cookies") },
 						icon: {
 							Image(Images.cookie.rawValue)
-								.resizable()
-								.scaledToFit()
 						})
 				}
 				NavigationLink(destination: InstancesView()) {

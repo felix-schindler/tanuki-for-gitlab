@@ -549,8 +549,6 @@ struct MergeRequestLoader: View {
 													},
 													icon: {
 														Image(Images.mergeRequestClosed.rawValue)
-															.resizable()
-															.scaledToFit()
 													})
 											}
 										).tint(.blue)
@@ -566,8 +564,6 @@ struct MergeRequestLoader: View {
 													},
 													icon: {
 														Image(Images.mergeRequest.rawValue)
-															.resizable()
-															.scaledToFit()
 													})
 											}
 										).tint(.green)
@@ -625,8 +621,6 @@ struct MergeRequestLoader: View {
 									},
 									icon: {
 										MergeStateHelper.getIconByState(mr.state)
-											.resizable()
-											.scaledToFit()
 									})
 							}
 						)

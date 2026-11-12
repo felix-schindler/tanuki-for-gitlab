@@ -170,8 +170,6 @@ struct HomeView: View {
 							},
 							icon: {
 								Image(Images.mergeRequest.rawValue)
-									.resizable()
-									.scaledToFit()
 									.foregroundStyle(.blue)
 							})
 					})
