@@ -5,10 +5,6 @@
 //  Created by Felix Schindler on 12.11.26.
 //
 
-/// Central SF Symbol names, so entity icons are defined once instead of being
-/// spelled out at every call site. Only symbols that carry a meaning within
-/// Tanuki belong here; generic action glyphs (`checkmark`, `xmark`, `plus`, …)
-/// stay inline.
 enum Icons: String {
 	// MARK: - Navigation
 	case home = "house"

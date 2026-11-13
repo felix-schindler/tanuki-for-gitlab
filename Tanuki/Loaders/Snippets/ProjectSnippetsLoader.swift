@@ -7,7 +7,6 @@ import GitLabAPI
 import SwiftUI
 
 struct ProjectSnippetsLoader: View {
-	/// Path of project to load snippets from
 	private let fullPath: String
 	private let projectId: Int
 

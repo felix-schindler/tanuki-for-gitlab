@@ -7,9 +7,6 @@
 
 import SwiftUI
 
-/// Shared shell for the issue and merge request filters: a form with Reset and
-/// Done in the navigation bar. Filters are bound live, so callers reload with
-/// `debouncedLoad(filter)` instead of an Apply button.
 struct FilterSheet<Filters: Equatable, Content: View>: View {
 	@Binding var filters: Filters
 	let initialValue: Filters

@@ -165,9 +165,6 @@ struct MergeRequestLoader: View {
 		}
 	}
 
-	// GitLab rebases asynchronously; the request only starts the job, so reload
-	// right away to pick up `rebaseInProgress` and let pull-to-refresh catch the
-	// new status.
 	private func rebase(_ projectId: Int) async {
 		do {
 			_ = try await API.raw(

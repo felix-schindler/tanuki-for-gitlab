@@ -21,7 +21,6 @@ enum PersistedCookies {
 		return dicts
 	}
 
-	/// Moves the pre-Keychain copy, which was stored in clear text, and deletes it.
 	private static func migrateFromUserDefaults() -> Data? {
 		guard let legacy = UserDefaults.standard.data(forKey: account) else {
 			return nil

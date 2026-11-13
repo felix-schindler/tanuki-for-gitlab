@@ -19,8 +19,6 @@ struct HomeView: View {
 	@State
 	private var versionWarning: String?
 
-	/// `/version` needs an authenticated token. A failing call (guest token,
-	/// restricted instance) just means no banner.
 	private func checkVersion() async {
 		guard let version = try? await API.get(type: RestAPIVersion.self, endpoint: "version"),
 			VersionGate.compareVersions(version.version, VersionGate.minimumRequiredVersion)

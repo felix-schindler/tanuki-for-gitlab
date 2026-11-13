@@ -12,10 +12,6 @@ import SwiftUI
 // MARK: - Cache
 
 extension URLCache {
-	/// Avatar cache, sized for the device.
-	///
-	/// `URLCache.shared` is too small for a scrolling list of avatars, and the
-	/// watch has tighter memory limits than the phone.
 	public static let avatar: URLCache = {
 		#if os(watchOS)
 			let memoryCapacity = 20 * 1024 * 1024  // 20 MB in RAM

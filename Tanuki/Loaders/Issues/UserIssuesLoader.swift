@@ -177,8 +177,6 @@ struct UserIssuesLoader: View {
 				showFilters = true
 			}
 		}.sheet(isPresented: $showFilters) {
-			// The current user's list can filter by people; a specific user's list
-			// is already pinned to that author and assignee.
 			IssueFilterView(filter: $filter, showsPeople: self.username == nil)
 		}.searchable(
 			text: Binding(get: { self.filter.search ?? "" }, set: { self.filter.search = $0.isNotEmpty ? $0 : nil }),

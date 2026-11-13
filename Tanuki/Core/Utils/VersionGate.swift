@@ -7,13 +7,8 @@
 
 import Foundation
 
-/// Warns when an instance is older than the GitLab version Tanuki's GraphQL
-/// schema and REST calls are built against. The warning is per instance and
-/// server version, and can be acknowledged away.
 @MainActor
 enum VersionGate {
-	/// The GraphQL schema is generated from GitLab 18.1; older instances are
-	/// missing fields and answer with GraphQL errors.
 	static let minimumRequiredVersion = "18.1.0"
 
 	private static let acknowledgementsKey = "acknowledgedVersionWarnings"
@@ -50,8 +45,6 @@ enum VersionGate {
 			&& !acknowledgedVersionWarnings.contains(key(for: host, serverVersion: serverVersion))
 	}
 
-	/// Compares dotted version strings numerically, so `18.10` sorts after
-	/// `18.2`. Pre-release/build suffixes (`-ee`, `-rc1`) are ignored.
 	static func compareVersions(_ lhs: String, _ rhs: String) -> ComparisonResult {
 		let left = numericComponents(lhs)
 		let right = numericComponents(rhs)

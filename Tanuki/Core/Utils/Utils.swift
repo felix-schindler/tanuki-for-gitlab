@@ -72,8 +72,6 @@ enum FileCache {
 
 // MARK: - Load helpers
 extension View {
-	/// Runs `action` immediately, then again 300 ms after `value` stops changing.
-	/// Replaces the `.task { load() }` + `.onChange(of: value) { load() }` pair.
 	func debouncedLoad<Value: Equatable>(_ value: Value, action: @escaping () async -> Void) -> some View {
 		modifier(DebouncedLoad(value: value, action: action))
 	}

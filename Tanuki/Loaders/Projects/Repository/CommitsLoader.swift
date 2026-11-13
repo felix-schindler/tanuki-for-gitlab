@@ -29,8 +29,6 @@ struct Branch: Codable {
 	let canPush: Bool
 }
 
-/// Bridges the REST commit model to `SmallCommitView`, which is typed against the
-/// GraphQL commit selection.
 private struct RestCommit: NewCommit {
 	let commit: Commit
 	let verificationStatus: String?
@@ -46,8 +44,6 @@ private struct RestCommit: NewCommit {
 	var _lastPipelineStatus: GraphQLEnum<GitLabAPI.PipelineStatusEnum>? { nil }
 }
 
-/// A REST commit rendered by `SmallCommitView`, adding the signature status that
-/// GraphQL would otherwise provide.
 private struct CommitRow: View {
 	let commit: Commit
 	let projectId: Int

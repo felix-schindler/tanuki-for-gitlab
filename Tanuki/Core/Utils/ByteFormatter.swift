@@ -7,7 +7,6 @@
 
 import Foundation
 
-/// Formats raw byte counts consistently across caches, files and artifacts.
 @MainActor
 class ByteFormatter {
 	static let shared = ByteFormatter()

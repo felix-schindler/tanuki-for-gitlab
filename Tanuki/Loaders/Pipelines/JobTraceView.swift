@@ -25,8 +25,6 @@ struct JobTraceView: View {
 	@State
 	private var isLoadingOlder = false
 
-	/// Bytes at the start of the shown text whose UTF-8 character started in an
-	/// older chunk; they are prepended to the next older chunk instead of a `�`.
 	@State
 	private var seam = Data()
 
@@ -67,8 +65,6 @@ struct JobTraceView: View {
 		}
 	}
 
-	/// Splits off bytes at the start of `data` that continue a character from the
-	/// previous chunk, so decoding neither loses nor mangles the boundary.
 	private static func splitLeadingPartial(_ data: Data) -> (Data, String) {
 		let base = data.startIndex
 		let limit = min(3, data.count)

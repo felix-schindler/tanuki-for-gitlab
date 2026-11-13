@@ -34,7 +34,6 @@ extension Color {
 		}
 	}
 
-	/// The color as uppercase `RRGGBB`, or `nil` if it can't be read as RGB.
 	var hex: String? {
 		guard let components = UIColor(self).cgColor.components, components.count >= 2 else {
 			return nil

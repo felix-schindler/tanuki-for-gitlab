@@ -57,8 +57,6 @@ struct GitLabInstance: Codable, Identifiable, Equatable, Sendable {
 		return expiresAt < Date().addingTimeInterval(300)
 	}
 
-	/// Turns a pasted server URL into `host[:port][/basePath]`, dropping scheme, login,
-	/// query, fragment and a trailing `/`. Default ports are left out so they match links.
 	static func normalizedHost(from input: String) -> String? {
 		let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
 		guard trimmed.isNotEmpty else { return nil }
@@ -81,11 +79,6 @@ struct GitLabInstance: Codable, Identifiable, Equatable, Sendable {
 		if Array(segments.suffix(2)) == ["api", "v4"] {
 			segments.removeLast(2)
 		}
-		// One segment is a sub-path install like `example.com/gitlab`. Two or more is
-		// a project or file URL (`gitlab.com/group/project`, `…/-/tree/main`), which
-		// would otherwise make every API call 404.
-		// shortcut: nested sub-path installs (`example.com/company/gitlab`) lose their
-		// path; ask the server (`GET api/v4/version`) when someone reports it.
 		if segments.count > 1 {
 			segments.removeAll()
 		}
@@ -105,10 +98,6 @@ class InstanceManager {
 	private static let legacyTokenKey = "token"
 	private static let migrationDoneKey = "migration_done"
 
-	/// `API.host`, `API.token` and friends each read `instances`, so decoding the
-	/// whole keychain every time is pure overhead. The keychain is slow to read and
-	/// the list changes once in a while; key the cache on the shared host list so a
-	/// write from another process still invalidates it.
 	private static var cachedInstances: (hosts: [String], instances: [GitLabInstance])?
 
 	static var instances: [GitLabInstance] {
@@ -119,8 +108,6 @@ class InstanceManager {
 			}
 
 			let decoded = loadInstances(hosts: hosts)
-			// A host list that yields nothing is more likely a locked Keychain than
-			// deleted accounts: don't cache it, so the next read can recover.
 			if !hosts.isEmpty && decoded.isEmpty {
 				return decoded
 			}
@@ -140,8 +127,6 @@ class InstanceManager {
 			}
 			return try? JSONDecoder().decode(GitLabInstance.self, from: data)
 		}
-		// Pre-Keychain install, or a Keychain that cannot be read: keep working
-		// instead of logging the user out.
 		if keychain.isEmpty, let legacy = legacyInstances() {
 			return legacy
 		}
@@ -267,8 +252,6 @@ class InstanceManager {
 			return
 		}
 		instances = legacy
-		// Drop the clear-text copy only once the Keychain write is proven, so a
-		// failure cannot log the user out on upgrade.
 		guard legacy.allSatisfy({ Keychain.data(for: $0.id) != nil }) else {
 			return
 		}
@@ -280,8 +263,6 @@ class InstanceManager {
 	/// before any network client is built, so there are no caches to reset.
 	static func removeInvalid() {
 		let current = instances
-		// An empty read is a locked Keychain, not a deleted account list; writing it
-		// back would drop the host index and orphan the items.
 		guard !current.isEmpty else { return }
 		let valid = current.filter { $0.token.isNotEmpty }
 		let selection = valid.contains { $0.id == selectedId } ? selectedId : valid.last?.id
@@ -352,8 +333,6 @@ final class WatchSync: NSObject, WCSessionDelegate {
 			return
 		}
 
-		// The watch can't refresh on its own without invalidating this device's
-		// refresh token, so it asks for the current one after we've renewed it.
 		let reply = SendableReply(call: replyHandler)
 		Task { @MainActor in
 			await Auth.ensureValidToken()
@@ -535,9 +514,6 @@ class API {
 		let encoding: ParameterEncoding =
 			(contentType == .json) ? JSONEncoding.default : URLEncoding.default
 
-		// GitLab answers idempotent writes (star/unstar, delete fork) with 304 and an
-		// empty body, which Alamofire rejects as a serialization failure before callers
-		// ever see the status code.
 		let emptyResponseCodes = DataResponseSerializer.defaultEmptyResponseCodes.union([304])
 
 		let response = await session.request(
@@ -614,12 +590,6 @@ class API {
 		return fileURL
 	}
 
-	/// Streams an absolute URL to disk, for release assets and archives that are
-	/// not API paths.
-	///
-	/// The bearer token is only attached when the URL targets the configured
-	/// instance over HTTPS, so a release asset hosted somewhere else never
-	/// receives credentials.
 	public static func download(
 		from remoteURL: URL,
 		to destination: @escaping DownloadRequest.Destination,
@@ -666,8 +636,6 @@ class API {
 		return fileURL
 	}
 
-	/// True when `url` targets the configured instance over HTTPS. Used to decide
-	/// whether a request may carry the bearer token.
 	public static func isInstanceURL(_ url: URL) -> Bool {
 		guard url.scheme?.lowercased() == "https",
 			let host = url.host()?.lowercased(),

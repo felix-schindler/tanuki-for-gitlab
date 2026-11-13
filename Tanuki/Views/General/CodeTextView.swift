@@ -31,7 +31,6 @@ public struct CodeTextView: View {
 		self.language = language.lowercased()
 		self.theme = colorScheme == .dark ? darkTheme : lightTheme
 		self.fontSize = fontSize
-		// Plain text for the first frame; the task below replaces it once highlighted.
 		_highlightedCode = State(initialValue: CodeHighlighter.styled(AttributedString(code), fontSize: fontSize))
 	}
 
@@ -57,8 +56,6 @@ private struct HighlightRequest: Equatable {
 	let fontSize: Double
 }
 
-/// One `Highlightr` (and its JavaScript context) for the whole app, plus a result cache
-/// so scrolling back over a diff doesn't highlight the same file again.
 @MainActor
 private final class CodeHighlighter {
 	static let shared = CodeHighlighter()

@@ -86,7 +86,6 @@ class Auth {
 		}
 	}
 
-	/// Runs the GitLab.com OAuth flow and stores the resulting instance.
 	public static func loginWithOAuth(
 		using session: WebAuthenticationSession,
 		dismiss: DismissAction? = nil
@@ -140,8 +139,6 @@ class Auth {
 			)
 			SessionStore.shared.refresh()
 		} catch let error {
-			// The token may be expired or the host unreachable: leaving the broken
-			// account selected would break every screen until the user switches back.
 			if let previousInstance {
 				InstanceManager.select(previousInstance)
 				try? await resetSessionCaches(host: previousInstance.host)

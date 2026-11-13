@@ -46,7 +46,6 @@ struct AddInstanceView: View {
 				dismiss: dismiss
 			)
 		} catch OAuthError.cancelled {
-			// The user dismissed the browser sheet on purpose.
 		} catch let error {
 			errorMessage = "Failed to log in: \(error.localizedDescription)"
 		}

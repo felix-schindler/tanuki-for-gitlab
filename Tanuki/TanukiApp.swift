@@ -13,8 +13,6 @@ import WebKit
 
 let logger: Logger = Logger(subsystem: "de.schindlerfelix.GitLab", category: "Tanuki")
 
-/// Sidebar entries on iPad. Settings has no tab on iPhone; it is reached from
-/// the profile toolbar there.
 enum PadTab: String, CaseIterable {
 	case home, todos, explore, profile, settings
 }
@@ -36,8 +34,6 @@ struct TanukiApp: App {
 	init() {
 		InstanceManager.migrate()
 		WatchSync.shared.activate()
-		// Downloads are kept for a day, but only purged on a finished download or
-		// when Settings is opened. Do it at launch, off the main thread.
 		Task.detached(priority: .utility) {
 			FileCache.purge()
 		}

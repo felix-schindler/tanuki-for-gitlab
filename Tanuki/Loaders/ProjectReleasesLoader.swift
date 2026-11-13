@@ -74,8 +74,6 @@ struct ProjectReleasesLoader: View {
 		return linkName
 	}
 
-	/// Release asset links can point at the instance (`directAssetUrl`) or at an
-	/// external host; both are downloaded so the share sheet offers the file.
 	@ViewBuilder
 	private func assetRow(name: String?, urlString: String?, directAssetPath: String?) -> some View {
 		if let urlString, let url = URL(string: urlString) {

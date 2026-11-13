@@ -8,10 +8,6 @@
 import SwiftUI
 
 /// Downloads a file to the temporary cache, then opens the share sheet.
-///
-/// Release assets and source archives are plain (absolute) URLs. `API.download`
-/// only attaches the token when the URL belongs to the configured instance, so
-/// a third-party asset host never receives credentials.
 struct DownloadButton<Label: View>: View {
 	private let url: URL
 	private let fileName: String?

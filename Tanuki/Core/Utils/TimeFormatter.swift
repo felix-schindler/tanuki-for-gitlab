@@ -7,7 +7,6 @@
 
 import Foundation
 
-/// Formats second durations (durations, pipeline runtimes) consistently.
 @MainActor
 class TimeFormatter {
 	static let shared = TimeFormatter()

@@ -58,8 +58,6 @@ class InstanceManager {
 	private static let selectedKey = "selectedInstance"
 	private static let watchSelectedKey = "watchSelectedInstance"
 
-	/// Keychain reads and JSON decoding are too slow to repeat for every API
-	/// property access; cache them until the shared host list changes.
 	private static var cachedInstances: (hosts: [String], instances: [GitLabInstance])?
 
 	static var instances: [GitLabInstance] {
@@ -70,8 +68,6 @@ class InstanceManager {
 			}
 
 			let decoded = loadInstances(hosts: hosts)
-			// A host list that yields nothing is more likely a locked Keychain than
-			// deleted accounts: don't cache it, so the next read can recover.
 			if !hosts.isEmpty && decoded.isEmpty {
 				return decoded
 			}
@@ -91,8 +87,7 @@ class InstanceManager {
 			}
 			return try? JSONDecoder().decode(GitLabInstance.self, from: data)
 		}
-		// Pre-Keychain install, or a Keychain that cannot be read: keep working
-		// instead of logging the user out.
+		// Pre-Keychain install or unreadable Keychain: keep working, don't log out.
 		if keychain.isEmpty, let legacy = legacyInstances() {
 			return legacy
 		}
@@ -121,8 +116,6 @@ class InstanceManager {
 			return
 		}
 		instances = legacy
-		// Drop the clear-text copy only once the Keychain write is proven, so a
-		// failure cannot log the user out on upgrade.
 		guard legacy.allSatisfy({ Keychain.data(for: $0.id) != nil }) else {
 			return
 		}
@@ -238,7 +231,6 @@ enum WatchAuthError: LocalizedError {
 
 @MainActor
 final class WatchAuth {
-	/// One request in flight at a time, so several callers don't ask the phone twice.
 	private static var tokenTask: Task<String, Error>?
 
 	nonisolated static func isUnauthorized(_ error: Error) -> Bool {
@@ -263,8 +255,6 @@ final class WatchAuth {
 			return nil
 		}
 		guard current.isOAuth else {
-			// A personal access token can't be renewed here. Keep the account and
-			// let the iPhone remove it when it decides the session is gone.
 			return nil
 		}
 		let token = try? await requestAccessToken()
