@@ -20,20 +20,34 @@ struct SmallProjectView: View {
 		NavigationLink(
 			destination: ProjectLoader(fullPath: project.fullPath),
 			label: {
-				HStack {
-					if let url = URL.fromAvatar(project.avatarUrl) {
-						AvatarImage(url, size: avatarSize)
-					}
-					Text(project.nameWithNamespace)
-					Spacer()
-					if project.archived == true {
-						Image(systemName: "archivebox.fill")
-							.help("Archived")
-							.accessibilityLabel("Archived")
-					} else if let visibility = project.visibility {
-						VisibilityIcon(visibility)
-					}
-				}
+				SmallProjectLabel(project, avatarSize: avatarSize)
 			})
+	}
+}
+
+struct SmallProjectLabel: View {
+	private var project: SmallProject
+	private let avatarSize: AvatarSize
+
+	init(_ project: SmallProject, avatarSize: AvatarSize = .small) {
+		self.project = project
+		self.avatarSize = avatarSize
+	}
+
+	public var body: some View {
+		HStack {
+			if let url = URL.fromAvatar(project.avatarUrl) {
+				AvatarImage(url, size: avatarSize)
+			}
+			Text(project.nameWithNamespace)
+			Spacer()
+			if project.archived == true {
+				Image(systemName: "archivebox.fill")
+					.help("Archived")
+					.accessibilityLabel("Archived")
+			} else if let visibility = project.visibility {
+				VisibilityIcon(visibility)
+			}
+		}
 	}
 }

@@ -9,15 +9,31 @@ import GitLabAPI
 import SwiftUI
 import UIKit
 
+private enum HomeRoute: Hashable {
+	case issues
+	case mergeRequests(UserMergeRequestType)
+	case projects
+	case snippets
+	case groups
+	case project(fullPath: String)
+	case jump(JumpTarget)
+}
+
 struct HomeView: View {
 	@State
 	private var starredProjects: Result<[SmallProject?], Error>?
 
 	@State
-	private var path = NavigationPath()
+	private var versionWarning: String?
 
 	@State
-	private var versionWarning: String?
+	private var selection: HomeRoute?
+
+	@State
+	private var preferredColumn = NavigationSplitViewColumn.sidebar
+
+	@Environment(\.horizontalSizeClass)
+	private var horizontalSizeClass
 
 	private func checkVersion() async {
 		guard let version = try? await API.get(type: RestAPIVersion.self, endpoint: "version"),
@@ -98,29 +114,102 @@ struct HomeView: View {
 			return
 		}
 
-		path.append(target)
+		selection = .jump(target)
+		preferredColumn = .detail
 	}
 
 	public var body: some View {
-		NavigationStack(path: $path) {
+		NavigationSplitView(preferredCompactColumn: $preferredColumn) {
 			list
-				.navigationDestination(for: JumpTarget.self) { target in
-					switch target {
-					case .entity(let fullPath):
-						EntityLoader(fullPath: fullPath)
-					case .issue(let fullPath, let iid):
-						IssueLoader(fullPath: fullPath, iid: iid)
-					case .mergeRequest(let fullPath, let iid):
-						MergeRequestLoader(fullPath: fullPath, iid: iid)
-					case .route(let fullPath, let route):
-						EntityLoader(fullPath: fullPath, route: route)
+				.toolbar {
+					if horizontalSizeClass != .regular {
+						toolbar
 					}
 				}
+		} detail: {
+			// Rebuild for a new selection so the detail does not keep the previous item's state.
+			NavigationStack {
+				if let selection {
+					destination(selection)
+				} else {
+					placeholder
+				}
+			}
+			.id(selection)
+			.toolbar {
+				if horizontalSizeClass == .regular {
+					toolbar
+				}
+			}
 		}
 	}
 
+	@ToolbarContentBuilder
+	private var toolbar: some ToolbarContent {
+		ToolbarItem(placement: .topBarLeading) {
+			Button("Jump", systemImage: "arrow.right.page.on.clipboard") {
+				jumpToClipboard()
+			}.tint(.accentColor)
+		}
+		ToolbarItemGroup(placement: .topBarTrailing) {
+			NavigationLink(destination: EventsLoader()) {
+				Label("Activity", systemImage: Icons.events.rawValue)
+			}.tint(.accentColor)
+			NavigationLink(destination: NewProjectView()) {
+				Label("New project", systemImage: "plus")
+			}.tint(.accentColor)
+		}
+	}
+
+	@ViewBuilder
+	private func destination(_ route: HomeRoute) -> some View {
+		switch route {
+		case .issues:
+			UserIssuesLoader()
+		case .mergeRequests(let type):
+			UserMergeLoader(type)
+		case .projects:
+			ProjectsLoader(membership: true)
+		case .snippets:
+			UserSnippetsLoader()
+		case .groups:
+			GroupsLoader(allAvailable: false)
+		case .project(let fullPath):
+			ProjectLoader(fullPath: fullPath)
+		case .jump(let target):
+			jumpDestination(target)
+		}
+	}
+
+	@ViewBuilder
+	private func jumpDestination(_ target: JumpTarget) -> some View {
+		switch target {
+		case .entity(let fullPath):
+			EntityLoader(fullPath: fullPath)
+		case .issue(let fullPath, let iid):
+			IssueLoader(fullPath: fullPath, iid: iid)
+		case .mergeRequest(let fullPath, let iid):
+			MergeRequestLoader(fullPath: fullPath, iid: iid)
+		case .route(let fullPath, let route):
+			EntityLoader(fullPath: fullPath, route: route)
+		}
+	}
+
+	private var placeholder: some View {
+		VStack(spacing: 12) {
+			Image(systemName: Icons.home.rawValue)
+				.font(.system(size: 44))
+				.foregroundStyle(.secondary)
+			Text("Tanuki")
+				.font(.title2.bold())
+			Text("Choose an item on the left.")
+				.foregroundStyle(.secondary)
+		}
+		.frame(maxWidth: .infinity, maxHeight: .infinity)
+	}
+
 	private var list: some View {
-		List {
+		List(selection: $selection) {
 			if let versionWarning {
 				Section {
 					Label(
@@ -139,7 +228,7 @@ struct HomeView: View {
 
 			Section("Your work") {
 				NavigationLink(
-					destination: UserIssuesLoader(),
+					value: HomeRoute.issues,
 					label: {
 						Label(
 							title: {
@@ -154,12 +243,12 @@ struct HomeView: View {
 				DisclosureGroup(
 					content: {
 						NavigationLink(
-							"Assigned", destination: UserMergeLoader(.assgined))
+							"Assigned", value: HomeRoute.mergeRequests(.assgined))
 						NavigationLink(
-							"Authored", destination: UserMergeLoader(.authored))
+							"Authored", value: HomeRoute.mergeRequests(.authored))
 						NavigationLink(
 							"Review requested",
-							destination: UserMergeLoader(.reviewRequested))
+							value: HomeRoute.mergeRequests(.reviewRequested))
 					},
 					label: {
 						Label(
@@ -173,7 +262,7 @@ struct HomeView: View {
 					})
 
 				NavigationLink(
-					destination: ProjectsLoader(membership: true),
+					value: HomeRoute.projects,
 					label: {
 						Label(
 							title: {
@@ -187,7 +276,7 @@ struct HomeView: View {
 				)
 
 				NavigationLink(
-					destination: UserSnippetsLoader(),
+					value: HomeRoute.snippets,
 					label: {
 						Label(
 							title: {
@@ -201,7 +290,7 @@ struct HomeView: View {
 				)
 
 				NavigationLink(
-					destination: GroupsLoader(allAvailable: false),
+					value: HomeRoute.groups,
 					label: {
 						Label(
 							title: {
@@ -226,7 +315,11 @@ struct HomeView: View {
 						} else {
 							ForEach(projects, id: \.?.fullPath) { maybeProject in
 								if let project = maybeProject {
-									SmallProjectView(project)
+									NavigationLink(
+										value: HomeRoute.project(fullPath: project.fullPath),
+										label: {
+											SmallProjectLabel(project)
+										})
 								}
 							}
 						}
@@ -244,20 +337,6 @@ struct HomeView: View {
 		}.refreshable {
 			await reloadStarredProjects()
 			await checkVersion()
-		}.toolbar {
-			ToolbarItem(placement: .topBarLeading) {
-				Button("Jump", systemImage: "arrow.right.page.on.clipboard") {
-					jumpToClipboard()
-				}.tint(.accentColor)
-			}
-			ToolbarItemGroup(placement: .topBarTrailing) {
-				NavigationLink(destination: EventsLoader()) {
-					Label("Activity", systemImage: Icons.events.rawValue)
-				}.tint(.accentColor)
-				NavigationLink(destination: NewProjectView()) {
-					Label("New project", systemImage: "plus")
-				}.tint(.accentColor)
-			}
 		}
 		.listStyle(.sidebar)
 		.headerProminence(.increased)
@@ -266,7 +345,5 @@ struct HomeView: View {
 }
 
 #Preview {
-	NavigationStack {
-		HomeView()
-	}
+	HomeView()
 }

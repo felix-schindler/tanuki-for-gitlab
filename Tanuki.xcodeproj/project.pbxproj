@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		DC0A6A552B8D148000C53D56 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = DC0A6A542B8D148000C53D56 /* CachedAsyncImage */; };
-		DC7E3B440000000000000004 /* TanukiShared in Frameworks */ = {isa = PBXBuildFile; productRef = DC7E3B440000000000000002 /* TanukiShared */; };
-		DC7E3B440000000000000005 /* TanukiShared in Frameworks */ = {isa = PBXBuildFile; productRef = DC7E3B440000000000000003 /* TanukiShared */; };
 		DC2511E22E7F4C7E0021371C /* Tanuki Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = DC2511D82E7F4C7D0021371C /* Tanuki Watch App.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DC42A2112C62D36E00B1EA85 /* HighlightedTextEditor in Frameworks */ = {isa = PBXBuildFile; productRef = DC42A2102C62D36E00B1EA85 /* HighlightedTextEditor */; };
 		DC53A0D32F9D000100000003 /* TanukiIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = DC53A0D22F9D000100000002 /* TanukiIcon.icon */; };
@@ -17,6 +15,8 @@
 		DC5AD7D12E697E4B0031FC7B /* ApolloAPI in Frameworks */ = {isa = PBXBuildFile; productRef = DC5AD7D02E697E4B0031FC7B /* ApolloAPI */; };
 		DC5AD7D32E697E4B0031FC7B /* ApolloSQLite in Frameworks */ = {isa = PBXBuildFile; productRef = DC5AD7D22E697E4B0031FC7B /* ApolloSQLite */; };
 		DC5AD7DD2E69D6E50031FC7B /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = DC5AD7DC2E69D6E50031FC7B /* Toast */; };
+		DC7E3B440000000000000004 /* TanukiShared in Frameworks */ = {isa = PBXBuildFile; productRef = DC7E3B440000000000000002 /* TanukiShared */; };
+		DC7E3B440000000000000005 /* TanukiShared in Frameworks */ = {isa = PBXBuildFile; productRef = DC7E3B440000000000000003 /* TanukiShared */; };
 		DC8978222E7F514200D42E4C /* GitLabAPI in Frameworks */ = {isa = PBXBuildFile; productRef = DC8978212E7F514200D42E4C /* GitLabAPI */; };
 		DC8978242E7F515800D42E4C /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = DC8978232E7F515800D42E4C /* Apollo */; };
 		DC8978262E7F515800D42E4C /* ApolloAPI in Frameworks */ = {isa = PBXBuildFile; productRef = DC8978252E7F515800D42E4C /* ApolloAPI */; };
@@ -612,13 +612,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		DCD225022E696BC8002256F0 /* XCLocalSwiftPackageReference "GitLabAPI" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = GitLabAPI;
-		};
 		DC7E3B440000000000000001 /* XCLocalSwiftPackageReference "Shared" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Shared;
+		};
+		DCD225022E696BC8002256F0 /* XCLocalSwiftPackageReference "GitLabAPI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = GitLabAPI;
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -720,6 +720,16 @@
 			package = DC5AD7DB2E69D6E50031FC7B /* XCRemoteSwiftPackageReference "toast-swift" */;
 			productName = Toast;
 		};
+		DC7E3B440000000000000002 /* TanukiShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC7E3B440000000000000001 /* XCLocalSwiftPackageReference "Shared" */;
+			productName = TanukiShared;
+		};
+		DC7E3B440000000000000003 /* TanukiShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC7E3B440000000000000001 /* XCLocalSwiftPackageReference "Shared" */;
+			productName = TanukiShared;
+		};
 		DC8978212E7F514200D42E4C /* GitLabAPI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DCD225022E696BC8002256F0 /* XCLocalSwiftPackageReference "GitLabAPI" */;
@@ -763,16 +773,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DCD2F7012F8AF9740049850E /* XCRemoteSwiftPackageReference "Alamofire" */;
 			productName = Alamofire;
-		};
-		DC7E3B440000000000000002 /* TanukiShared */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DC7E3B440000000000000001 /* XCLocalSwiftPackageReference "Shared" */;
-			productName = TanukiShared;
-		};
-		DC7E3B440000000000000003 /* TanukiShared */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DC7E3B440000000000000001 /* XCLocalSwiftPackageReference "Shared" */;
-			productName = TanukiShared;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

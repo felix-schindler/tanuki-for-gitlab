@@ -92,7 +92,7 @@ struct CurrentUserLoader: View {
 					ShareButton(url)
 				}
 			}
-		}
+        }.navigationTitle("Profile")
 	}
 }
 

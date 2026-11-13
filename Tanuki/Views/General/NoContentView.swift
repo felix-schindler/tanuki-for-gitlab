@@ -31,7 +31,6 @@ struct NoContentView: View {
 				.scaledToFill()
 				.foregroundStyle(.secondary)
 				.frame(width: 40, height: 40)
-				.clipped()
 				.padding(.bottom, 10)
 			Text(self.msg)
 				.font(.title2.bold())

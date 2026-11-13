@@ -8,14 +8,9 @@
 
 import OSLog
 import SwiftUI
-import UIKit
 import WebKit
 
 let logger: Logger = Logger(subsystem: "de.schindlerfelix.GitLab", category: "Tanuki")
-
-enum PadTab: String, CaseIterable {
-	case home, todos, explore, profile, settings
-}
 
 @main
 struct TanukiApp: App {
@@ -27,9 +22,6 @@ struct TanukiApp: App {
 
 	@AppStorage(SettingsKey.appearance)
 	private var appearance = ""
-
-	@AppStorage(SettingsKey.padTab)
-	private var padTab: PadTab?
 
 	init() {
 		InstanceManager.migrate()
@@ -78,26 +70,6 @@ struct TanukiApp: App {
 	}
 
 	public var main: some View {
-		SwiftUI.Group {
-			if UIDevice.current.userInterfaceIdiom == .pad {
-				padView
-			} else {
-				phoneView
-			}
-		}.task {
-			sessionStore.refresh()
-			restorePersistedCookies()
-			await Auth.ensureValidToken()
-		}.onChange(of: scenePhase) { _, newPhase in
-			if newPhase == .active {
-				Task {
-					await Auth.ensureValidToken()
-				}
-			}
-		}
-	}
-
-	private var phoneView: some View {
 		TabView {
 			HomeView()
 				.tabItem {
@@ -118,67 +90,16 @@ struct TanukiApp: App {
 			}.tabItem {
 				Label("Profile", systemImage: Icons.users.rawValue)
 			}.tag(3)
-		}
-	}
-
-	private var padView: some View {
-		NavigationSplitView {
-			List(selection: $padTab) {
-				Label("Home", systemImage: Icons.home.rawValue)
-					.tag(PadTab.home)
-				Label("Todos", systemImage: Icons.todos.rawValue)
-					.tag(PadTab.todos)
-				Label("Explore", systemImage: Icons.explore.rawValue)
-					.tag(PadTab.explore)
-				Label("Profile", systemImage: Icons.users.rawValue)
-					.tag(PadTab.profile)
-				Label("Settings", systemImage: Icons.settings.rawValue)
-					.tag(PadTab.settings)
-			}
-			.listStyle(.sidebar)
-			.navigationTitle("Tanuki")
-		} detail: {
-			if let padTab {
-				padDetail(for: padTab)
-			} else {
-				padWelcome
-			}
-		}
-	}
-
-	@ViewBuilder
-	private func padDetail(for tab: PadTab) -> some View {
-		if tab == .home {
-			// HomeView brings its own NavigationStack (it hosts the Jump paths).
-			HomeView()
-		} else {
-			NavigationStack {
-				switch tab {
-				case .todos:
-					CurrentUserTodosLoader()
-				case .explore:
-					ExploreView()
-				case .profile:
-					CurrentUserLoader()
-				case .settings:
-					SettingsView()
-				case .home:
-					EmptyView()
+		}.task {
+			sessionStore.refresh()
+			restorePersistedCookies()
+			await Auth.ensureValidToken()
+		}.onChange(of: scenePhase) { _, newPhase in
+			if newPhase == .active {
+				Task {
+					await Auth.ensureValidToken()
 				}
 			}
 		}
-	}
-
-	private var padWelcome: some View {
-		VStack(spacing: 12) {
-			Image(systemName: Icons.home.rawValue)
-				.font(.system(size: 44))
-				.foregroundStyle(.secondary)
-			Text("Welcome to Tanuki")
-				.font(.title2.bold())
-			Text("Choose a section in the sidebar.")
-				.foregroundStyle(.secondary)
-		}
-		.frame(maxWidth: .infinity, maxHeight: .infinity)
 	}
 }
