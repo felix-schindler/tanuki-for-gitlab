@@ -92,6 +92,10 @@ struct GroupLoader: View {
 							}
 						}
 
+                        if let description = group.description, description.isNotEmpty {
+                            Markdown(description)
+                        }
+
 						ScrollView(.horizontal) {
 							HStack {
 								if let parent = group.parent {
@@ -112,10 +116,6 @@ struct GroupLoader: View {
 										.font(.footnote)
 								}
 							}.font(.footnote)
-						}
-
-						if let description = group.description, description.isNotEmpty {
-							Markdown(description)
 						}
 					}
 
