@@ -9,7 +9,9 @@ supports multiple accounts. Most screens are backed by GraphQL (Apollo, cached
 to a local SQLite database); anything GraphQL does not expose (files, wikis,
 job traces, archive downloads, …) goes through REST with the same token.
 
-## GraphQL
+## Development
+
+### GraphQL
 
 To fetch the latest schema and generate the API code, run:
 
@@ -19,14 +21,14 @@ make fetch-schema
 make generate-apollo
 ```
 
-## GitHub contributions
+### GitHub contributions
 
 ```
 git remote add github git@github.com:felix-schindler/tanuki-for-gitlab.git
 git fetch github pull/<id>/head:pr-<id>
 ```
 
-# Release a new version
+### Release a new version
 
 1. Change app version in Xcode → Targets → Tanuki → Identity → Version
 2. Add changelog in `changelogs/v<version>.md`
@@ -36,7 +38,7 @@ Pushing the tag triggers `.github/workflows/release.yml` +
 `.gitea/workflows/release.yml`, which create releases with the body from
 `changelogs/v<version>.md`.
 
-# Feature comparison
+## Feature comparison
 
 ✅ = supported, ❌ = not supported, otherwise noted.
 
