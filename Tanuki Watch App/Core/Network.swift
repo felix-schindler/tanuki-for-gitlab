@@ -9,6 +9,7 @@ import Apollo
 import ApolloAPI
 import Foundation
 import SwiftUI
+import TanukiShared
 import WatchConnectivity
 
 struct GitLabInstance: Codable, Identifiable, Equatable, Sendable {

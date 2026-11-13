@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import TanukiShared
 
 enum PersistedCookies {
 	private static let account = "persistedCookies"

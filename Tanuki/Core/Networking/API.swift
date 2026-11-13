@@ -10,6 +10,7 @@ import Alamofire
 import Foundation
 import OSLog
 import SwiftUI
+import TanukiShared
 
 #if canImport(WatchConnectivity)
 	import WatchConnectivity
