@@ -81,6 +81,14 @@ struct GitLabInstance: Codable, Identifiable, Equatable, Sendable {
 		if Array(segments.suffix(2)) == ["api", "v4"] {
 			segments.removeLast(2)
 		}
+		// One segment is a sub-path install like `example.com/gitlab`. Two or more is
+		// a project or file URL (`gitlab.com/group/project`, `…/-/tree/main`), which
+		// would otherwise make every API call 404.
+		// shortcut: nested sub-path installs (`example.com/company/gitlab`) lose their
+		// path; ask the server (`GET api/v4/version`) when someone reports it.
+		if segments.count > 1 {
+			segments.removeAll()
+		}
 
 		return segments.isEmpty ? authority : authority + "/" + segments.joined(separator: "/")
 	}
@@ -272,6 +280,9 @@ class InstanceManager {
 	/// before any network client is built, so there are no caches to reset.
 	static func removeInvalid() {
 		let current = instances
+		// An empty read is a locked Keychain, not a deleted account list; writing it
+		// back would drop the host index and orphan the items.
+		guard !current.isEmpty else { return }
 		let valid = current.filter { $0.token.isNotEmpty }
 		let selection = valid.contains { $0.id == selectedId } ? selectedId : valid.last?.id
 		guard valid.count != current.count || selection != selectedId else { return }

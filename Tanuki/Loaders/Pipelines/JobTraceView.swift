@@ -25,6 +25,11 @@ struct JobTraceView: View {
 	@State
 	private var isLoadingOlder = false
 
+	/// Bytes at the start of the shown text whose UTF-8 character started in an
+	/// older chunk; they are prepended to the next older chunk instead of a `�`.
+	@State
+	private var seam = Data()
+
 	private func loadTrace() async {
 		do {
 			let response = try await API.raw(
@@ -32,7 +37,9 @@ struct JobTraceView: View {
 				endpoint: "projects", resource: fullPath, suffix: "jobs/\(jobId)/trace",
 				headers: ["Range": "bytes=-\(Self.chunkSize)"])
 			firstLoadedByte = Self.rangeStart(response) ?? 0
-			trace = .success(Self.text(from: response))
+			let (partial, text) = Self.splitLeadingPartial(response.data ?? Data())
+			seam = partial
+			trace = .success(text)
 		} catch {
 			trace = .failure(error)
 			Notify.status(.error)
@@ -52,14 +59,24 @@ struct JobTraceView: View {
 				endpoint: "projects", resource: fullPath, suffix: "jobs/\(jobId)/trace",
 				headers: ["Range": "bytes=\(start)-\(end)"])
 			firstLoadedByte = Self.rangeStart(response) ?? start
-			trace = .success(Self.text(from: response) + current)
+			let (partial, older) = Self.splitLeadingPartial((response.data ?? Data()) + seam)
+			seam = partial
+			trace = .success(older + current)
 		} catch {
 			Notify.status(.error)
 		}
 	}
 
-	private static func text(from response: AFDataResponse<Data>) -> String {
-		String(decoding: response.data ?? Data(), as: UTF8.self)
+	/// Splits off bytes at the start of `data` that continue a character from the
+	/// previous chunk, so decoding neither loses nor mangles the boundary.
+	private static func splitLeadingPartial(_ data: Data) -> (Data, String) {
+		let base = data.startIndex
+		let limit = min(3, data.count)
+		var partial = 0
+		while partial < limit, data[base + partial] & 0b1100_0000 == 0b1000_0000 {
+			partial += 1
+		}
+		return (Data(data[base..<(base + partial)]), String(decoding: data[(base + partial)...], as: UTF8.self))
 	}
 
 	/// Parses the start offset of a `Content-Range: bytes 0-99/100` response.

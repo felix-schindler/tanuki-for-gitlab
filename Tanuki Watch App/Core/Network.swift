@@ -296,6 +296,8 @@ final class WatchAuth {
 		if session.activationState != .activated {
 			WatchSync.shared.activate()
 		}
+		// shortcut: needs the iPhone app to be reachable (foreground or just backgrounded),
+		// so an expired token cannot be renewed while Tanuki is closed on the phone.
 		guard WCSession.isSupported(), session.isReachable else {
 			throw WatchAuthError.sessionExpired
 		}

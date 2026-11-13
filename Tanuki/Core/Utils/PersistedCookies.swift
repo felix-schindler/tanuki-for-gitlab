@@ -50,5 +50,7 @@ enum PersistedCookies {
 
 	static func clear() {
 		Keychain.remove(account)
+		// Without this the clear-text copy is migrated back on the next load.
+		UserDefaults.standard.removeObject(forKey: account)
 	}
 }

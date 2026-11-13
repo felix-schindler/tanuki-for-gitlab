@@ -8,7 +8,6 @@ import Security
 
 public enum Keychain {
 	private static let service = "de.schindlerfelix.GitLab"
-	private static let accessGroup = "group.de.schindlerfelix.GitLab"
 
 	public static func data(for account: String) -> Data? {
 		var query = baseQuery(account: account)
@@ -41,11 +40,13 @@ public enum Keychain {
 	}
 
 	private static func baseQuery(account: String) -> [String: Any] {
+		// Each app reads only what it wrote, so the default access group is enough.
+		// A shared group would need a `keychain-access-groups` entitlement with the
+		// Team ID in front, and Keychain items never cross the phone/watch boundary.
 		[
 			kSecClass as String: kSecClassGenericPassword,
 			kSecAttrService as String: service,
 			kSecAttrAccount as String: account,
-			kSecAttrAccessGroup as String: accessGroup,
 		]
 	}
 }

@@ -70,6 +70,8 @@ private final class CodeHighlighter {
 	private init() {
 		highlighter = Highlightr()
 		cache.countLimit = 50
+		// Large diffs cost far more than tiny snippets; cap bytes, not just entries.
+		cache.totalCostLimit = 8 * 1024 * 1024
 	}
 
 	func highlight(_ code: String, language: String, theme: String, fontSize: Double) async -> AttributedString {
@@ -102,7 +104,7 @@ private final class CodeHighlighter {
 			highlighted = Self.styled(AttributedString(code), fontSize: fontSize)
 		}
 
-		cache.setObject(CacheEntry(highlighted), forKey: key)
+		cache.setObject(CacheEntry(highlighted), forKey: key, cost: code.utf16.count)
 		return highlighted
 	}
 

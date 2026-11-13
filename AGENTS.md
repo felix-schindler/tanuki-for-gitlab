@@ -30,4 +30,4 @@ Native iOS GitLab client (SwiftUI, Swift 6.0). Xcode project, no unit tests.
 
 ## Release
 
-Bump `MARKETING_VERSION` in Xcode → add `changelogs/v<version>.md` → `git push origin v<version>`. Tag `v*` triggers `.github/workflows/release.yml` + `.gitea/workflows/release.yml`, which use the changelog file as release body.
+Bump `MARKETING_VERSION` in Xcode → add `changelogs/v<version>.md` → `git push origin v<version>`. Tag `v*` triggers `.github/workflows/release.yml`, which uses the changelog file as release body.

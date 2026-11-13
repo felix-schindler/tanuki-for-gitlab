@@ -59,8 +59,6 @@ enum Icons: String {
 	// MARK: - Visibility
 	case lock = "lock"
 	case globe = "globe"
-	case eye = "eye"
-	case eyeSlash = "eye.slash"
 	case shield = "shield.lefthalf.filled"
 }
 
