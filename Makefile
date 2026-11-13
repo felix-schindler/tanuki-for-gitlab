@@ -2,7 +2,7 @@
 
 SWIFT := swift
 CONFIG := {"lineLength":120,"tabWidth":4,"indentation":{"tabs":1}}
-SOURCES := ./Tanuki ./Tanuki\ Watch\ App ./Emoji ./Shared
+SOURCES := ./Tanuki ./Tanuki\ Watch\ App ./Shared
 
 APOLLO_CONFIG := ./apollo-codegen-config.json
 APOLLO_CLI := ./apollo-ios-cli

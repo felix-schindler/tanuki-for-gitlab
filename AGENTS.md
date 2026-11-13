@@ -26,7 +26,7 @@ Native iOS GitLab client (SwiftUI, Swift 6.0). Xcode project, no unit tests.
 - `Tanuki/Core/Networking/Network.swift` — GraphQL via `Network.shared.apollo` (SQLite disk cache `tanuki_graphql_cache.sqlite`, Bearer interceptor). Call `resetApolloClient()` after instance switch; endpoint derives from `API.graphUrl`.
 - `Tanuki/Queries/` + `Tanuki/Loaders/` — one domain per folder (Projects, Merge Requests, Issues, Groups, Users, Todos, …). Loaders are `*Loader.swift` SwiftUI views: async fetch → `LoadingView` / `FailedView` + `.refreshable`. Follow this pattern for new data views.
 - `Tanuki/Views/{Auth,Entity-Specific,General,Settings}/`, `Tanuki/Forms/New*.swift` (create-forms), `Tanuki/Core/{Types,Utils,Notifications}/`.
-- `Emoji/Package.swift` is the `TanukiEmoji` library; `Shared/Package.swift` is `TanukiShared`, the UI shared by the app and watch targets (`AvatarImage`). The app itself is not SPM.
+- `Shared/Package.swift` is `TanukiShared`, shared by the app and watch targets (`AvatarImage`, `EmojiHelper` + `Resources/emoji.json`). The app itself is not SPM.
 
 ## Release
 

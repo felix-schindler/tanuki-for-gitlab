@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import TanukiEmoji
+import TanukiShared
 
 // MARK: - URL helpers
 extension URL {

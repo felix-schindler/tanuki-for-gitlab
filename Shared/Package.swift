@@ -18,7 +18,8 @@ let package = Package(
 			name: "TanukiShared",
 			dependencies: [
 				.product(name: "CachedAsyncImage", package: "swiftui-cached-async-image")
-			]
+			],
+			resources: [.process("Resources")]
 		)
 	]
 )

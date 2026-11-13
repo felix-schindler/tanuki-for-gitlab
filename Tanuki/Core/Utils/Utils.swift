@@ -9,7 +9,7 @@
 import Foundation
 import GitLabAPI
 import SwiftUI
-import TanukiEmoji
+import TanukiShared
 
 // MARK: - Cache helpers
 enum FileCache {

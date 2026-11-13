@@ -17,8 +17,6 @@
 		DC5AD7D12E697E4B0031FC7B /* ApolloAPI in Frameworks */ = {isa = PBXBuildFile; productRef = DC5AD7D02E697E4B0031FC7B /* ApolloAPI */; };
 		DC5AD7D32E697E4B0031FC7B /* ApolloSQLite in Frameworks */ = {isa = PBXBuildFile; productRef = DC5AD7D22E697E4B0031FC7B /* ApolloSQLite */; };
 		DC5AD7DD2E69D6E50031FC7B /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = DC5AD7DC2E69D6E50031FC7B /* Toast */; };
-		DC7E3B430000000000000004 /* TanukiEmoji in Frameworks */ = {isa = PBXBuildFile; productRef = DC7E3B430000000000000002 /* TanukiEmoji */; };
-		DC7E3B430000000000000005 /* TanukiEmoji in Frameworks */ = {isa = PBXBuildFile; productRef = DC7E3B430000000000000003 /* TanukiEmoji */; };
 		DC8978222E7F514200D42E4C /* GitLabAPI in Frameworks */ = {isa = PBXBuildFile; productRef = DC8978212E7F514200D42E4C /* GitLabAPI */; };
 		DC8978242E7F515800D42E4C /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = DC8978232E7F515800D42E4C /* Apollo */; };
 		DC8978262E7F515800D42E4C /* ApolloAPI in Frameworks */ = {isa = PBXBuildFile; productRef = DC8978252E7F515800D42E4C /* ApolloAPI */; };
@@ -87,7 +85,6 @@
 				DC8978262E7F515800D42E4C /* ApolloAPI in Frameworks */,
 				DC89783D2E7F558300D42E4C /* CachedAsyncImage in Frameworks */,
 				DC8978222E7F514200D42E4C /* GitLabAPI in Frameworks */,
-				DC7E3B430000000000000004 /* TanukiEmoji in Frameworks */,
 				DC8978242E7F515800D42E4C /* Apollo in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -99,7 +96,6 @@
 				DC7E3B440000000000000004 /* TanukiShared in Frameworks */,
 				DC5AD7DD2E69D6E50031FC7B /* Toast in Frameworks */,
 				DCD225042E696BC8002256F0 /* GitLabAPI in Frameworks */,
-				DC7E3B430000000000000005 /* TanukiEmoji in Frameworks */,
 				DC0A6A552B8D148000C53D56 /* CachedAsyncImage in Frameworks */,
 				DC42A2112C62D36E00B1EA85 /* HighlightedTextEditor in Frameworks */,
 				DC5AD7D12E697E4B0031FC7B /* ApolloAPI in Frameworks */,
@@ -165,7 +161,6 @@
 			packageProductDependencies = (
 				DC8978212E7F514200D42E4C /* GitLabAPI */,
 				DC7E3B440000000000000003 /* TanukiShared */,
-				DC7E3B430000000000000002 /* TanukiEmoji */,
 				DC8978232E7F515800D42E4C /* Apollo */,
 				DC8978252E7F515800D42E4C /* ApolloAPI */,
 				DC89783C2E7F558300D42E4C /* CachedAsyncImage */,
@@ -200,7 +195,6 @@
 				DCAF9D9E2BC3755F001FF2E5 /* Highlightr */,
 				DC42A2102C62D36E00B1EA85 /* HighlightedTextEditor */,
 				DCD225032E696BC8002256F0 /* GitLabAPI */,
-				DC7E3B430000000000000003 /* TanukiEmoji */,
 				DC5AD7CE2E697E4B0031FC7B /* Apollo */,
 				DC5AD7D02E697E4B0031FC7B /* ApolloAPI */,
 				DC5AD7D22E697E4B0031FC7B /* ApolloSQLite */,
@@ -245,7 +239,6 @@
 				DCAF9D9D2BC3755F001FF2E5 /* XCRemoteSwiftPackageReference "Highlightr" */,
 				DC42A20F2C62D36E00B1EA85 /* XCRemoteSwiftPackageReference "HighlightedTextEditor" */,
 				DCD225022E696BC8002256F0 /* XCLocalSwiftPackageReference "GitLabAPI" */,
-				DC7E3B430000000000000001 /* XCLocalSwiftPackageReference "Emoji" */,
 				DC5AD7CD2E697E4B0031FC7B /* XCRemoteSwiftPackageReference "apollo-ios" */,
 				DC5AD7DB2E69D6E50031FC7B /* XCRemoteSwiftPackageReference "toast-swift" */,
 				DCD2F7012F8AF9740049850E /* XCRemoteSwiftPackageReference "Alamofire" */,
@@ -619,10 +612,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		DC7E3B430000000000000001 /* XCLocalSwiftPackageReference "Emoji" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = Emoji;
-		};
 		DCD225022E696BC8002256F0 /* XCLocalSwiftPackageReference "GitLabAPI" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = GitLabAPI;
@@ -730,16 +719,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DC5AD7DB2E69D6E50031FC7B /* XCRemoteSwiftPackageReference "toast-swift" */;
 			productName = Toast;
-		};
-		DC7E3B430000000000000002 /* TanukiEmoji */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DC7E3B430000000000000001 /* XCLocalSwiftPackageReference "Emoji" */;
-			productName = TanukiEmoji;
-		};
-		DC7E3B430000000000000003 /* TanukiEmoji */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DC7E3B430000000000000001 /* XCLocalSwiftPackageReference "Emoji" */;
-			productName = TanukiEmoji;
 		};
 		DC8978212E7F514200D42E4C /* GitLabAPI */ = {
 			isa = XCSwiftPackageProductDependency;
