@@ -12,7 +12,10 @@ struct EventsLoader: View {
 	private var userId = 0
 
 	@State
-	private var events: Result<[Event], Error>? = nil
+	private var state = Loadable<[Event]>()
+
+	@State
+	private var pager = RestPage()
 
 	init() {
 	}
@@ -48,56 +51,72 @@ struct EventsLoader: View {
 		return ret.trimmingCharacters(in: .whitespacesAndNewlines)
 	}
 
-	private func getEvents() async {
-		var endpoint: String
-
+	private var endpoint: String {
 		if projectId != 0 {
-			endpoint = "projects/\(projectId)/events"
+			return "projects/\(projectId)/events"
 		} else if userId != 0 {
-			endpoint = "users/\(userId)/events"
+			return "users/\(userId)/events"
+		}
+		return "events"
+	}
+
+	private func load(reset: Bool) async {
+		if reset {
+			pager.reset()
+			state.isLoading = true
 		} else {
-			endpoint = "events"
+			state.isLoadingMore = true
+		}
+
+		defer {
+			state.isLoading = false
+			state.isLoadingMore = false
 		}
 
 		do {
-			let events = try await API.get(type: [Event].self, endpoint: endpoint)
-			self.events = .success(events)
-		} catch let error {
-			self.events = .failure(error)
+			let events = try await API.get(
+				type: [Event].self, endpoint: endpoint, query: pager.query)
+
+			if Task.isCancelled { return }
+			state.value = (state.value ?? []) + events
+			state.error = nil
+			pager.advance(events.count)
+		} catch {
+			if Task.isCancelled { return }
+			state.error = error
+			Notify.status(.error)
 		}
 	}
 
+	private func loadMore() async {
+		guard pager.hasMore, !state.isLoading, !state.isLoadingMore else { return }
+		await load(reset: false)
+	}
+
 	public var body: some View {
-		List {
-			if let events {
-				switch events {
-				case .success(let events):
-					if events.isEmpty {
-						NoContentView("There are no events", systemImage: "clock.arrow.circlepath")
-					} else {
-						ForEach(events, id: \.id) { event in
-							VStack(alignment: .leading) {
-								ScrollView(.horizontal) {
-									HStack {
-										AuthorView(event.author)
-										PillView(
-											event.createdAt.toString(timeStyle: .short), icon: Icons.clock.rawValue)
-									}
-								}.font(.footnote)
-								Text(getStupidText(event: event))
-							}
+		LoadableList(
+			state,
+			hasMore: pager.hasMore,
+			emptyMessage: "There are no events",
+			emptySystemImage: "clock.arrow.circlepath",
+			loadingMessage: "Loading events",
+			loadingSystemImage: Icons.events.rawValue,
+			onLoadMore: { await loadMore() },
+			onRefresh: { await load(reset: true) },
+			row: { event in
+				VStack(alignment: .leading) {
+					ScrollView(.horizontal) {
+						HStack {
+							AuthorView(event.author)
+							PillView(
+								event.createdAt.toString(timeStyle: .short), icon: Icons.clock.rawValue)
 						}
-					}
-				case .failure(let failure):
-					FailedView(failure.localizedDescription)
+					}.font(.footnote)
+					Text(getStupidText(event: event))
 				}
-			} else {
-				LoadingView("Loading events", systemImage: Icons.events.rawValue)
 			}
-		}.task {
-			await getEvents()
-		}.refreshable {
-			await getEvents()
+		).task {
+			await load(reset: true)
 		}.navigationTitle("Activity")
 	}
 }

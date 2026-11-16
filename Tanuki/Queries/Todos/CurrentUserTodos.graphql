@@ -1,6 +1,10 @@
-query CurrentUserTodos {
+query CurrentUserTodos($first: Int!, $after: String) {
   currentUser {
-    todos {
+    todos(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         id
         body

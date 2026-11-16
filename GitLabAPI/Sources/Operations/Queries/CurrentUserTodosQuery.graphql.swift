@@ -8,10 +8,24 @@ nonisolated public struct CurrentUserTodosQuery: GraphQLQuery {
   public static let operationName: String = "CurrentUserTodos"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query CurrentUserTodos { currentUser { __typename todos { __typename nodes { __typename id body group { __typename fullPath } state action author { __typename avatarUrl name username } targetEntity { __typename webUrl } project { __typename avatarUrl fullPath nameWithNamespace visibility archived } createdAt targetType } } } }"#
+      #"query CurrentUserTodos($first: Int!, $after: String) { currentUser { __typename todos(first: $first, after: $after) { __typename pageInfo { __typename hasNextPage endCursor } nodes { __typename id body group { __typename fullPath } state action author { __typename avatarUrl name username } targetEntity { __typename webUrl } project { __typename avatarUrl fullPath nameWithNamespace visibility archived } createdAt targetType } } } }"#
     ))
 
-  public init() {}
+  public var first: Int32
+  public var after: GraphQLNullable<String>
+
+  public init(
+    first: Int32,
+    after: GraphQLNullable<String>
+  ) {
+    self.first = first
+    self.after = after
+  }
+
+  @_spi(Unsafe) public var __variables: Variables? { [
+    "first": first,
+    "after": after
+  ] }
 
   nonisolated public struct Data: GitLabAPI.SelectionSet {
     @_spi(Unsafe) public let __data: DataDict
@@ -38,7 +52,10 @@ nonisolated public struct CurrentUserTodosQuery: GraphQLQuery {
       @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.CurrentUser }
       @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
-        .field("todos", Todos?.self),
+        .field("todos", Todos?.self, arguments: [
+          "first": .variable("first"),
+          "after": .variable("after")
+        ]),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
         CurrentUserTodosQuery.Data.CurrentUser.self
@@ -57,14 +74,40 @@ nonisolated public struct CurrentUserTodosQuery: GraphQLQuery {
         @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.TodoConnection }
         @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
+          .field("pageInfo", PageInfo.self),
           .field("nodes", [Node?]?.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           CurrentUserTodosQuery.Data.CurrentUser.Todos.self
         ] }
 
+        /// Information to aid in pagination.
+        public var pageInfo: PageInfo { __data["pageInfo"] }
         /// A list of nodes.
         public var nodes: [Node?]? { __data["nodes"] }
+
+        /// CurrentUser.Todos.PageInfo
+        ///
+        /// Parent Type: `PageInfo`
+        nonisolated public struct PageInfo: GitLabAPI.SelectionSet {
+          @_spi(Unsafe) public let __data: DataDict
+          @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+          @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.PageInfo }
+          @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+            .field("__typename", String.self),
+            .field("hasNextPage", Bool.self),
+            .field("endCursor", String?.self),
+          ] }
+          @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+            CurrentUserTodosQuery.Data.CurrentUser.Todos.PageInfo.self
+          ] }
+
+          /// When paginating forwards, are there more items?
+          public var hasNextPage: Bool { __data["hasNextPage"] }
+          /// When paginating forwards, the cursor to continue.
+          public var endCursor: String? { __data["endCursor"] }
+        }
 
         /// CurrentUser.Todos.Node
         ///

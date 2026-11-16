@@ -18,15 +18,19 @@ struct UserIssuesLoader: View {
 	@State
 	private var showFilters = false
 
-	@State
-	private var loadTask: Task<Void, Never>?
-
 	init(username: String? = nil) {
 		self.username = username
 	}
 
 	@State
-	private var projectMemberships: Result<[IssueProjectMembership?], Error>? = nil
+	private var userLoader = ApolloLoader<UserIssuesQuery, [IssueProjectMembership?]> {
+		$0.user?.projectMemberships?.nodes
+	}
+
+	@State
+	private var currentLoader = ApolloLoader<CurrentUserIssuesQuery, [IssueProjectMembership?]> {
+		$0.currentUser?.projectMemberships?.nodes
+	}
 
 	private var userQuery: UserIssuesQuery? {
 		guard let username else { return nil }
@@ -65,113 +69,64 @@ struct UserIssuesLoader: View {
 		)
 	}
 
-	private func loadIssues() {
-		self.loadTask?.cancel()
-		self.loadTask = Task {
-			do {
-				if let query = self.userQuery {
-					let responses = try Network.shared.apollo.fetch(
-						query: query, cachePolicy: .cacheAndNetwork)
+	private var projectMemberships: Loadable<[IssueProjectMembership?]> {
+		userQuery == nil ? currentLoader.state : userLoader.state
+	}
 
-					for try await response in responses {
-						if Task.isCancelled { return }
-						if let projectMemberships = response.data?.user?.projectMemberships?.nodes {
-							self.projectMemberships = .success(projectMemberships)
-						} else if let errors = response.errors {
-							for error in errors {
-								Notify.status(.error, error.localizedDescription)
-							}
-						}
-					}
-				} else {
-					let responses = try Network.shared.apollo.fetch(
-						query: self.currentUserQuery, cachePolicy: .cacheAndNetwork)
-
-					for try await response in responses {
-						if Task.isCancelled { return }
-						if let projectMemberships = response.data?.currentUser?.projectMemberships?
-							.nodes
-						{
-							self.projectMemberships = .success(projectMemberships)
-						} else if let errors = response.errors {
-							for error in errors {
-								Notify.status(.error, error.localizedDescription)
-							}
-						}
-					}
-				}
-			} catch {
-				if !Task.isCancelled {
-					self.projectMemberships = .failure(error)
-					Notify.status(.error)
-				}
-			}
+	private func load() async {
+		if let query = userQuery {
+			await userLoader.load(query)
+		} else {
+			await currentLoader.load(currentUserQuery)
 		}
 	}
 
-	func reloadIssues() async {
-		do {
-			if let query = self.userQuery {
-				let response = try await Network.shared.apollo.fetch(
-					query: query, cachePolicy: .networkOnly)
-
-				if let projectMemberships = response.data?.user?.projectMemberships?.nodes {
-					self.projectMemberships = .success(projectMemberships)
-				}
-			} else {
-				let response = try await Network.shared.apollo.fetch(
-					query: self.currentUserQuery, cachePolicy: .networkOnly)
-
-				if let projectMemberships = response.data?.currentUser?.projectMemberships?.nodes {
-					self.projectMemberships = .success(projectMemberships)
-				}
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.projectMemberships = .failure(error)
-			Notify.status(.error)
+	private func reload() async {
+		if let query = userQuery {
+			await userLoader.reload(query)
+		} else {
+			await currentLoader.reload(currentUserQuery)
 		}
 	}
 
 	public var body: some View {
+		let state = self.projectMemberships
+
 		List {
-			if let projectMemberships = self.projectMemberships {
-				switch projectMemberships {
-				case .success(let projectMemberships):
-					let validMemberships = projectMemberships.compactMap { $0 }
-						.filter {
-							$0.fullPath != nil && ($0._issues?.contains { $0 != nil } ?? false)
-						}
-
-					let issues: [(String, any SmallIssue)] = validMemberships.flatMap {
-						membership in
-						let fullPath = membership.fullPath!  // safe because we filtered nil above
-						return membership._issues!.compactMap { $0 }.map { issue in
-							(fullPath, issue)
-						}
-					}
-
-					if issues.isEmpty {
-						NoContentView(
-							"All caught up!", systemImage: Icons.issues.rawValue,
-							description: "There are no Issues")
-					} else {
-						ForEach(0..<issues.count, id: \.self) { index in
-							let (fullPath, issue) = issues[index]
-							SmallIssueView(fullPath, issue)
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
-				}
-			} else {
+			if state.isInitialLoading {
 				LoadingView("Loading Issues", systemImage: Icons.issues.rawValue, color: .green)
+			} else if state.isColdFailure, let error = state.error {
+				FailedView(error)
+			} else if let projectMemberships = state.value {
+				let validMemberships = projectMemberships.compactMap { $0 }
+					.filter {
+						$0.fullPath != nil && ($0._issues?.contains { $0 != nil } ?? false)
+					}
+
+				let issues: [(String, any SmallIssue)] = validMemberships.flatMap {
+					membership in
+					let fullPath = membership.fullPath!  // safe because we filtered nil above
+					return membership._issues!.compactMap { $0 }.map { issue in
+						(fullPath, issue)
+					}
+				}
+
+				if issues.isEmpty {
+					NoContentView(
+						"All caught up!", systemImage: Icons.issues.rawValue,
+						description: "There are no Issues")
+				} else {
+					ForEach(0..<issues.count, id: \.self) { index in
+						let (fullPath, issue) = issues[index]
+						SmallIssueView(fullPath, issue)
+					}
+				}
 			}
+
 		}.debouncedLoad(filter) {
-			loadIssues()
+			await load()
 		}.refreshable {
-			await reloadIssues()
+			await reload()
 		}.toolbar {
 			Button("Filter", systemImage: Icons.filter.rawValue) {
 				showFilters = true

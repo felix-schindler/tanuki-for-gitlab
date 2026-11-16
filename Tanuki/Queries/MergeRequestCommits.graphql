@@ -1,8 +1,12 @@
-query MergeRequestCommits($fullPath: ID!, $iid: String!) {
+query MergeRequestCommits($first: Int!, $after: String, $fullPath: ID!, $iid: String!) {
   project(fullPath: $fullPath) {
     id
     mergeRequest(iid: $iid) {
-      commits {
+      commits(first: $first, after: $after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
         nodes {
           id
           title

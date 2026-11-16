@@ -15,60 +15,47 @@ struct EntityLoader: View {
 	private let fullPath: String
 	private let route: JumpRoute?
 
-	@State
-	private var entity: Result<Entity, Error>?
-
 	private enum Entity {
 		case project(id: Int, rootRef: String?)
 		case group(id: Int)
 		case user(username: String)
 	}
 
+	@State
+	private var loader: ApolloLoader<EntityIdQuery, Entity>
+
 	init(fullPath: String, route: JumpRoute? = nil) {
 		self.fullPath = fullPath
 		self.route = route
-	}
-
-	private func resolve() {
-		Task {
-			do {
-				let response = try await Network.shared.apollo.fetch(
-					query: EntityIdQuery(fullPath: fullPath, username: fullPath),
-					cachePolicy: .networkOnly)
-
-				if let project = response.data?.project, let id = project.id.toIntId() {
-					entity = .success(.project(id: id, rootRef: project.repository?.rootRef))
-				} else if let group = response.data?.group, let id = group.id?.toIntId() {
-					entity = .success(.group(id: id))
-				} else if route == nil, !fullPath.contains("/"), response.data?.user != nil {
-					entity = .success(.user(username: fullPath))
-				} else {
-					entity = .failure(
-						ProjectLoadError(
-							fullPath: fullPath,
-							messages: ["No project, group or user at this path."]))
+		_loader = State(
+			initialValue: ApolloLoader(extract: { data in
+				if let project = data.project, let id = project.id.toIntId() {
+					return .project(id: id, rootRef: project.repository?.rootRef)
 				}
-			} catch {
-				entity = .failure(error)
-			}
-		}
+				if let group = data.group, let id = group.id?.toIntId() {
+					return .group(id: id)
+				}
+				if route == nil, !fullPath.contains("/"), data.user != nil {
+					return .user(username: fullPath)
+				}
+				return nil
+			}))
 	}
 
 	var body: some View {
+		let state = loader.state
+
 		SwiftUI.Group {
-			if let entity {
-				switch entity {
-				case .success(let entity):
-					destination(for: entity)
-				case .failure(let error):
-					FailedView(error)
-				}
-			} else {
+			if state.isInitialLoading {
 				LoadingView("Loading \(fullPath)", systemImage: "magnifyingglass")
+			} else if state.isColdFailure, let error = state.error {
+				FailedView(error)
+			} else if let entity = state.value {
+				destination(for: entity)
 			}
 		}
 		.task {
-			resolve()
+			await loader.load(EntityIdQuery(fullPath: fullPath, username: fullPath))
 		}
 	}
 

@@ -1,6 +1,10 @@
-query UserTimelogs($username: String!) {
+query UserTimelogs($first: Int!, $after: String, $username: String!) {
   user(username: $username) {
-    timelogs(sort: SPENT_AT_DESC) {
+    timelogs(sort: SPENT_AT_DESC, first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         id
         user {

@@ -62,6 +62,7 @@ struct UserMergeLoader: View {
 			case .assigned:
 				let responses = try Network.shared.apollo.fetch(
 					query: UserAssignedMergeRequestsQuery(
+						first: 50, after: .none,
 						state: .none, search: .none, draft: .none, subscribed: .none, labels: .none, milestone: .none,
 						createdAfter: .none, createdBefore: .none, updatedAfter: .none, updatedBefore: .none),
 					cachePolicy: .cacheAndNetwork
@@ -75,6 +76,7 @@ struct UserMergeLoader: View {
 			case .authored:
 				let responses = try Network.shared.apollo.fetch(
 					query: UserAuthoredMergeRequestsQuery(
+						first: 50, after: .none,
 						state: .none, search: .none, draft: .none, subscribed: .none, labels: .none, milestone: .none,
 						createdAfter: .none, createdBefore: .none, updatedAfter: .none, updatedBefore: .none),
 					cachePolicy: .cacheAndNetwork
@@ -88,6 +90,7 @@ struct UserMergeLoader: View {
 			case .reviewRequested:
 				let responses = try Network.shared.apollo.fetch(
 					query: UserReviewRequestedMergeRequestsQuery(
+						first: 50, after: .none,
 						state: .none, search: .none, draft: .none, subscribed: .none, labels: .none, milestone: .none,
 						createdAfter: .none, createdBefore: .none, updatedAfter: .none, updatedBefore: .none),
 					cachePolicy: .cacheAndNetwork
@@ -115,6 +118,7 @@ struct UserMergeLoader: View {
 			case .assigned:
 				let response = try await Network.shared.apollo.fetch(
 					query: UserAssignedMergeRequestsQuery(
+						first: 50, after: .none,
 						state: .none, search: .none, draft: .none, subscribed: .none, labels: .none, milestone: .none,
 						createdAfter: .none, createdBefore: .none, updatedAfter: .none, updatedBefore: .none),
 					cachePolicy: .networkOnly)
@@ -123,6 +127,7 @@ struct UserMergeLoader: View {
 			case .authored:
 				let response = try await Network.shared.apollo.fetch(
 					query: UserAuthoredMergeRequestsQuery(
+						first: 50, after: .none,
 						state: .none, search: .none, draft: .none, subscribed: .none, labels: .none, milestone: .none,
 						createdAfter: .none, createdBefore: .none, updatedAfter: .none, updatedBefore: .none),
 					cachePolicy: .networkOnly)
@@ -131,6 +136,7 @@ struct UserMergeLoader: View {
 			case .reviewRequested:
 				let response = try await Network.shared.apollo.fetch(
 					query: UserReviewRequestedMergeRequestsQuery(
+						first: 50, after: .none,
 						state: .none, search: .none, draft: .none, subscribed: .none, labels: .none, milestone: .none,
 						createdAfter: .none, createdBefore: .none, updatedAfter: .none, updatedBefore: .none),
 					cachePolicy: .networkOnly)

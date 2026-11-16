@@ -1,4 +1,6 @@
 query UserReviewRequestedMergeRequests(
+  $first: Int!
+  $after: String
   $state: MergeRequestState
   $search: String
   $draft: Boolean
@@ -12,6 +14,8 @@ query UserReviewRequestedMergeRequests(
 ) {
   currentUser {
     reviewRequestedMergeRequests(
+      first: $first
+      after: $after
       state: $state
       search: $search
       draft: $draft
@@ -24,6 +28,10 @@ query UserReviewRequestedMergeRequests(
       updatedBefore: $updatedBefore
     ) {
       count
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         project {
           fullPath

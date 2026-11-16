@@ -1,6 +1,10 @@
-query UserGroups($username: String!) {
+query UserGroups($first: Int!, $after: String, $username: String!) {
   user(username: $username) {
-    groups {
+    groups(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         avatarUrl
         name

@@ -91,7 +91,7 @@ struct CommitsLoader: View {
 			let temp = try await API.get(
 				type: [Commit].self,
 				endpoint: "projects/\(projectId)/repository/commits",
-				query: ["ref_name": refName]
+				query: ["ref_name": refName, "per_page": "100"]
 			)
 
 			if Task.isCancelled { return }
@@ -107,7 +107,8 @@ struct CommitsLoader: View {
 		do {
 			self.branches = try await API.get(
 				type: [Branch].self,
-				endpoint: "projects/\(projectId)/repository/branches"
+				endpoint: "projects/\(projectId)/repository/branches",
+				query: ["per_page": "100"]
 			)
 		} catch let error {
 			Notify.status(.error, error.localizedDescription)

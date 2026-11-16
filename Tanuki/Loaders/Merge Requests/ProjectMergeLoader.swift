@@ -18,18 +18,23 @@ struct ProjectMergeLoader: View {
 	private var showFilters = false
 
 	@State
-	private var loadTask: Task<Void, Never>?
-
-	@State
-	private var project: Result<GitLabAPI.ProjectMergeRequestsQuery.Data.Project, Error>? = nil
+	private var pager = PagedQuery<
+		ProjectMergeRequestsQuery, ProjectMergeRequestsQuery.Data.Project.MergeRequests.Node
+	>(
+		extract: { ($0.project?.mergeRequests?.nodes ?? []).compactMap { $0 } },
+		key: { $0.iid },
+		hasNext: { $0.project?.mergeRequests?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.project?.mergeRequests?.pageInfo.endCursor }
+	)
 
 	init(fullPath: String) {
 		self.fullPath = fullPath
-		self.project = nil
 	}
 
-	private var query: ProjectMergeRequestsQuery {
+	private func query(after: GraphQLNullable<String> = .none) -> ProjectMergeRequestsQuery {
 		return ProjectMergeRequestsQuery(
+			first: 50,
+			after: after,
 			fullPath: self.fullPath,
 			state: GraphFilter.toFilterEnum(self.filter.state),
 			search: GraphFilter.toFilter(self.filter.search),
@@ -47,85 +52,29 @@ struct ProjectMergeLoader: View {
 		)
 	}
 
-	private func loadMergeRequests() {
-		self.loadTask?.cancel()
-		self.loadTask = Task {
-			do {
-				let responses = try Network.shared.apollo.fetch(
-					query: self.query,
-					cachePolicy: .cacheAndNetwork
-				)
-
-				for try await response in responses {
-					if Task.isCancelled { return }
-					if let project = response.data?.project {
-						self.project = .success(project)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			} catch {
-				if !Task.isCancelled {
-					self.project = .failure(error)
-					Notify.status(.error)
-				}
-			}
-		}
-	}
-
-	private func reloadMergeRequests() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: self.query,
-				cachePolicy: .networkOnly
-			)
-
-			if let project = response.data?.project {
-				self.project = .success(project)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.project = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
 	public var body: some View {
-		List {
-			if let project {
-				switch project {
-				case .success(let project):
-					if let mergeRequestsEnabled = project.mergeRequestsEnabled,
-						!mergeRequestsEnabled
-					{
-						NoContentView(
-							"Merge requests are not enabled for this project",
-							image: Images.mergeRequest.rawValue
-						)
-					} else if let mrs = project.mergeRequests?.nodes {
-						if mrs.count == 0 {
-							NoContentView("There are no merge requests", image: Images.mergeRequest.rawValue)
-						} else {
-							ForEach(mrs, id: \.?.iid) { mr in
-								if let mr {
-									SmallMergeView(self.fullPath, mr)
-								}
-							}
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
-				}
+		SwiftUI.Group {
+			if pager.firstPage?.project?.mergeRequestsEnabled == false {
+				NoContentView(
+					"Merge requests are not enabled for this project",
+					image: Images.mergeRequest.rawValue
+				)
 			} else {
-				LoadingView("Loading Merge Requests", image: Images.mergeRequest.rawValue, color: .blue)
+				LoadableList(
+					pager.state,
+					hasMore: pager.hasMore,
+					emptyMessage: "There are no merge requests",
+					emptySystemImage: Images.mergeRequest.rawValue,
+					loadingMessage: "Loading Merge Requests",
+					loadingSystemImage: Images.mergeRequest.rawValue,
+					onLoadMore: { await pager.loadMore() },
+					onRefresh: { await pager.refresh() }
+				) { mr in
+					SmallMergeView(self.fullPath, mr)
+				}
 			}
 		}.debouncedLoad(filter) {
-			loadMergeRequests()
-		}.refreshable {
-			await reloadMergeRequests()
+			await pager.start(query(), setCursor: { $0.after = .some($1) })
 		}.toolbar {
 			Button("Filter", systemImage: Icons.filter.rawValue) {
 				showFilters = true

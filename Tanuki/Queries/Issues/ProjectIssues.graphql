@@ -1,4 +1,6 @@
 query ProjectIssues(
+  $first: Int!
+  $after: String
   $fullPath: ID!
   $state: IssuableState
   $search: String
@@ -21,6 +23,8 @@ query ProjectIssues(
       createIssue
     }
     issues(
+      first: $first
+      after: $after
       state: $state
       search: $search
       confidential: $confidential
@@ -35,6 +39,10 @@ query ProjectIssues(
       updatedAfter: $updatedAfter
       updatedBefore: $updatedBefore
     ) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         iid
         title

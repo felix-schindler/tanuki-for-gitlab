@@ -13,84 +13,44 @@ struct MrCommitsLoader: View {
 	private let iid: String
 
 	@State
-	private var project: Result<MergeRequestCommitsQuery.Data.Project, Error>? = nil
+	private var loader = ApolloLoader<MergeRequestCommitsQuery, MergeRequestCommitsQuery.Data.Project> {
+		$0.project
+	}
 
 	init(fullPath: String, iid: String) {
 		self.fullPath = fullPath
 		self.iid = iid
 	}
 
-	private func loadCommits() {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: MergeRequestCommitsQuery(fullPath: self.fullPath, iid: self.iid),
-				cachePolicy: .cacheAndNetwork
-			)
-
-			Task {
-				for try await response in responses {
-					if let project = response.data?.project {
-						self.project = .success(project)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			}
-		} catch let error {
-			self.project = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
-	private func reloadCommits() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: MergeRequestCommitsQuery(fullPath: self.fullPath, iid: self.iid),
-				cachePolicy: .networkOnly
-			)
-
-			if let project = response.data?.project {
-				self.project = .success(project)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.project = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
 	public var body: some View {
+		let state = loader.state
+
 		List {
-			if let project {
-				switch project {
-				case .success(let project):
-					if let projectId = project.id.toIntId(),
-						let commits = project.mergeRequest?.commits?.nodes,
-						commits.isNotEmpty
-					{
-						ForEach(commits, id: \.?.shortId) { maybeCommit in
-							if let commit = maybeCommit {
-								SmallCommitView(commit, projectId)
-							}
-						}
-					} else {
-						NoContentView(
-							"There are no commits in this MR",
-							systemImage: Icons.commits.rawValue)
-					}
-				case .failure(let error):
-					FailedView(error)
-				}
-			} else {
+			if state.isInitialLoading {
 				LoadingView("Loading Commits", systemImage: Icons.commits.rawValue)
+			} else if state.isColdFailure, let error = state.error {
+				FailedView(error)
+			} else if let project = state.value {
+				if let projectId = project.id.toIntId(),
+					let commits = project.mergeRequest?.commits?.nodes,
+					commits.isNotEmpty
+				{
+					ForEach(commits, id: \.?.shortId) { maybeCommit in
+						if let commit = maybeCommit {
+							SmallCommitView(commit, projectId)
+						}
+					}
+				} else {
+					NoContentView(
+						"There are no commits in this MR",
+						systemImage: Icons.commits.rawValue)
+				}
 			}
+
 		}.task {
-			loadCommits()
+			await loader.load(MergeRequestCommitsQuery(first: 100, after: .none, fullPath: fullPath, iid: iid))
 		}.refreshable {
-			await reloadCommits()
+			await loader.reload(MergeRequestCommitsQuery(first: 100, after: .none, fullPath: fullPath, iid: iid))
 		}.navigationTitle("Commits")
 	}
 }

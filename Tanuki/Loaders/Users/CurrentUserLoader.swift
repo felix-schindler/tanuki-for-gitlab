@@ -11,71 +11,34 @@ import SwiftUI
 struct CurrentUserLoader: View {
 
 	@State
-	private var user: Result<CurrentUserQuery.Data.CurrentUser, Error>? = nil
-
-	private func loadUser() async {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: CurrentUserQuery(), cachePolicy: .cacheAndNetwork)
-
-			Task {
-				for try await response in responses {
-					if let user = response.data?.currentUser {
-						self.user = .success(user)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			}
-		} catch let error {
-			self.user = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
-	private func reloadUser() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: CurrentUserQuery(), cachePolicy: .networkOnly)
-
-			if let user = response.data?.currentUser {
-				self.user = .success(user)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.user = .failure(error)
-			Notify.status(.error)
-		}
+	private var loader = ApolloLoader<CurrentUserQuery, CurrentUserQuery.Data.CurrentUser> {
+		$0.currentUser
 	}
 
 	public var body: some View {
-		List {
-			if let user {
-				switch user {
-				case .success(let user):
-					UserView(user, isSelf: true)
+		let state = loader.state
 
-					Section("Account") {
-						NavigationLink(destination: KeysLoader()) {
-							Label("SSH keys", systemImage: Icons.key.rawValue)
-						}
-						NavigationLink(destination: EmailsLoader()) {
-							Label("Email addresses", systemImage: Icons.email.rawValue)
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
-				}
-			} else {
+		List {
+			if state.isInitialLoading {
 				LoadingView("Loading Profile", systemImage: Icons.users.rawValue)
+			} else if state.isColdFailure, let error = state.error {
+				FailedView(error)
+			} else if let user = state.value {
+				UserView(user, isSelf: true)
+
+				Section("Account") {
+					NavigationLink(destination: KeysLoader()) {
+						Label("SSH keys", systemImage: Icons.key.rawValue)
+					}
+					NavigationLink(destination: EmailsLoader()) {
+						Label("Email addresses", systemImage: Icons.email.rawValue)
+					}
+				}
 			}
 		}.task {
-			await loadUser()
+			await loader.load(CurrentUserQuery())
 		}.refreshable {
-			await reloadUser()
+			await loader.reload(CurrentUserQuery())
 		}.toolbar {
 			ToolbarItem(placement: .topBarLeading) {
 				NavigationLink(
@@ -86,13 +49,13 @@ struct CurrentUserLoader: View {
 			}
 
 			ToolbarItem(placement: .topBarTrailing) {
-				if let user, case .success(let user) = user,
+				if let user = loader.state.value,
 					let url = URL(string: user.webUrl)
 				{
 					ShareButton(url)
 				}
 			}
-        }.navigationTitle("Profile")
+		}.navigationTitle("Profile")
 	}
 }
 

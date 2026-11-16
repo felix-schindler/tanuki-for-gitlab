@@ -1,6 +1,10 @@
-query CurrentUserStarredProjects {
+query CurrentUserStarredProjects($first: Int!, $after: String) {
   currentUser {
-    starredProjects {
+    starredProjects(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         avatarUrl
         nameWithNamespace

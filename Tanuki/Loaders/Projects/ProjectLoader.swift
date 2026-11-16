@@ -34,7 +34,7 @@ struct ProjectLoader: View {
 	private let fullPath: String
 
 	@State
-	private var project: Result<ProjectQuery.Data.Project, Error>? = nil
+	private var loader = ApolloLoader<ProjectQuery, ProjectQuery.Data.Project> { $0.project }
 
 	/// Selected special file (README, LICENSE, ...)
 	@State
@@ -48,64 +48,6 @@ struct ProjectLoader: View {
 
 	init(fullPath: String) {
 		self.fullPath = fullPath
-	}
-
-	private func handleGraphQLErrors(_ errors: [any Error]?) {
-		guard let errors, !errors.isEmpty else { return }
-
-		let messages = errors.map(\.localizedDescription)
-		Notify.status(
-			.error, "Couldn't load \(fullPath)", messages.first,
-			systemImage: "exclamationmark.triangle")
-
-		// Keep a cached success; the network response may fail after it.
-		if project == nil {
-			self.project = .failure(ProjectLoadError(fullPath: fullPath, messages: messages))
-		}
-	}
-
-	private func loadProject() {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: ProjectQuery(fullPath: fullPath),
-				cachePolicy: .cacheAndNetwork
-			)
-
-			Task {
-				for try await response in responses {
-					if let project = response.data?.project {
-						self.project = .success(project)
-					}
-					self.handleGraphQLErrors(response.errors)
-				}
-			}
-		} catch let error {
-			self.project = .failure(error)
-			Notify.status(.error, "Couldn't load \(fullPath)", error.localizedDescription)
-		}
-	}
-
-	private func reloadProject() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: ProjectQuery(fullPath: fullPath),
-				cachePolicy: .networkOnly
-			)
-
-			if let project = response.data?.project {
-				self.project = .success(project)
-				Notify.status(.success)
-			} else {
-				handleGraphQLErrors(response.errors)
-				if response.errors?.isEmpty ?? true {
-					self.project = .failure(
-						ProjectLoadError(fullPath: fullPath, messages: ["GitLab returned no project."]))
-				}
-			}
-		} catch let error {
-			self.project = .failure(error)
-			Notify.status(.error, "Couldn't load \(fullPath)", error.localizedDescription)
-		}
 	}
 
 	private func requestAccess(_ projectId: Int) async {
@@ -146,281 +88,279 @@ struct ProjectLoader: View {
 
 	public var body: some View {
 		List {
-			if let project {
-				switch project {
-				case .success(let project):
+			let state = loader.state
+			if state.isInitialLoading {
+				LoadingView("Loading Project \(self.fullPath)", systemImage: Icons.projects.rawValue)
+			} else if state.isColdFailure, let error = state.error {
+				FailedView(error)
+			} else if let project = state.value {
+				Section {
+					ProjectHeaderView(project) {
+						await loader.reload(ProjectQuery(fullPath: fullPath))
+					}
+				}
+
+				if project.archived == true {
 					Section {
-						ProjectHeaderView(project) {
-							await reloadProject()
-						}
+						Label("This project has been archived", systemImage: "archivebox.fill")
+					}
+				}
+
+				if let lastCommit = project.repository?.tree?.lastCommit,
+					let projectId = project.id.toIntId()
+				{
+					Section("Last commit") {
+						SmallCommitView(lastCommit, projectId)
+					}
+				}
+
+				Section("Actions") {
+					if project.issuesEnabled ?? true {
+						NavigationLink(
+							destination: ProjectIssuesLoader(
+								fullPath: self.fullPath
+							),
+							label: {
+								Label(
+									title: {
+										HStack {
+											Text("Issues")
+											Spacer()
+											Text("\(project.openIssuesCount ?? 0)")
+										}
+									},
+									icon: {
+										Image(systemName: Icons.issues.rawValue)
+											.foregroundStyle(.green)
+									})
+							}
+						)
 					}
 
-					if project.archived == true {
-						Section {
-							Label("This project has been archived", systemImage: "archivebox.fill")
-						}
-					}
-
-					if let lastCommit = project.repository?.tree?.lastCommit,
-						let projectId = project.id.toIntId()
-					{
-						Section("Last commit") {
-							SmallCommitView(lastCommit, projectId)
-						}
-					}
-
-					Section("Actions") {
-						if project.issuesEnabled ?? true {
-							NavigationLink(
-								destination: ProjectIssuesLoader(
-									fullPath: self.fullPath
-								),
-								label: {
-									Label(
-										title: {
-											HStack {
-												Text("Issues")
-												Spacer()
-												Text("\(project.openIssuesCount ?? 0)")
-											}
-										},
-										icon: {
-											Image(systemName: Icons.issues.rawValue)
-												.foregroundStyle(.green)
-										})
-								}
-							)
-						}
-
-						if project.mergeRequestsEnabled ?? true {
-							NavigationLink(
-								destination: ProjectMergeLoader(fullPath: self.fullPath),
-								label: {
-									Label(
-										title: {
-											HStack {
-												Text("Merge Requests")
-												Spacer()
-												Text(
-													"\(project.openMergeRequestsCount ?? 0)"
-												)
-											}
-										},
-										icon: {
-											Image(Images.mergeRequest.rawValue)
-												.foregroundStyle(.blue)
-										}
-									)
-								}
-							)
-						}
-
-						if let projectId = project.id.toIntId() {
-							DisclosureGroup(
-								content: {
-									NavigationLink(
-										destination: EventsLoader(projectId: projectId),
-										label: {
-											Text("Activity")
-										})
-									NavigationLink(
-										"Members",
-										destination: MembersLoader(
-											fullPath: self.fullPath,
-											id: projectId,
-											type: .project
-										)
-									)
-									NavigationLink(
-										destination: LabelsLoader(
-											fullPath: self.fullPath,
-											id: projectId,
-											queryType: .project
-										),
-										label: {
-											HStack {
-												Text("Labels")
-												if let count = project.labels?.count {
-													Spacer()
-													Text("\(count)")
-												}
-											}
-										}
-									)
-									NavigationLink(
-										"Milestones",
-										destination: MilestonesLoader(
-											fullPath: self.fullPath,
-											id: projectId,
-											queryType: .project
-										)
-									)
-									NavigationLink(
-										destination: EditProjectView(
-											projectId: projectId,
-											name: project.name,
-											description: project.description,
-											visibility: project.visibility ?? "private"
-										),
-										label: {
-											Text("Settings")
-										}
-									)
-								},
-								label: {
-									Label("Manage", systemImage: Icons.members.rawValue)
-								}
-							)
-						}
-
-						if let projectId = project.id.toIntId() {
-							DisclosureGroup(
-								content: {
-									if let ref = project.repository?.rootRef {
-										NavigationLink(
-											"Repository",
-											destination: TreeLoader(
-												projectId: projectId,
-												fullPath: self.fullPath,
-												refName: ref
+					if project.mergeRequestsEnabled ?? true {
+						NavigationLink(
+							destination: ProjectMergeLoader(fullPath: self.fullPath),
+							label: {
+								Label(
+									title: {
+										HStack {
+											Text("Merge Requests")
+											Spacer()
+											Text(
+												"\(project.openMergeRequestsCount ?? 0)"
 											)
-										)
-
-										NavigationLink(
-											destination: CommitsLoader(projectId, refName: ref),
-											label: {
-												HStack {
-													Text("Commits")
-													if let commitCount = project.statistics?.commitCount {
-														Spacer()
-														Text("\(Int(commitCount))")
-													}
-												}
-											})
+										}
+									},
+									icon: {
+										Image(Images.mergeRequest.rawValue)
+											.foregroundStyle(.blue)
 									}
+								)
+							}
+						)
+					}
 
-									NavigationLink(
-										"Branches",
-										destination: BranchesLoader(projectId)
-									)
-
-									NavigationLink(
-										"Tags",
-										destination: TagsLoader(projectId)
-									)
-
-									if project.wikiEnabled ?? true {
-										NavigationLink(
-											"Wiki",
-											destination: WikisLoader(projectId: projectId)
-										)
-									}
-
-									if project.snippetsEnabled ?? true {
-										NavigationLink(
-											"Snippets",
-											destination: ProjectSnippetsLoader(
-												fullPath: self.fullPath, projectId: projectId)
-										)
-									}
-								},
-								label: {
-									Label(
-										"Code",
-										systemImage: Icons.code.rawValue
-									)
-								}
-							)
-						}
-
+					if let projectId = project.id.toIntId() {
 						DisclosureGroup(
 							content: {
 								NavigationLink(
-									"Pipelines",
-									destination: ProjectPipelinesLoader(fullPath: self.fullPath)
+									destination: EventsLoader(projectId: projectId),
+									label: {
+										Text("Activity")
+									})
+								NavigationLink(
+									"Members",
+									destination: MembersLoader(
+										fullPath: self.fullPath,
+										id: projectId,
+										type: .project
+									)
 								)
 								NavigationLink(
-									destination: ProjectReleasesLoader(
-										fullPath: self.fullPath, projectId: project.id.toIntId()),
+									destination: LabelsLoader(
+										fullPath: self.fullPath,
+										id: projectId,
+										queryType: .project
+									),
 									label: {
 										HStack {
-											Text("Releases")
-											if let count = project.releases?.count {
+											Text("Labels")
+											if let count = project.labels?.count {
 												Spacer()
 												Text("\(count)")
 											}
 										}
 									}
 								)
+								NavigationLink(
+									"Milestones",
+									destination: MilestonesLoader(
+										fullPath: self.fullPath,
+										id: projectId,
+										queryType: .project
+									)
+								)
+								NavigationLink(
+									destination: EditProjectView(
+										projectId: projectId,
+										name: project.name,
+										description: project.description,
+										visibility: project.visibility ?? "private"
+									),
+									label: {
+										Text("Settings")
+									}
+								)
 							},
 							label: {
-								Label("Build", systemImage: Icons.flag.rawValue)
-							})
+								Label("Manage", systemImage: Icons.members.rawValue)
+							}
+						)
 					}
 
-					let readme = project.repository?.readme?.nodes?.first??
-						.rawTextBlob?
-						.emojized()
-					let license = project.repository?.license?.nodes?.first??
-						.rawTextBlob?
-						.emojized()
-					let contributing = project.repository?.contributing?.nodes?.first??
-						.rawTextBlob?
-						.emojized()
-
-					let baseUrl = URL(string: project.webUrl ?? "")
-					let imgUrl = URL(
-						string:
-							"\(project.webUrl ?? "")/-/raw/\(project.repository?.rootRef ?? "")/"
-					)
-
-					if readme != nil || license != nil || contributing != nil {
-						Section("Special files") {
-							VStack {
-								Picker("", selection: $selectedFile) {
-									if readme != nil {
-										Text("README").tag(0)
-									}
-
-									if license != nil {
-										Text("LICENSE").tag(1)
-									}
-
-									if contributing != nil {
-										Text("CONTRIBUTING").tag(2)
-									}
-								}.pickerStyle(.segmented)
-
-								if selectedFile == 0, let readme {
-									Markdown(
-										readme,
-										baseURL: baseUrl,
-										imageBaseURL: imgUrl
+					if let projectId = project.id.toIntId() {
+						DisclosureGroup(
+							content: {
+								if let ref = project.repository?.rootRef {
+									NavigationLink(
+										"Repository",
+										destination: TreeLoader(
+											projectId: projectId,
+											fullPath: self.fullPath,
+											refName: ref
+										)
 									)
-								} else if selectedFile == 1, let license {
-									Markdown(license)
-								} else if selectedFile == 2, let contributing {
-									Markdown(
-										contributing,
-										baseURL: baseUrl,
-										imageBaseURL: imgUrl
+
+									NavigationLink(
+										destination: CommitsLoader(projectId, refName: ref),
+										label: {
+											HStack {
+												Text("Commits")
+												if let commitCount = project.statistics?.commitCount {
+													Spacer()
+													Text("\(Int(commitCount))")
+												}
+											}
+										})
+								}
+
+								NavigationLink(
+									"Branches",
+									destination: BranchesLoader(projectId)
+								)
+
+								NavigationLink(
+									"Tags",
+									destination: TagsLoader(projectId)
+								)
+
+								if project.wikiEnabled ?? true {
+									NavigationLink(
+										"Wiki",
+										destination: WikisLoader(projectId: projectId)
 									)
 								}
+
+								if project.snippetsEnabled ?? true {
+									NavigationLink(
+										"Snippets",
+										destination: ProjectSnippetsLoader(
+											fullPath: self.fullPath, projectId: projectId)
+									)
+								}
+							},
+							label: {
+								Label(
+									"Code",
+									systemImage: Icons.code.rawValue
+								)
+							}
+						)
+					}
+
+					DisclosureGroup(
+						content: {
+							NavigationLink(
+								"Pipelines",
+								destination: ProjectPipelinesLoader(fullPath: self.fullPath)
+							)
+							NavigationLink(
+								destination: ProjectReleasesLoader(
+									fullPath: self.fullPath, projectId: project.id.toIntId()),
+								label: {
+									HStack {
+										Text("Releases")
+										if let count = project.releases?.count {
+											Spacer()
+											Text("\(count)")
+										}
+									}
+								}
+							)
+						},
+						label: {
+							Label("Build", systemImage: Icons.flag.rawValue)
+						})
+				}
+
+				let readme = project.repository?.readme?.nodes?.first??
+					.rawTextBlob?
+					.emojized()
+				let license = project.repository?.license?.nodes?.first??
+					.rawTextBlob?
+					.emojized()
+				let contributing = project.repository?.contributing?.nodes?.first??
+					.rawTextBlob?
+					.emojized()
+
+				let baseUrl = URL(string: project.webUrl ?? "")
+				let imgUrl = URL(
+					string:
+						"\(project.webUrl ?? "")/-/raw/\(project.repository?.rootRef ?? "")/"
+				)
+
+				if readme != nil || license != nil || contributing != nil {
+					Section("Special files") {
+						VStack {
+							Picker("", selection: $selectedFile) {
+								if readme != nil {
+									Text("README").tag(0)
+								}
+
+								if license != nil {
+									Text("LICENSE").tag(1)
+								}
+
+								if contributing != nil {
+									Text("CONTRIBUTING").tag(2)
+								}
+							}.pickerStyle(.segmented)
+
+							if selectedFile == 0, let readme {
+								Markdown(
+									readme,
+									baseURL: baseUrl,
+									imageBaseURL: imgUrl
+								)
+							} else if selectedFile == 1, let license {
+								Markdown(license)
+							} else if selectedFile == 2, let contributing {
+								Markdown(
+									contributing,
+									baseURL: baseUrl,
+									imageBaseURL: imgUrl
+								)
 							}
 						}
 					}
-				case .failure(let error):
-					FailedView(error)
 				}
-			} else {
-				LoadingView("Loading Project \(self.fullPath)", systemImage: Icons.projects.rawValue)
 			}
 		}.task {
-			loadProject()
+			await loader.load(ProjectQuery(fullPath: fullPath))
 		}.refreshable {
-			await reloadProject()
+			await loader.reload(ProjectQuery(fullPath: fullPath))
 		}.toolbar {
-			if let project, case .success(let project) = project {
+			if let project = loader.state.value {
 				HStack {
 					Menu("More", systemImage: "ellipsis") {
 						Section {
@@ -545,7 +485,7 @@ struct ProjectLoader: View {
 				}
 			}
 		}.navigationDestination(isPresented: $navigationActive) {
-			if let project, case .success(let project) = project,
+			if let project = loader.state.value,
 				let projectId = project.id.toIntId(),
 				let navigationDestination
 			{

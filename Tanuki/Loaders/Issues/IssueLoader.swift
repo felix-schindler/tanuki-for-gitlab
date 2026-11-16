@@ -16,7 +16,7 @@ struct IssueLoader: View {
 	private let iid: String
 
 	@State
-	private var project: Result<GitLabAPI.IssueQuery.Data.Project, Error>? = nil
+	private var loader = ApolloLoader<IssueQuery, IssueQuery.Data.Project> { $0.project }
 
 	@State
 	private var showDeleteConfirm = false
@@ -26,67 +26,6 @@ struct IssueLoader: View {
 		self.iid = iid
 	}
 
-	// MARK: - Data loading
-
-	private func handleGraphQLErrors(_ errors: [any Error]?) {
-		guard let errors, !errors.isEmpty else { return }
-
-		let messages = errors.map(\.localizedDescription)
-		Notify.status(
-			.error, "Couldn't load issue ##\(iid)", messages.first,
-			systemImage: "exclamationmark.triangle")
-
-		if project == nil {
-			self.project = .failure(
-				ProjectLoadError(fullPath: "\(fullPath) ##\(iid)", messages: messages))
-		}
-	}
-
-	private func loadIssue() {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: IssueQuery(fullPath: self.fullPath, iid: self.iid),
-				cachePolicy: .cacheAndNetwork
-			)
-
-			Task {
-				for try await response in responses {
-					if let project = response.data?.project {
-						self.project = .success(project)
-					}
-					self.handleGraphQLErrors(response.errors)
-				}
-			}
-		} catch let error {
-			self.project = .failure(error)
-			Notify.status(.error, "Couldn't load issue ##\(iid)", error.localizedDescription)
-		}
-	}
-
-	private func reloadIssue() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: IssueQuery(fullPath: self.fullPath, iid: self.iid),
-				cachePolicy: .networkOnly
-			)
-
-			if let project = response.data?.project {
-				self.project = .success(project)
-				Notify.status(.success)
-			} else {
-				handleGraphQLErrors(response.errors)
-				if response.errors?.isEmpty ?? true {
-					self.project = .failure(
-						ProjectLoadError(
-							fullPath: "\(fullPath) ##\(iid)", messages: ["GitLab returned no issue."]))
-				}
-			}
-		} catch let error {
-			self.project = .failure(error)
-			Notify.status(.error, "Couldn't load issue ##\(iid)", error.localizedDescription)
-		}
-	}
-
 	// MARK: - Issue mutations
 	private func changeState(_ state: IssueStateEvent) async {
 		do {
@@ -94,7 +33,7 @@ struct IssueLoader: View {
 				mutation: IssueStateMutation(
 					projectPath: self.fullPath, iid: self.iid, stateEvent: GraphFilter.toFilterEnum(state))
 			)
-			await reloadIssue()
+			await loader.reload(IssueQuery(fullPath: fullPath, iid: iid))
 		} catch let error {
 			Notify.status(.error, "Failed to change issue state", error.localizedDescription)
 		}
@@ -111,245 +50,245 @@ struct IssueLoader: View {
 	}
 
 	public var body: some View {
+		let state = loader.state
+
 		List {
-			if let project {
-				switch project {
-				case .success(let project):
-					if let issue = project.issue {
-						VStack(alignment: .leading) {
-							HStack(spacing: 5) {
-								if let url = URL.fromAvatar(project.avatarUrl) {
-									AvatarImage(url, size: .tiny)
-								}
-								ScrollView(.horizontal) {
-									Text(issue.reference)
-										.foregroundStyle(.secondary)
-								}
-								Spacer()
-								Text(Date.fromToString(issue.createdAt))
+			if state.isInitialLoading {
+				LoadingView(
+					"Loading Issue #\(self.iid)", systemImage: Icons.issues.rawValue, color: .green)
+			} else if state.isColdFailure, let error = state.error {
+				FailedView(error)
+			} else if let project = state.value {
+				if let issue = project.issue {
+					VStack(alignment: .leading) {
+						HStack(spacing: 5) {
+							if let url = URL.fromAvatar(project.avatarUrl) {
+								AvatarImage(url, size: .tiny)
 							}
-							.font(.footnote)
+							ScrollView(.horizontal) {
+								Text(issue.reference)
+									.foregroundStyle(.secondary)
+							}
+							Spacer()
+							Text(Date.fromToString(issue.createdAt))
+						}
+						.font(.footnote)
+						.padding(.bottom, 1)
+
+						Text(issue.title.emojized())
+							.font(.title3)
+							.fontWeight(.medium)
 							.padding(.bottom, 1)
 
-							Text(issue.title.emojized())
-								.font(.title3)
-								.fontWeight(.medium)
-								.padding(.bottom, 1)
+						ScrollView(.horizontal) {
+							HStack(spacing: 5) {
+								AuthorView(issue._author)
 
-							ScrollView(.horizontal) {
-								HStack(spacing: 5) {
-									AuthorView(issue._author)
-
-									if let dueDate = issue.dueDate {
-										PillView(
-											Date.fromToString(dueDate),
-											icon: "alarm",
-											bgColor: .blue,
-											fgColor: .white,
-										)
-									}
-								}
-								.font(.footnote)
-								.monospacedDigit()
-							}
-
-							if let description = issue.description, description.isNotEmpty {
-								Markdown(description)
-							}
-
-							HStack {
-								VotePillsView(
-									projectId: project.id.toIntId(),
-									iid: self.iid,
-									type: .issue,
-									upvotes: issue.upvotes,
-									downvotes: issue.downvotes
-								) {
-									await reloadIssue()
+								if let dueDate = issue.dueDate {
+									PillView(
+										Date.fromToString(dueDate),
+										icon: "alarm",
+										bgColor: .blue,
+										fgColor: .white,
+									)
 								}
 							}
 							.font(.footnote)
+							.monospacedDigit()
 						}
 
-						Section("Details") {
-							let assgineeCount = issue.assignees?.nodes?.count ?? 0
-							DisclosureGroup(
-								content: {
-									if assgineeCount > 0 {
-										ForEach(issue.assignees!.nodes!, id: \.self) { maybeUser in
-											if let user = maybeUser {
-												NavigationLink(
-													destination: UserLoader(
-														username: user.username
-													),
-													label: {
-														HStack {
-															if let url =
-																URL.fromAvatar(
-																	user.avatarUrl)
-															{
-																AvatarImage(
-																	url,
-																	size: .small)
-															}
-															Text(user.username)
-														}
-													}
-												)
-											}
-										}
-									} else {
-										Text("There are no assignees")
-									}
-								},
-								label: {
-									Label(
-										title: {
-											HStack {
-												Text("Assignees")
-												Spacer()
-												Text(String(assgineeCount))
-											}
-										},
-										icon: {
-											Image(systemName: "person.crop.circle")
-										})
-								}
-							)
+						if let description = issue.description, description.isNotEmpty {
+							Markdown(description)
+						}
 
-							if let labels = issue.labels?.nodes, labels.isNotEmpty {
-								Label(
-									title: {
-										ScrollView(.horizontal) {
-											HStack {
-												ForEach(labels, id: \.?.title) { label in
-													if let label {
-														PillView(
-															label.title.emojized(),
-															bgColor: Color(hex: label.color),
-															fgColor: Color(hex: label.textColor)
-														)
+						HStack {
+							VotePillsView(
+								projectId: project.id.toIntId(),
+								iid: self.iid,
+								type: .issue,
+								upvotes: issue.upvotes,
+								downvotes: issue.downvotes
+							) {
+								await loader.reload(IssueQuery(fullPath: fullPath, iid: iid))
+							}
+						}
+						.font(.footnote)
+					}
+
+					Section("Details") {
+						let assgineeCount = issue.assignees?.nodes?.count ?? 0
+						DisclosureGroup(
+							content: {
+								if assgineeCount > 0 {
+									ForEach(issue.assignees!.nodes!, id: \.self) { maybeUser in
+										if let user = maybeUser {
+											NavigationLink(
+												destination: UserLoader(
+													username: user.username
+												),
+												label: {
+													HStack {
+														if let url =
+															URL.fromAvatar(
+																user.avatarUrl)
+														{
+															AvatarImage(
+																url,
+																size: .small)
+														}
+														Text(user.username)
 													}
 												}
-											}
+											)
 										}
-									},
-									icon: {
-										Image(systemName: Icons.tag.rawValue)
 									}
-								)
-							}
-
-							if let milestone = issue.milestone {
-								Label(
-									milestone.title.emojized(),
-									systemImage: Icons.milestones.rawValue
-								)
-								.labelStyle(TrailingIconLabelStyle())
-							}
-
-							if issue.humanTimeEstimate != nil
-								|| issue.humanTotalTimeSpent != nil
-							{
+								} else {
+									Text("There are no assignees")
+								}
+							},
+							label: {
 								Label(
 									title: {
 										HStack {
-											Text(
-												"Estimate: \(issue.humanTimeEstimate ?? "none")"
-											)
+											Text("Assignees")
 											Spacer()
-											Text(
-												"Spent: \(issue.humanTotalTimeSpent ?? "none")"
-											)
+											Text(String(assgineeCount))
 										}
 									},
 									icon: {
-										Image(systemName: Icons.timeTracking.rawValue)
+										Image(systemName: "person.crop.circle")
 									})
 							}
-						}
+						)
 
-						if issue.userPermissions.updateIssue {
-							Section("Actions") {
-								if let projectId = project.id.toIntId() {
-									NavigationLink(
-										destination: EditTitleDescriptionView(
-											projectId: projectId,
-											iid: self.iid,
-											type: .issue,
-											initialTitle: issue.title,
-											initialDescription: issue.description ?? ""
-										) {
-											await reloadIssue()
-										}
-									) {
-										Label("Edit issue", systemImage: "pencil")
-									}
-								}
-
-								if issue.state == .opened {
-									AsyncButton("Close issue", systemImage: Icons.issues.rawValue) {
-										await self.changeState(.close)
-									}.tint(.blue)
-								} else if issue.state == .closed {
-									AsyncButton("Reopen issue", systemImage: "arrow.triangle.swap") {
-										await self.changeState(.reopen)
-									}.tint(.green)
-								}
-
-								if let projectId = project.id.toIntId() {
-									Button("Delete issue", systemImage: "trash", role: .destructive) {
-										self.showDeleteConfirm = true
-									}.confirmationDialog(
-										"Are you sure you want to delete issue #\(self.iid)?",
-										isPresented: $showDeleteConfirm, titleVisibility: .visible
-									) {
-										AsyncButton("Delete", role: .destructive) {
-											await self.deleteIssue(projectId)
-										}
-										Button("Cancel", role: .cancel) {
-											showDeleteConfirm = false
-										}
-									}.tint(.red)
-								}
-							}
-						}
-
-						let noteCount = issue.notes.nodes?.count ?? 0
-						if issue.userPermissions.createNote || noteCount > 0 {
-							Section("Notes (\(issue.userNotesCount))") {
-								if let projectId = project.id.toIntId(),
-									issue.userPermissions.createNote
-								{
-									NewNoteView(projectId, iid: issue.iid, type: .issue)
-								}
-
-								if noteCount > 0 {
-									ForEach(issue.notes.nodes!, id: \.self?.id) { maybeNote in
-										if let note = maybeNote {
-											NoteView(note, projectId: project.id.toIntId() ?? 0)
+						if let labels = issue.labels?.nodes, labels.isNotEmpty {
+							Label(
+								title: {
+									ScrollView(.horizontal) {
+										HStack {
+											ForEach(labels, id: \.?.title) { label in
+												if let label {
+													PillView(
+														label.title.emojized(),
+														bgColor: Color(hex: label.color),
+														fgColor: Color(hex: label.textColor)
+													)
+												}
+											}
 										}
 									}
+								},
+								icon: {
+									Image(systemName: Icons.tag.rawValue)
 								}
-							}
+							)
 						}
-					} else {
-						NoContentView(
-							"Issue was not found", systemImage: Icons.issues.rawValue)
+
+						if let milestone = issue.milestone {
+							Label(
+								milestone.title.emojized(),
+								systemImage: Icons.milestones.rawValue
+							)
+							.labelStyle(TrailingIconLabelStyle())
+						}
+
+						if issue.humanTimeEstimate != nil
+							|| issue.humanTotalTimeSpent != nil
+						{
+							Label(
+								title: {
+									HStack {
+										Text(
+											"Estimate: \(issue.humanTimeEstimate ?? "none")"
+										)
+										Spacer()
+										Text(
+											"Spent: \(issue.humanTotalTimeSpent ?? "none")"
+										)
+									}
+								},
+								icon: {
+									Image(systemName: Icons.timeTracking.rawValue)
+								})
+						}
 					}
-				case .failure(let error):
-					FailedView(error)
+
+					if issue.userPermissions.updateIssue {
+						Section("Actions") {
+							if let projectId = project.id.toIntId() {
+								NavigationLink(
+									destination: EditTitleDescriptionView(
+										projectId: projectId,
+										iid: self.iid,
+										type: .issue,
+										initialTitle: issue.title,
+										initialDescription: issue.description ?? ""
+									) {
+										await loader.reload(IssueQuery(fullPath: fullPath, iid: iid))
+									}
+								) {
+									Label("Edit issue", systemImage: "pencil")
+								}
+							}
+
+							if issue.state == .opened {
+								AsyncButton("Close issue", systemImage: Icons.issues.rawValue) {
+									await self.changeState(.close)
+								}.tint(.blue)
+							} else if issue.state == .closed {
+								AsyncButton("Reopen issue", systemImage: "arrow.triangle.swap") {
+									await self.changeState(.reopen)
+								}.tint(.green)
+							}
+
+							if let projectId = project.id.toIntId() {
+								Button("Delete issue", systemImage: "trash", role: .destructive) {
+									self.showDeleteConfirm = true
+								}.confirmationDialog(
+									"Are you sure you want to delete issue #\(self.iid)?",
+									isPresented: $showDeleteConfirm, titleVisibility: .visible
+								) {
+									AsyncButton("Delete", role: .destructive) {
+										await self.deleteIssue(projectId)
+									}
+									Button("Cancel", role: .cancel) {
+										showDeleteConfirm = false
+									}
+								}.tint(.red)
+							}
+						}
+					}
+
+					let noteCount = issue.notes.nodes?.count ?? 0
+					if issue.userPermissions.createNote || noteCount > 0 {
+						Section("Notes (\(issue.userNotesCount))") {
+							if let projectId = project.id.toIntId(),
+								issue.userPermissions.createNote
+							{
+								NewNoteView(projectId, iid: issue.iid, type: .issue)
+							}
+
+							if noteCount > 0 {
+								ForEach(issue.notes.nodes!, id: \.self?.id) { maybeNote in
+									if let note = maybeNote {
+										NoteView(note, projectId: project.id.toIntId() ?? 0)
+									}
+								}
+							}
+						}
+					}
+				} else {
+					NoContentView(
+						"Issue was not found", systemImage: Icons.issues.rawValue)
 				}
-			} else {
-				LoadingView(
-					"Loading Issue #\(self.iid)", systemImage: Icons.issues.rawValue, color: .green)
 			}
+
 		}.task {
-			loadIssue()
+			await loader.load(IssueQuery(fullPath: fullPath, iid: iid))
 		}.refreshable {
-			await reloadIssue()
+			await loader.reload(IssueQuery(fullPath: fullPath, iid: iid))
 		}.toolbar {
-			if let project, case .success(let project) = project,
+			if let project = loader.state.value,
 				let issue = project.issue
 			{
 				HStack {

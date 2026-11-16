@@ -12,7 +12,7 @@ struct GroupLoader: View {
 	private let fullPath: String
 
 	@State
-	private var group: Result<GroupQuery.Data.Group, Error>? = nil
+	private var loader = ApolloLoader<GroupQuery, GroupQuery.Data.Group> { $0.group }
 
 	@State
 	private var navigationActive = false
@@ -22,44 +22,6 @@ struct GroupLoader: View {
 
 	init(fullPath: String) {
 		self.fullPath = fullPath
-	}
-
-	private func loadGroup() {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: GroupQuery(fullPath: self.fullPath), cachePolicy: .cacheAndNetwork)
-
-			Task {
-				for try await response in responses {
-					if let group = response.data?.group {
-						self.group = .success(group)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			}
-		} catch let error {
-			self.group = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
-	private func reloadGroup() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: GroupQuery(fullPath: self.fullPath), cachePolicy: .networkOnly)
-
-			if let group = response.data?.group {
-				self.group = .success(group)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.group = .failure(error)
-			Notify.status(.error)
-		}
 	}
 
 	private func requestAccess(_ groupId: Int) async {
@@ -73,194 +35,192 @@ struct GroupLoader: View {
 
 	public var body: some View {
 		List {
-			if let group {
-				switch group {
-				case .success(let group):
-					VStack(alignment: .leading) {
-						HStack {
-							if let avatarUrl = URL.fromAvatar(group.avatarUrl) {
-								AvatarImage(avatarUrl, size: .medium)
-							}
-							if let name = group.name?.emojized(), name.isNotEmpty {
-								Text(name)
-									.font(.title)
-									.fontWeight(.bold)
-							}
-							if let visibility = group.visibility {
-								Spacer()
-								VisibilityIcon(visibility)
-							}
+			let state = loader.state
+			if state.isInitialLoading {
+				LoadingView("Loading Group \(self.fullPath)", systemImage: Icons.groups.rawValue)
+			} else if state.isColdFailure, let error = state.error {
+				FailedView(error)
+			} else if let group = state.value {
+				VStack(alignment: .leading) {
+					HStack {
+						if let avatarUrl = URL.fromAvatar(group.avatarUrl) {
+							AvatarImage(avatarUrl, size: .medium)
 						}
-
-                        if let description = group.description, description.isNotEmpty {
-                            Markdown(description)
-                        }
-
-						ScrollView(.horizontal) {
-							HStack {
-								if let parent = group.parent {
-									NavigationLink(
-										destination: GroupLoader(fullPath: parent.fullPath),
-										label: {
-											Label(parent.name ?? parent.fullPath, systemImage: Icons.groups.rawValue)
-										}
-									)
-									.tint(.accentColor)
-									.controlSize(.mini)
-									.buttonBorderShape(.capsule)
-									.adaptiveButtonStyle()
-								}
-
-								if let accessLevel = group.maxAccessLevel.stringValue?.rawValue {
-									PillView(accessLevel.replacingOccurrences(of: "_", with: " ").capitalized)
-										.font(.footnote)
-								}
-							}.font(.footnote)
+						if let name = group.name?.emojized(), name.isNotEmpty {
+							Text(name)
+								.font(.title)
+								.fontWeight(.bold)
+						}
+						if let visibility = group.visibility {
+							Spacer()
+							VisibilityIcon(visibility)
 						}
 					}
 
-					Section {
-						HStack {
-							NavigationLink(
-								destination: GroupProjectsLoader(
-									fullPath: self.fullPath
-								),
-								label: {
-									Label(
-										title: {
-											HStack {
-												Text("Projects")
-												Spacer()
-												Text("\(group.projectsCount)")
-											}
-										},
-										icon: {
-											Image(systemName: Icons.projects.rawValue)
-												.foregroundStyle(.gray)
-										}
-									)
-								}
-							)
-						}
-						HStack {
-							NavigationLink(
-								destination: GroupsLoader(parentPath: self.fullPath),
-								label: {
-									Label(
-										title: {
-											HStack {
-												Text("Descendant groups")
-												Spacer()
-												Text("\(group.descendantGroupsCount)")
-											}
-										},
-										icon: {
-											Image(systemName: Icons.groups.rawValue)
-												.foregroundStyle(.red)
-										}
-									)
-								})
-						}
+					if let description = group.description, description.isNotEmpty {
+						Markdown(description)
+					}
 
-						DisclosureGroup(
-							content: {
-								if let groupId = group.id?.toIntId() {
-									NavigationLink(
-										destination: MembersLoader(
-											fullPath: self.fullPath,
-											id: groupId,
-											type: .group
-										),
-										label: {
-											HStack {
-												Text("Members")
-												Spacer()
-												Text(String(group.groupMembersCount))
-											}
-										})
-									NavigationLink(
-										"Labels",
-										destination: LabelsLoader(
-											fullPath: self.fullPath,
-											id: groupId,
-											queryType: .group
-										)
-									)
-									NavigationLink(
-										destination: EditGroupView(
-											groupId: groupId,
-											name: group.name ?? group.path,
-											description: group.description,
-											visibility: group.visibility ?? "private"
-										),
-										label: {
-											Text("Settings")
-										}
-									)
-								}
+					ScrollView(.horizontal) {
+						HStack {
+							if let parent = group.parent {
 								NavigationLink(
-									"Timelogs",
-									destination: TimelogsLoader(
+									destination: GroupLoader(fullPath: parent.fullPath),
+									label: {
+										Label(parent.name ?? parent.fullPath, systemImage: Icons.groups.rawValue)
+									}
+								)
+								.tint(.accentColor)
+								.controlSize(.mini)
+								.buttonBorderShape(.capsule)
+								.adaptiveButtonStyle()
+							}
+
+							if let accessLevel = group.maxAccessLevel.stringValue?.rawValue {
+								PillView(accessLevel.replacingOccurrences(of: "_", with: " ").capitalized)
+									.font(.footnote)
+							}
+						}.font(.footnote)
+					}
+				}
+
+				Section {
+					HStack {
+						NavigationLink(
+							destination: GroupProjectsLoader(
+								fullPath: self.fullPath
+							),
+							label: {
+								Label(
+									title: {
+										HStack {
+											Text("Projects")
+											Spacer()
+											Text("\(group.projectsCount)")
+										}
+									},
+									icon: {
+										Image(systemName: Icons.projects.rawValue)
+											.foregroundStyle(.gray)
+									}
+								)
+							}
+						)
+					}
+					HStack {
+						NavigationLink(
+							destination: GroupsLoader(parentPath: self.fullPath),
+							label: {
+								Label(
+									title: {
+										HStack {
+											Text("Descendant groups")
+											Spacer()
+											Text("\(group.descendantGroupsCount)")
+										}
+									},
+									icon: {
+										Image(systemName: Icons.groups.rawValue)
+											.foregroundStyle(.red)
+									}
+								)
+							})
+					}
+
+					DisclosureGroup(
+						content: {
+							if let groupId = group.id?.toIntId() {
+								NavigationLink(
+									destination: MembersLoader(
 										fullPath: self.fullPath,
+										id: groupId,
+										type: .group
+									),
+									label: {
+										HStack {
+											Text("Members")
+											Spacer()
+											Text(String(group.groupMembersCount))
+										}
+									})
+								NavigationLink(
+									"Labels",
+									destination: LabelsLoader(
+										fullPath: self.fullPath,
+										id: groupId,
 										queryType: .group
 									)
 								)
 								NavigationLink(
-									"Custom emojis",
-									destination: CustomEmojisLoader(
-										fullPath: self.fullPath
-									))
-							},
-							label: {
-								Label("Manage", systemImage: Icons.members.rawValue)
-							}
-						)
-
-						DisclosureGroup(
-							content: {
-								NavigationLink(
-									"Issues",
-									destination: GroupIssuesLoader(fullPath: self.fullPath)
+									destination: EditGroupView(
+										groupId: groupId,
+										name: group.name ?? group.path,
+										description: group.description,
+										visibility: group.visibility ?? "private"
+									),
+									label: {
+										Text("Settings")
+									}
 								)
-								if let groupId = group.id?.toIntId() {
-									NavigationLink(
-										"Milestones",
-										destination: MilestonesLoader(
-											fullPath: self.fullPath,
-											id: groupId,
-											queryType: .group
-										)
-									)
-								}
-							},
-							label: {
-								Label("Plan", systemImage: "calendar.badge.checkmark")
 							}
-						)
+							NavigationLink(
+								"Timelogs",
+								destination: TimelogsLoader(
+									fullPath: self.fullPath,
+									queryType: .group
+								)
+							)
+							NavigationLink(
+								"Custom emojis",
+								destination: CustomEmojisLoader(
+									fullPath: self.fullPath
+								))
+						},
+						label: {
+							Label("Manage", systemImage: Icons.members.rawValue)
+						}
+					)
 
-						DisclosureGroup(
-							content: {
+					DisclosureGroup(
+						content: {
+							NavigationLink(
+								"Issues",
+								destination: GroupIssuesLoader(fullPath: self.fullPath)
+							)
+							if let groupId = group.id?.toIntId() {
 								NavigationLink(
-									"Merge Requests",
-									destination: GroupMergeLoader(fullPath: self.fullPath))
-							},
-							label: {
-								Label("Code", systemImage: Icons.code.rawValue)
+									"Milestones",
+									destination: MilestonesLoader(
+										fullPath: self.fullPath,
+										id: groupId,
+										queryType: .group
+									)
+								)
 							}
-						)
-					}.navigationTitle(group.path)
-				case .failure(let error):
-					FailedView(error.localizedDescription, icon: Icons.groups.rawValue)
-				}
-			} else {
-				LoadingView("Loading Group \(self.fullPath)", systemImage: Icons.groups.rawValue)
+						},
+						label: {
+							Label("Plan", systemImage: "calendar.badge.checkmark")
+						}
+					)
+
+					DisclosureGroup(
+						content: {
+							NavigationLink(
+								"Merge Requests",
+								destination: GroupMergeLoader(fullPath: self.fullPath))
+						},
+						label: {
+							Label("Code", systemImage: Icons.code.rawValue)
+						}
+					)
+				}.navigationTitle(group.path)
 			}
 		}.task {
-			loadGroup()
+			await loader.load(GroupQuery(fullPath: fullPath))
 		}.refreshable {
-			await reloadGroup()
+			await loader.reload(GroupQuery(fullPath: fullPath))
 		}.toolbar {
-			if let group, case .success(let group) = group {
+			if let group = loader.state.value {
 				HStack {
 					if let url = URL(string: group.webUrl) {
 						ShareButton(url)
@@ -293,7 +253,7 @@ struct GroupLoader: View {
 				}
 			}
 		}.navigationDestination(isPresented: $navigationActive) {
-			if let group, case .success(let group) = group,
+			if let group = loader.state.value,
 				let groupId = group.id?.toIntId()
 			{
 				NewProjectView(groupId)
@@ -301,7 +261,7 @@ struct GroupLoader: View {
 				FailedView("Form couldn't be opened because the namespace ID is not defined")
 			}
 		}.navigationDestination(isPresented: $createSubgroup) {
-			if let group, case .success(let group) = group,
+			if let group = loader.state.value,
 				let groupId = group.id?.toIntId()
 			{
 				NewGroupView(parentId: groupId)

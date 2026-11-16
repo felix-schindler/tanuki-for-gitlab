@@ -21,7 +21,9 @@ private enum HomeRoute: Hashable {
 
 struct HomeView: View {
 	@State
-	private var starredProjects: Result<[SmallProject?], Error>?
+	private var starredLoader = ApolloLoader<CurrentUserStarredProjectsQuery, [SmallProject?]> {
+		$0.currentUser?.starredProjects?.nodes
+	}
 
 	@State
 	private var versionWarning: String?
@@ -47,44 +49,6 @@ struct HomeView: View {
 		}
 
 		versionWarning = version.version
-	}
-
-	private func loadStarredProjects() {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: CurrentUserStarredProjectsQuery(), cachePolicy: .cacheAndNetwork)
-
-			Task {
-				for try await response in responses {
-					if let projects = response.data?.currentUser?.starredProjects?.nodes {
-						starredProjects = .success(projects)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			}
-		} catch let error {
-			starredProjects = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
-	private func reloadStarredProjects() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: CurrentUserStarredProjectsQuery(), cachePolicy: .networkOnly)
-
-			if let projects = response.data?.currentUser?.starredProjects?.nodes {
-				starredProjects = .success(projects)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			starredProjects = .failure(error)
-			Notify.status(.error)
-		}
 	}
 
 	private func jumpToClipboard() {
@@ -305,37 +269,37 @@ struct HomeView: View {
 			}
 
 			Section("Starred projects") {
-				if let starredProjects {
-					switch starredProjects {
-					case .success(let projects):
-						if projects.isEmpty {
-							NoContentView(
-								"There are no starred projects",
-								systemImage: "star.square.on.square.fill")
-						} else {
-							ForEach(projects, id: \.?.fullPath) { maybeProject in
-								if let project = maybeProject {
-									NavigationLink(
-										value: HomeRoute.project(fullPath: project.fullPath),
-										label: {
-											SmallProjectLabel(project)
-										})
-								}
+				let state = starredLoader.state
+				if state.isInitialLoading {
+					LoadingView("Loading starred Projects", systemImage: Icons.star.rawValue, color: .yellow)
+				} else if state.isColdFailure, let error = state.error {
+					FailedView(error)
+						.frame(maxWidth: .infinity, minHeight: 100)
+				} else if let projects = state.value {
+					if projects.isEmpty {
+						NoContentView(
+							"There are no starred projects",
+							systemImage: "star.square.on.square.fill")
+					} else {
+						ForEach(projects, id: \.?.fullPath) { maybeProject in
+							if let project = maybeProject {
+								NavigationLink(
+									value: HomeRoute.project(fullPath: project.fullPath),
+									label: {
+										SmallProjectLabel(project)
+									})
 							}
 						}
-					case .failure(let error):
-						FailedView(error)
-							.frame(maxWidth: .infinity, minHeight: 100)
 					}
-				} else {
-					LoadingView("Loading starred Projects", systemImage: Icons.star.rawValue, color: .yellow)
 				}
+
 			}
 		}.task {
-			loadStarredProjects()
+			await starredLoader.load(CurrentUserStarredProjectsQuery(first: 100, after: .none))
+		}.task {
 			await checkVersion()
 		}.refreshable {
-			await reloadStarredProjects()
+			await starredLoader.reload(CurrentUserStarredProjectsQuery(first: 100, after: .none))
 			await checkVersion()
 		}
 		.listStyle(.sidebar)

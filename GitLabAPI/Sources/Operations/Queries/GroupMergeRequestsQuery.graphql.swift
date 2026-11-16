@@ -8,9 +8,11 @@ nonisolated public struct GroupMergeRequestsQuery: GraphQLQuery {
   public static let operationName: String = "GroupMergeRequests"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query GroupMergeRequests($fullPath: ID!, $state: MergeRequestState, $search: String, $draft: Boolean, $subscribed: SubscriptionStatus, $labels: [String], $milestone: String, $authorUsername: String, $assigneeUsername: String, $reviewerUsername: String, $createdAfter: Time, $createdBefore: Time, $updatedAfter: Time, $updatedBefore: Time, $includeSubgroups: Boolean) { group(fullPath: $fullPath) { __typename mergeRequests( state: $state search: $search draft: $draft subscribed: $subscribed labelName: $labels milestoneTitle: $milestone authorUsername: $authorUsername assigneeUsername: $assigneeUsername reviewerUsername: $reviewerUsername createdAfter: $createdAfter createdBefore: $createdBefore updatedAfter: $updatedAfter updatedBefore: $updatedBefore includeSubgroups: $includeSubgroups ) { __typename nodes { __typename iid title reference(full: true) state upvotes downvotes userNotesCount author { __typename avatarUrl name username } createdAt webUrl } } } }"#
+      #"query GroupMergeRequests($first: Int!, $after: String, $fullPath: ID!, $state: MergeRequestState, $search: String, $draft: Boolean, $subscribed: SubscriptionStatus, $labels: [String], $milestone: String, $authorUsername: String, $assigneeUsername: String, $reviewerUsername: String, $createdAfter: Time, $createdBefore: Time, $updatedAfter: Time, $updatedBefore: Time, $includeSubgroups: Boolean) { group(fullPath: $fullPath) { __typename mergeRequests( first: $first after: $after state: $state search: $search draft: $draft subscribed: $subscribed labelName: $labels milestoneTitle: $milestone authorUsername: $authorUsername assigneeUsername: $assigneeUsername reviewerUsername: $reviewerUsername createdAfter: $createdAfter createdBefore: $createdBefore updatedAfter: $updatedAfter updatedBefore: $updatedBefore includeSubgroups: $includeSubgroups ) { __typename pageInfo { __typename hasNextPage endCursor } nodes { __typename iid title reference(full: true) state upvotes downvotes userNotesCount author { __typename avatarUrl name username } createdAt webUrl } } } }"#
     ))
 
+  public var first: Int32
+  public var after: GraphQLNullable<String>
   public var fullPath: ID
   public var state: GraphQLNullable<GraphQLEnum<MergeRequestState>>
   public var search: GraphQLNullable<String>
@@ -28,6 +30,8 @@ nonisolated public struct GroupMergeRequestsQuery: GraphQLQuery {
   public var includeSubgroups: GraphQLNullable<Bool>
 
   public init(
+    first: Int32,
+    after: GraphQLNullable<String>,
     fullPath: ID,
     state: GraphQLNullable<GraphQLEnum<MergeRequestState>>,
     search: GraphQLNullable<String>,
@@ -44,6 +48,8 @@ nonisolated public struct GroupMergeRequestsQuery: GraphQLQuery {
     updatedBefore: GraphQLNullable<Time>,
     includeSubgroups: GraphQLNullable<Bool>
   ) {
+    self.first = first
+    self.after = after
     self.fullPath = fullPath
     self.state = state
     self.search = search
@@ -62,6 +68,8 @@ nonisolated public struct GroupMergeRequestsQuery: GraphQLQuery {
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
+    "first": first,
+    "after": after,
     "fullPath": fullPath,
     "state": state,
     "search": search,
@@ -105,6 +113,8 @@ nonisolated public struct GroupMergeRequestsQuery: GraphQLQuery {
       @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
         .field("mergeRequests", MergeRequests?.self, arguments: [
+          "first": .variable("first"),
+          "after": .variable("after"),
           "state": .variable("state"),
           "search": .variable("search"),
           "draft": .variable("draft"),
@@ -138,14 +148,40 @@ nonisolated public struct GroupMergeRequestsQuery: GraphQLQuery {
         @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.MergeRequestConnection }
         @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
+          .field("pageInfo", PageInfo.self),
           .field("nodes", [Node?]?.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           GroupMergeRequestsQuery.Data.Group.MergeRequests.self
         ] }
 
+        /// Information to aid in pagination.
+        public var pageInfo: PageInfo { __data["pageInfo"] }
         /// A list of nodes.
         public var nodes: [Node?]? { __data["nodes"] }
+
+        /// Group.MergeRequests.PageInfo
+        ///
+        /// Parent Type: `PageInfo`
+        nonisolated public struct PageInfo: GitLabAPI.SelectionSet {
+          @_spi(Unsafe) public let __data: DataDict
+          @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+          @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.PageInfo }
+          @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+            .field("__typename", String.self),
+            .field("hasNextPage", Bool.self),
+            .field("endCursor", String?.self),
+          ] }
+          @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+            GroupMergeRequestsQuery.Data.Group.MergeRequests.PageInfo.self
+          ] }
+
+          /// When paginating forwards, are there more items?
+          public var hasNextPage: Bool { __data["hasNextPage"] }
+          /// When paginating forwards, the cursor to continue.
+          public var endCursor: String? { __data["endCursor"] }
+        }
 
         /// Group.MergeRequests.Node
         ///

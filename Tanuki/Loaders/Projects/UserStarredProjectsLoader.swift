@@ -13,79 +13,35 @@ struct UserStarredProjectsLoader: View {
 	private let username: String
 
 	@State
-	private var projects: Result<[UserStarredProjectsQuery.Data.User.StarredProjects.Node?], Error>? =
-		nil
+	private var pager = PagedQuery<UserStarredProjectsQuery, SmallProject>(
+		extract: { ($0.user?.starredProjects?.nodes ?? []).compactMap { $0 } },
+		key: { $0.fullPath },
+		hasNext: { $0.user?.starredProjects?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.user?.starredProjects?.pageInfo.endCursor }
+	)
 
 	init(username: String) {
 		self.username = username
 	}
 
-	private func loadProjects() {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: UserStarredProjectsQuery(username: self.username),
-				cachePolicy: .cacheAndNetwork
-			)
-
-			Task {
-				for try await response in responses {
-					if let projects = response.data?.user?.starredProjects?.nodes {
-						self.projects = .success(projects)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			}
-		} catch let error {
-			self.projects = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
-	private func reloadProjects() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: UserStarredProjectsQuery(username: self.username),
-				cachePolicy: .networkOnly
-			)
-
-			if let projects = response.data?.user?.starredProjects?.nodes {
-				self.projects = .success(projects)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.projects = .failure(error)
-			Notify.status(.error)
-		}
+	private func query(after: GraphQLNullable<String> = .none) -> UserStarredProjectsQuery {
+		UserStarredProjectsQuery(first: 50, after: after, username: username)
 	}
 
 	public var body: some View {
-		List {
-			if let projects {
-				switch projects {
-				case .success(let projects):
-					if projects.isEmpty {
-						NoContentView("There are no starred projects", systemImage: Icons.star.rawValue)
-					} else {
-						ForEach(projects, id: \.self?.fullPath) { maybeProject in
-							if let project = maybeProject {
-								SmallProjectView(project)
-							}
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
-				}
-			} else {
-				LoadingView("Loading starred Projects", systemImage: Icons.star.rawValue)
-			}
+		LoadableList(
+			pager.state,
+			hasMore: pager.hasMore,
+			emptyMessage: "There are no starred projects",
+			emptySystemImage: Icons.star.rawValue,
+			loadingMessage: "Loading starred Projects",
+			loadingSystemImage: Icons.star.rawValue,
+			onLoadMore: { await pager.loadMore() },
+			onRefresh: { await pager.refresh() }
+		) { project in
+			SmallProjectView(project)
 		}.task {
-			loadProjects()
-		}.refreshable {
-			await reloadProjects()
+			await pager.start(query(), setCursor: { $0.after = .some($1) })
 		}.navigationTitle("Stars of \(username)")
 	}
 }

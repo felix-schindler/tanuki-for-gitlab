@@ -18,18 +18,22 @@ struct GroupIssuesLoader: View {
 	@State
 	private var showFilters = false
 
-	@State
-	private var loadTask: Task<Void, Never>?
-
 	init(fullPath: String) {
 		self.fullPath = fullPath
 	}
 
 	@State
-	private var issues: Result<[SmallIssue?], Error>? = nil
+	private var pager = PagedQuery<GroupIssuesQuery, SmallIssue>(
+		extract: { ($0.group?.issues?.nodes ?? []).compactMap { $0 } },
+		key: { $0.reference },
+		hasNext: { $0.group?.issues?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.group?.issues?.pageInfo.endCursor }
+	)
 
-	private var query: GroupIssuesQuery {
+	private func query(after: GraphQLNullable<String> = .none) -> GroupIssuesQuery {
 		GroupIssuesQuery(
+			first: 50,
+			after: after,
 			fullPath: self.fullPath,
 			state: GraphFilter.toFilterEnum(self.filter.state),
 			search: GraphFilter.toFilter(self.filter.search),
@@ -48,76 +52,20 @@ struct GroupIssuesLoader: View {
 		)
 	}
 
-	private func loadIssues() {
-		self.loadTask?.cancel()
-		self.loadTask = Task {
-			do {
-				let responses = try Network.shared.apollo.fetch(
-					query: self.query,
-					cachePolicy: .cacheAndNetwork
-				)
-
-				for try await response in responses {
-					if Task.isCancelled { return }
-					if let issues = response.data?.group?.issues?.nodes {
-						self.issues = .success(issues)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			} catch {
-				if !Task.isCancelled {
-					self.issues = .failure(error)
-					Notify.status(.error)
-				}
-			}
-		}
-	}
-
-	private func reloadIssues() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: self.query,
-				cachePolicy: .networkOnly
-			)
-
-			if let issues = response.data?.group?.issues?.nodes {
-				self.issues = .success(issues)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.issues = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
 	public var body: some View {
-		List {
-			if let issues {
-				switch issues {
-				case .success(let issues):
-					if issues.isEmpty {
-						Text("There are no issues")
-					} else {
-						ForEach(issues, id: \.?.reference) { maybeIssue in
-							if let issue = maybeIssue {
-								SmallIssueView(self.fullPath, issue)
-							}
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
-				}
-			} else {
-				LoadingView("Loading Issues", systemImage: Icons.issues.rawValue, color: .green)
-			}
+		LoadableList(
+			pager.state,
+			hasMore: pager.hasMore,
+			emptyMessage: "There are no issues",
+			emptySystemImage: Icons.issues.rawValue,
+			loadingMessage: "Loading Issues",
+			loadingSystemImage: Icons.issues.rawValue,
+			onLoadMore: { await pager.loadMore() },
+			onRefresh: { await pager.refresh() }
+		) { issue in
+			SmallIssueView(self.fullPath, issue)
 		}.debouncedLoad(filter) {
-			loadIssues()
-		}.refreshable {
-			await reloadIssues()
+			await pager.start(query(), setCursor: { $0.after = .some($1) })
 		}.toolbar {
 			Button("Filter", systemImage: Icons.filter.rawValue) {
 				showFilters = true

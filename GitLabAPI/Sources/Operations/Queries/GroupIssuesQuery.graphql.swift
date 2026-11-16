@@ -8,9 +8,11 @@ nonisolated public struct GroupIssuesQuery: GraphQLQuery {
   public static let operationName: String = "GroupIssues"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query GroupIssues($fullPath: ID!, $state: IssuableState, $search: String, $confidential: Boolean, $subscribed: SubscriptionStatus, $types: [IssueType!], $labels: [String], $milestones: [String], $authorUsername: String, $assigneeUsernames: [String!], $createdAfter: Time, $createdBefore: Time, $updatedAfter: Time, $updatedBefore: Time, $includeSubgroups: Boolean) { group(fullPath: $fullPath) { __typename issues( state: $state search: $search confidential: $confidential subscribed: $subscribed types: $types labelName: $labels milestoneTitle: $milestones authorUsername: $authorUsername assigneeUsernames: $assigneeUsernames createdAfter: $createdAfter createdBefore: $createdBefore updatedAfter: $updatedAfter updatedBefore: $updatedBefore includeSubgroups: $includeSubgroups ) { __typename nodes { __typename iid title reference(full: true) state upvotes downvotes userNotesCount author { __typename avatarUrl name username } createdAt webUrl } } } }"#
+      #"query GroupIssues($first: Int!, $after: String, $fullPath: ID!, $state: IssuableState, $search: String, $confidential: Boolean, $subscribed: SubscriptionStatus, $types: [IssueType!], $labels: [String], $milestones: [String], $authorUsername: String, $assigneeUsernames: [String!], $createdAfter: Time, $createdBefore: Time, $updatedAfter: Time, $updatedBefore: Time, $includeSubgroups: Boolean) { group(fullPath: $fullPath) { __typename issues( first: $first after: $after state: $state search: $search confidential: $confidential subscribed: $subscribed types: $types labelName: $labels milestoneTitle: $milestones authorUsername: $authorUsername assigneeUsernames: $assigneeUsernames createdAfter: $createdAfter createdBefore: $createdBefore updatedAfter: $updatedAfter updatedBefore: $updatedBefore includeSubgroups: $includeSubgroups ) { __typename pageInfo { __typename hasNextPage endCursor } nodes { __typename iid title reference(full: true) state upvotes downvotes userNotesCount author { __typename avatarUrl name username } createdAt webUrl } } } }"#
     ))
 
+  public var first: Int32
+  public var after: GraphQLNullable<String>
   public var fullPath: ID
   public var state: GraphQLNullable<GraphQLEnum<IssuableState>>
   public var search: GraphQLNullable<String>
@@ -28,6 +30,8 @@ nonisolated public struct GroupIssuesQuery: GraphQLQuery {
   public var includeSubgroups: GraphQLNullable<Bool>
 
   public init(
+    first: Int32,
+    after: GraphQLNullable<String>,
     fullPath: ID,
     state: GraphQLNullable<GraphQLEnum<IssuableState>>,
     search: GraphQLNullable<String>,
@@ -44,6 +48,8 @@ nonisolated public struct GroupIssuesQuery: GraphQLQuery {
     updatedBefore: GraphQLNullable<Time>,
     includeSubgroups: GraphQLNullable<Bool>
   ) {
+    self.first = first
+    self.after = after
     self.fullPath = fullPath
     self.state = state
     self.search = search
@@ -62,6 +68,8 @@ nonisolated public struct GroupIssuesQuery: GraphQLQuery {
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
+    "first": first,
+    "after": after,
     "fullPath": fullPath,
     "state": state,
     "search": search,
@@ -105,6 +113,8 @@ nonisolated public struct GroupIssuesQuery: GraphQLQuery {
       @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
         .field("issues", Issues?.self, arguments: [
+          "first": .variable("first"),
+          "after": .variable("after"),
           "state": .variable("state"),
           "search": .variable("search"),
           "confidential": .variable("confidential"),
@@ -138,14 +148,40 @@ nonisolated public struct GroupIssuesQuery: GraphQLQuery {
         @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.IssueConnection }
         @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
+          .field("pageInfo", PageInfo.self),
           .field("nodes", [Node?]?.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           GroupIssuesQuery.Data.Group.Issues.self
         ] }
 
+        /// Information to aid in pagination.
+        public var pageInfo: PageInfo { __data["pageInfo"] }
         /// A list of nodes.
         public var nodes: [Node?]? { __data["nodes"] }
+
+        /// Group.Issues.PageInfo
+        ///
+        /// Parent Type: `PageInfo`
+        nonisolated public struct PageInfo: GitLabAPI.SelectionSet {
+          @_spi(Unsafe) public let __data: DataDict
+          @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+          @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.PageInfo }
+          @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+            .field("__typename", String.self),
+            .field("hasNextPage", Bool.self),
+            .field("endCursor", String?.self),
+          ] }
+          @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+            GroupIssuesQuery.Data.Group.Issues.PageInfo.self
+          ] }
+
+          /// When paginating forwards, are there more items?
+          public var hasNextPage: Bool { __data["hasNextPage"] }
+          /// When paginating forwards, the cursor to continue.
+          public var endCursor: String? { __data["endCursor"] }
+        }
 
         /// Group.Issues.Node
         ///

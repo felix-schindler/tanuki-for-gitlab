@@ -1,6 +1,10 @@
-query UserMembershipProjects($username: String!) {
+query UserMembershipProjects($first: Int!, $after: String, $username: String!) {
   user(username: $username) {
-    projectMemberships {
+    projectMemberships(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         project {
           avatarUrl

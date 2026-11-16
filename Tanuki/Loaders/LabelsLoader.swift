@@ -19,7 +19,20 @@ struct LabelsLoader: View {
 	private let queryType: LabelQueryType
 
 	@State
-	private var labels: Result<[MyLabel?], Error>? = nil
+	private var groupPager = PagedQuery<GroupLabelsQuery, MyLabel>(
+		extract: { ($0.group?.labels?.nodes ?? []).compactMap { $0 } },
+		key: { $0.id },
+		hasNext: { $0.group?.labels?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.group?.labels?.pageInfo.endCursor }
+	)
+
+	@State
+	private var projectPager = PagedQuery<ProjectLabelsQuery, MyLabel>(
+		extract: { ($0.project?.labels?.nodes ?? []).compactMap { $0 } },
+		key: { $0.id },
+		hasNext: { $0.project?.labels?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.project?.labels?.pageInfo.endCursor }
+	)
 
 	init(fullPath: String, id: Int, queryType: LabelQueryType) {
 		self.fullPath = fullPath
@@ -27,113 +40,75 @@ struct LabelsLoader: View {
 		self.queryType = queryType
 	}
 
-	private func loadLabels() {
-		do {
-			switch self.queryType {
-			case .group:
-				let responses = try Network.shared.apollo.fetch(
-					query: GroupLabelsQuery(fullPath: self.fullPath), cachePolicy: .cacheAndNetwork)
-
-				Task {
-					for try await response in responses {
-						if let labels = response.data?.group?.labels?.nodes {
-							self.labels = .success(labels)
-						} else if let errors = response.errors {
-							for error in errors {
-								Notify.status(.error, error.localizedDescription)
-							}
-						}
-					}
-				}
-			case .project:
-				let responses = try Network.shared.apollo.fetch(
-					query: ProjectLabelsQuery(fullPath: self.fullPath),
-					cachePolicy: .cacheAndNetwork)
-
-				Task {
-					for try await response in responses {
-						if let labels = response.data?.project?.labels?.nodes {
-							self.labels = .success(labels)
-						} else if let errors = response.errors {
-							for error in errors {
-								Notify.status(.error, error.localizedDescription)
-							}
-						}
-					}
-				}
-			}
-		} catch let error {
-			self.labels = .failure(error)
-			Notify.status(.error)
+	private var state: Loadable<[MyLabel]> {
+		switch queryType {
+		case .group: groupPager.state
+		case .project: projectPager.state
 		}
 	}
 
-	private func reloadLabels() async {
-		do {
-			switch self.queryType {
-			case .group:
-				let response = try await Network.shared.apollo.fetch(
-					query: GroupLabelsQuery(fullPath: self.fullPath), cachePolicy: .networkOnly)
+	private var hasMore: Bool {
+		switch queryType {
+		case .group: groupPager.hasMore
+		case .project: projectPager.hasMore
+		}
+	}
 
-				if let labels = response.data?.group?.labels?.nodes {
-					self.labels = .success(labels)
-				}
+	private func load() async {
+		switch queryType {
+		case .group:
+			await groupPager.start(
+				GroupLabelsQuery(first: 50, after: .none, fullPath: fullPath),
+				setCursor: { $0.after = .some($1) })
+		case .project:
+			await projectPager.start(
+				ProjectLabelsQuery(first: 50, after: .none, fullPath: fullPath),
+				setCursor: { $0.after = .some($1) })
+		}
+	}
 
-				Notify.status(.success)
-			case .project:
-				let response = try await Network.shared.apollo.fetch(
-					query: ProjectLabelsQuery(fullPath: self.fullPath), cachePolicy: .networkOnly)
+	private func refresh() async {
+		switch queryType {
+		case .group: await groupPager.refresh()
+		case .project: await projectPager.refresh()
+		}
+	}
 
-				if let labels = response.data?.project?.labels?.nodes {
-					self.labels = .success(labels)
-				}
-
-				Notify.status(.success)
-			}
-		} catch let error {
-			self.labels = .failure(error)
-			Notify.status(.error)
+	private func loadMore() async {
+		switch queryType {
+		case .group: await groupPager.loadMore()
+		case .project: await projectPager.loadMore()
 		}
 	}
 
 	public var body: some View {
-		List {
-			if let labels {
-				switch labels {
-				case .success(let labels):
-					if labels.isEmpty {
-						NoContentView("There are no labels", systemImage: Icons.tag.rawValue)
-					} else {
-						ForEach(labels, id: \.?.id) { maybeLabel in
-							if let label = maybeLabel {
-								VStack(alignment: .leading) {
-									ScrollView(.horizontal) {
-										PillView(
-											label.title.emojized(),
-											bgColor: Color(hex: label.color),
-											fgColor: Color(hex: label.textColor)
-										)
-									}
-
-									if let description = label.description, description.isNotEmpty {
-										Markdown(description)
-									}
-								}
-							}
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
+		LoadableList(
+			state,
+			hasMore: hasMore,
+			emptyMessage: "There are no labels",
+			emptySystemImage: Icons.tag.rawValue,
+			loadingMessage: "Loading Labels",
+			loadingSystemImage: Icons.tag.rawValue,
+			onLoadMore: { await loadMore() },
+			onRefresh: { await refresh() }
+		) { label in
+			VStack(alignment: .leading) {
+				ScrollView(.horizontal) {
+					PillView(
+						label.title.emojized(),
+						bgColor: Color(hex: label.color),
+						fgColor: Color(hex: label.textColor)
+					)
 				}
-			} else {
-				LoadingView("Loading Labels", systemImage: Icons.tag.rawValue)
+
+				if let description = label.description, description.isNotEmpty {
+					Markdown(description)
+				}
 			}
 		}.task {
-			loadLabels()
-		}.refreshable {
-			await reloadLabels()
+			await load()
 		}.toolbar {
-			if let labels, case .success = labels {
+			if self.state.value != nil {
 				NavigationLink(
 					destination: {
 						if self.queryType == .project {

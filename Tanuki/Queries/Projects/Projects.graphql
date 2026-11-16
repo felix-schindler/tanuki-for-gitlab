@@ -1,5 +1,7 @@
-query Projects($membership: Boolean, $search: String, $personal: Boolean, $sort: String, $withIssuesEnabled: Boolean, $withMergeRequestsEnabled: Boolean, $archived: ProjectArchived, $minAccessLevel: AccessLevelEnum, $aimedForDeletion: Boolean, $notAimedForDeletion: Boolean, $markedForDeletionOn: Date, $active: Boolean) {
+query Projects($first: Int!, $after: String, $membership: Boolean, $search: String, $personal: Boolean, $sort: String, $withIssuesEnabled: Boolean, $withMergeRequestsEnabled: Boolean, $archived: ProjectArchived, $minAccessLevel: AccessLevelEnum, $aimedForDeletion: Boolean, $notAimedForDeletion: Boolean, $markedForDeletionOn: Date, $active: Boolean) {
   projects(
+    first: $first
+    after: $after
     membership: $membership
     search: $search
     personal: $personal
@@ -13,6 +15,10 @@ query Projects($membership: Boolean, $search: String, $personal: Boolean, $sort:
     markedForDeletionOn: $markedForDeletionOn
     active: $active
   ) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
     nodes {
       avatarUrl
       nameWithNamespace

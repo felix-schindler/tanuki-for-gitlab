@@ -46,7 +46,7 @@ struct NewIssueView: View {
 	private func loadMembers() async {
 		do {
 			let response = try await Network.shared.apollo.fetch(
-				query: ProjectMembersQuery(fullPath: self.fullPath),
+				query: ProjectMembersQuery(first: 100, after: .none, fullPath: self.fullPath),
 				cachePolicy: .networkOnly
 			)
 
@@ -62,6 +62,7 @@ struct NewIssueView: View {
 		do {
 			let response = try await Network.shared.apollo.fetch(
 				query: ProjectMilestonesQuery(
+					first: 100, after: .none,
 					fullPath: self.fullPath,
 					state: .none,
 					searchTitle: .none,
@@ -86,7 +87,7 @@ struct NewIssueView: View {
 	private func loadLabels() async {
 		do {
 			let response = try await Network.shared.apollo.fetch(
-				query: ProjectLabelsQuery(fullPath: self.fullPath), cachePolicy: .networkOnly)
+				query: ProjectLabelsQuery(first: 100, after: .none, fullPath: self.fullPath), cachePolicy: .networkOnly)
 
 			if let labels = response.data?.project?.labels?.nodes {
 				self.labels = labels

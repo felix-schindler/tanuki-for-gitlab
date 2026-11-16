@@ -1,4 +1,6 @@
 query GroupIssues(
+  $first: Int!
+  $after: String
   $fullPath: ID!
   $state: IssuableState
   $search: String
@@ -17,6 +19,8 @@ query GroupIssues(
 ) {
   group(fullPath: $fullPath) {
     issues(
+      first: $first
+      after: $after
       state: $state
       search: $search
       confidential: $confidential
@@ -32,6 +36,10 @@ query GroupIssues(
       updatedBefore: $updatedBefore
       includeSubgroups: $includeSubgroups
     ) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         iid
         title

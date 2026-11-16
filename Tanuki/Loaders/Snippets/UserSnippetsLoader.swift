@@ -12,7 +12,20 @@ struct UserSnippetsLoader: View {
 	private let username: String?
 
 	@State
-	private var snippets: Result<[Snippet?], Error>? = nil
+	private var userPager = PagedQuery<UserSnippetsQuery, Snippet>(
+		extract: { ($0.user?.snippets?.nodes ?? []).compactMap { $0 } },
+		key: { $0.id },
+		hasNext: { $0.user?.snippets?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.user?.snippets?.pageInfo.endCursor }
+	)
+
+	@State
+	private var currentPager = PagedQuery<CurrentUserSnippetsQuery, Snippet>(
+		extract: { ($0.currentUser?.snippets?.nodes ?? []).compactMap { $0 } },
+		key: { $0.id },
+		hasNext: { $0.currentUser?.snippets?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.currentUser?.snippets?.pageInfo.endCursor }
+	)
 
 	@State
 	private var createSnippet = false
@@ -21,136 +34,82 @@ struct UserSnippetsLoader: View {
 		self.username = username
 	}
 
-	private func loadSnippets() {
-		do {
-			if let username {
-				let responses = try Network.shared.apollo.fetch(
-					query: UserSnippetsQuery(username: username),
-					cachePolicy: .cacheAndNetwork
-				)
+	private var state: Loadable<[Snippet]> {
+		username == nil ? currentPager.state : userPager.state
+	}
 
-				Task {
-					for try await response in responses {
-						if let snippets = response.data?.user?.snippets?.nodes {
-							self.snippets = .success(snippets)
-						} else if let errors = response.errors {
-							for error in errors {
-								Notify.status(.error, error.localizedDescription)
-							}
-						}
-					}
-				}
-			} else {
-				let responses = try Network.shared.apollo.fetch(
-					query: CurrentUserSnippetsQuery(),
-					cachePolicy: .cacheAndNetwork
-				)
+	private var hasMore: Bool {
+		username == nil ? currentPager.hasMore : userPager.hasMore
+	}
 
-				Task {
-					for try await response in responses {
-						if let snippets = response.data?.currentUser?.snippets?.nodes {
-							self.snippets = .success(snippets)
-						} else if let errors = response.errors {
-							for error in errors {
-								Notify.status(.error, error.localizedDescription)
-							}
-						}
-					}
-				}
-			}
-		} catch let error {
-			self.snippets = .failure(error)
-			Notify.status(.error)
+	private func load() async {
+		if let username {
+			await userPager.start(
+				UserSnippetsQuery(first: 50, after: .none, username: username),
+				setCursor: { $0.after = .some($1) })
+		} else {
+			await currentPager.start(
+				CurrentUserSnippetsQuery(first: 50, after: .none),
+				setCursor: { $0.after = .some($1) })
 		}
 	}
 
-	private func reloadSnippets(notify: Bool = true) async {
-		do {
-			if let username {
-				let response = try await Network.shared.apollo.fetch(
-					query: UserSnippetsQuery(username: username),
-					cachePolicy: .networkOnly
-				)
+	private func refresh(notify: Bool = true) async {
+		if username == nil {
+			await currentPager.refresh(notify: notify)
+		} else {
+			await userPager.refresh(notify: notify)
+		}
+	}
 
-				if let snippets = response.data?.user?.snippets?.nodes {
-					self.snippets = .success(snippets)
-				}
-			} else {
-				let response = try await Network.shared.apollo.fetch(
-					query: CurrentUserSnippetsQuery(),
-					cachePolicy: .networkOnly
-				)
-
-				if let snippets = response.data?.currentUser?.snippets?.nodes {
-					self.snippets = .success(snippets)
-				}
-			}
-
-			if notify {
-				Notify.status(.success)
-			}
-		} catch let error {
-			self.snippets = .failure(error)
-			Notify.status(.error)
+	private func loadMore() async {
+		if username == nil {
+			await currentPager.loadMore()
+		} else {
+			await userPager.loadMore()
 		}
 	}
 
 	public var body: some View {
-		List {
-			if let snippets {
-				switch snippets {
-				case .success(let snippets):
-					if snippets.isEmpty {
-						NoContentView("There are no snippets", systemImage: Icons.snippets.rawValue)
-					} else {
-						ForEach(snippets, id: \.self?.id) { maybeSnippet in
-							if let snippet = maybeSnippet {
-								NavigationLink(
-									destination: SnippetLoader(id: snippet.id),
-									label: {
-										HStack {
-											VStack(alignment: .leading) {
-												HStack {
-													VisibilityIcon(
-														snippet
-															.visibilityLevel
-															.rawValue
-													)
-													Text(snippet.title.emojized())
-												}
+		LoadableList(
+			state,
+			hasMore: hasMore,
+			emptyMessage: "There are no snippets",
+			emptySystemImage: Icons.snippets.rawValue,
+			loadingMessage: "Loading Snippets",
+			loadingSystemImage: Icons.snippets.rawValue,
+			onLoadMore: { await loadMore() },
+			onRefresh: { await refresh() }
+		) { snippet in
+			NavigationLink(
+				destination: SnippetLoader(id: snippet.id),
+				label: {
+					HStack {
+						VStack(alignment: .leading) {
+							HStack {
+								VisibilityIcon(snippet.visibilityLevel.rawValue)
+								Text(snippet.title.emojized())
+							}
 
-												ScrollView(.horizontal) {
-													HStack {
-														if let author = snippet
-															._author
-														{
-															AuthorView(author)
-														}
-
-														PillView(
-															Date.fromToString(snippet.createdAt),
-															icon: Icons.clock.rawValue)
-													}.font(.footnote)
-												}
-											}
-										}.swipeActions {
-											ShareButton(URL(string: snippet.webUrl)!)
-										}
+							ScrollView(.horizontal) {
+								HStack {
+									if let author = snippet._author {
+										AuthorView(author)
 									}
-								)
+
+									PillView(
+										Date.fromToString(snippet.createdAt),
+										icon: Icons.clock.rawValue)
+								}.font(.footnote)
 							}
 						}
+					}.swipeActions {
+						ShareButton(URL(string: snippet.webUrl)!)
 					}
-				case .failure(let error):
-					FailedView(error.localizedDescription, icon: Icons.snippets.rawValue)
 				}
-			} else {
-				LoadingView("Loading Snippets", systemImage: Icons.snippets.rawValue)
-			}
+			)
 		}.task {
-			loadSnippets()
-		}.refreshable {
-			await reloadSnippets()
+			await load()
 		}.toolbar {
 			if username == nil {
 				Button("New snippet", systemImage: "plus") {
@@ -160,7 +119,7 @@ struct UserSnippetsLoader: View {
 		}.navigationDestination(isPresented: $createSnippet) {
 			NewSnippetView(
 				onCreated: {
-					await reloadSnippets(notify: false)
+					await refresh(notify: false)
 				})
 		}.navigationTitle("Snippets")
 	}

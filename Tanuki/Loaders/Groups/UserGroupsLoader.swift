@@ -12,74 +12,35 @@ struct UserGroupsLoader: View {
 	private let username: String
 
 	@State
-	private var groups: Result<[Group?], Error>? = nil
+	private var pager = PagedQuery<UserGroupsQuery, Group>(
+		extract: { ($0.user?.groups?.nodes ?? []).compactMap { $0 } },
+		key: { $0.fullPath },
+		hasNext: { $0.user?.groups?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.user?.groups?.pageInfo.endCursor }
+	)
 
 	init(_ username: String) {
 		self.username = username
 	}
 
-	private func loadGroups() {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: UserGroupsQuery(username: username), cachePolicy: .cacheAndNetwork)
-
-			Task {
-				for try await response in responses {
-					if let groups = response.data?.user?.groups?.nodes {
-						self.groups = .success(groups)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			}
-		} catch let error {
-			self.groups = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
-	private func reloadGroups() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: UserGroupsQuery(username: username), cachePolicy: .networkOnly)
-
-			if let groups = response.data?.user?.groups?.nodes {
-				self.groups = .success(groups)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.groups = .failure(error)
-			Notify.status(.error)
-		}
+	private func query(after: GraphQLNullable<String> = .none) -> UserGroupsQuery {
+		UserGroupsQuery(first: 50, after: after, username: username)
 	}
 
 	public var body: some View {
-		List {
-			if let groups {
-				switch groups {
-				case .success(let groups):
-					if groups.isEmpty {
-						NoContentView("There are no groups", systemImage: Icons.groups.rawValue)
-					} else {
-						ForEach(groups, id: \.self?.fullPath) { group in
-							if let group {
-								SmallGroupView(group: group)
-							}
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
-				}
-			} else {
-				LoadingView("Loading Groups", systemImage: Icons.groups.rawValue)
-			}
+		LoadableList(
+			pager.state,
+			hasMore: pager.hasMore,
+			emptyMessage: "There are no groups",
+			emptySystemImage: Icons.groups.rawValue,
+			loadingMessage: "Loading Groups",
+			loadingSystemImage: Icons.groups.rawValue,
+			onLoadMore: { await pager.loadMore() },
+			onRefresh: { await pager.refresh() }
+		) { group in
+			SmallGroupView(group: group)
 		}.task {
-			loadGroups()
-		}.refreshable {
-			await reloadGroups()
+			await pager.start(query(), setCursor: { $0.after = .some($1) })
 		}.navigationTitle("Groups")
 	}
 }

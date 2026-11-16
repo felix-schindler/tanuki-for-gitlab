@@ -1,6 +1,10 @@
-query ProjectLabels($fullPath: ID!) {
+query ProjectLabels($first: Int!, $after: String, $fullPath: ID!) {
   project(fullPath: $fullPath) {
-    labels {
+    labels(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         id
         title

@@ -1,6 +1,10 @@
-query ProjectPipelines($fullPath: ID!) {
+query ProjectPipelines($first: Int!, $after: String, $fullPath: ID!) {
   project(fullPath: $fullPath) {
-    pipelines {
+    pipelines(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         id
         iid

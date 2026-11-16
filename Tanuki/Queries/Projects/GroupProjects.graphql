@@ -1,6 +1,10 @@
-query GroupProjects($fullPath: ID!) {
+query GroupProjects($first: Int!, $after: String, $fullPath: ID!) {
   group(fullPath: $fullPath) {
-    projects {
+    projects(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         avatarUrl
         nameWithNamespace

@@ -19,13 +19,23 @@ struct MilestonesLoader: View {
 	private let queryType: MilestoneQueryType
 
 	@State
-	private var milestones: Result<[Milestone?], Error>? = nil
+	private var groupPager = PagedQuery<GroupMilestonesQuery, Milestone>(
+		extract: { ($0.group?.milestones?.nodes ?? []).compactMap { $0 } },
+		key: { $0.iid },
+		hasNext: { $0.group?.milestones?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.group?.milestones?.pageInfo.endCursor }
+	)
+
+	@State
+	private var projectPager = PagedQuery<ProjectMilestonesQuery, Milestone>(
+		extract: { ($0.project?.milestones?.nodes ?? []).compactMap { $0 } },
+		key: { $0.iid },
+		hasNext: { $0.project?.milestones?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.project?.milestones?.pageInfo.endCursor }
+	)
 
 	@State
 	private var showFilters = false
-
-	@State
-	private var loadTask: Task<Void, Never>?
 
 	// MARK: - Filter
 	@State private var searchTitle: String? = nil
@@ -38,8 +48,10 @@ struct MilestonesLoader: View {
 		self.queryType = queryType
 	}
 
-	private var groupQuery: GroupMilestonesQuery {
+	private func groupQuery(after: GraphQLNullable<String> = .none) -> GroupMilestonesQuery {
 		return GroupMilestonesQuery(
+			first: 50,
+			after: after,
 			fullPath: self.fullPath,
 			state: GraphFilter.toFilterEnum(self.state),
 			searchTitle: GraphFilter.toFilter(self.searchTitle),
@@ -47,8 +59,10 @@ struct MilestonesLoader: View {
 		)
 	}
 
-	private var projectQuery: ProjectMilestonesQuery {
+	private func projectQuery(after: GraphQLNullable<String> = .none) -> ProjectMilestonesQuery {
 		return ProjectMilestonesQuery(
+			first: 50,
+			after: after,
 			fullPath: self.fullPath,
 			state: GraphFilter.toFilterEnum(self.state),
 			searchTitle: GraphFilter.toFilter(self.searchTitle),
@@ -56,127 +70,77 @@ struct MilestonesLoader: View {
 		)
 	}
 
-	private func loadMilestones() {
-		self.loadTask?.cancel()
-		self.loadTask = Task {
-			do {
-				switch self.queryType {
-				case .group:
-					let responses = try Network.shared.apollo.fetch(
-						query: self.groupQuery,
-						cachePolicy: .cacheAndNetwork)
-
-					for try await response in responses {
-						if Task.isCancelled { return }
-						if let milestones = response.data?.group?.milestones?.nodes {
-							self.milestones = .success(milestones)
-						} else if let errors = response.errors {
-							for error in errors {
-								Notify.status(.error, error.localizedDescription)
-							}
-						}
-					}
-				case .project:
-					let responses = try Network.shared.apollo.fetch(
-						query: self.projectQuery,
-						cachePolicy: .cacheAndNetwork)
-
-					for try await response in responses {
-						if Task.isCancelled { return }
-						if let milestones = response.data?.project?.milestones?.nodes {
-							self.milestones = .success(milestones)
-						} else if let errors = response.errors {
-							for error in errors {
-								Notify.status(.error, error.localizedDescription)
-							}
-						}
-					}
-				}
-			} catch {
-				if !Task.isCancelled {
-					self.milestones = .failure(error)
-					Notify.status(.error)
-				}
-			}
+	private var loadState: Loadable<[Milestone]> {
+		switch queryType {
+		case .group: groupPager.state
+		case .project: projectPager.state
 		}
 	}
 
-	private func reloadMilestones() async {
-		do {
-			switch self.queryType {
-			case .group:
-				let response = try await Network.shared.apollo.fetch(
-					query: self.groupQuery, cachePolicy: .networkOnly)
+	private var hasMore: Bool {
+		switch queryType {
+		case .group: groupPager.hasMore
+		case .project: projectPager.hasMore
+		}
+	}
 
-				if let milestones = response.data?.group?.milestones?.nodes {
-					self.milestones = .success(milestones)
-				}
+	private func load() async {
+		switch queryType {
+		case .group:
+			await groupPager.start(groupQuery(), setCursor: { $0.after = .some($1) })
+		case .project:
+			await projectPager.start(projectQuery(), setCursor: { $0.after = .some($1) })
+		}
+	}
 
-				break
-			case .project:
-				let response = try await Network.shared.apollo.fetch(
-					query: self.projectQuery,
-					cachePolicy: .networkOnly
-				)
+	private func refresh() async {
+		switch queryType {
+		case .group: await groupPager.refresh()
+		case .project: await projectPager.refresh()
+		}
+	}
 
-				if let milestones = response.data?.project?.milestones?.nodes {
-					self.milestones = .success(milestones)
-				}
-
-				break
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.milestones = .failure(error)
-			Notify.status(.error)
+	private func loadMore() async {
+		switch queryType {
+		case .group: await groupPager.loadMore()
+		case .project: await projectPager.loadMore()
 		}
 	}
 
 	public var body: some View {
-		List {
-			if let milestones {
-				switch milestones {
-				case .success(let milestones):
-					if milestones.isEmpty {
-						NoContentView("There are no milestones", systemImage: Icons.milestones.rawValue)
-					} else {
-						ForEach(milestones, id: \.?.iid) { milestone in
-							if let milestone {
-								VStack(alignment: .leading, spacing: 10) {
-									Label(
-										title: {
-											Text(milestone.title.emojized())
-										},
-										icon: {
-											Image(systemName: Icons.milestones.rawValue)
-												.foregroundStyle(
-													milestone.state == .closed
-														? .red
-														: (milestone.expired
-															? .orange
-															: .green)
-												)
-										}
-									)
-
-									if let description = milestone.description, description.isNotEmpty {
-										Markdown(description)
-									}
-								}
-							}
-						}
+		LoadableList(
+			loadState,
+			hasMore: hasMore,
+			emptyMessage: "There are no milestones",
+			emptySystemImage: Icons.milestones.rawValue,
+			loadingMessage: "Loading Milestones",
+			loadingSystemImage: Icons.milestones.rawValue,
+			onLoadMore: { await loadMore() },
+			onRefresh: { await refresh() }
+		) { milestone in
+			VStack(alignment: .leading, spacing: 10) {
+				Label(
+					title: {
+						Text(milestone.title.emojized())
+					},
+					icon: {
+						Image(systemName: Icons.milestones.rawValue)
+							.foregroundStyle(
+								milestone.state == .closed
+									? .red
+									: (milestone.expired
+										? .orange
+										: .green)
+							)
 					}
-				case .failure(let error):
-					FailedView(error)
+				)
+
+				if let description = milestone.description, description.isNotEmpty {
+					Markdown(description)
 				}
-			} else {
-				LoadingView("Loading Milestones", systemImage: Icons.milestones.rawValue)
 			}
 		}.debouncedLoad(searchTitle) {
-			loadMilestones()
-		}.refreshable {
-			await reloadMilestones()
+			await load()
 		}.searchable(
 			text: Binding(get: { self.searchTitle ?? "" }, set: { self.searchTitle = $0.isNotEmpty ? $0 : nil }),
 			prompt: "Title"
@@ -215,7 +179,7 @@ struct MilestonesLoader: View {
 					}
 				}.toolbar {
 					AsyncButton("Apply filter", systemImage: "checkmark") {
-						await reloadMilestones()
+						await load()
 						showFilters = false
 					}
 				}

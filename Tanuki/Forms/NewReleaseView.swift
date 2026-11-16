@@ -57,6 +57,7 @@ struct NewReleaseView: View {
 		do {
 			let response = try await Network.shared.apollo.fetch(
 				query: ProjectMilestonesQuery(
+					first: 100, after: .none,
 					fullPath: self.fullPath, state: .none, searchTitle: .none, includeAncestors: .some(false)),
 				cachePolicy: .networkOnly
 			)

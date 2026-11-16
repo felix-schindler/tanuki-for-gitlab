@@ -11,70 +11,84 @@ struct BranchesLoader: View {
 	private var projectId: Int
 
 	@State
-	private var branches: Result<[Branch], Error>? = nil
+	private var state = Loadable<[Branch]>()
+
+	@State
+	private var pager = RestPage()
 
 	init(_ projectId: Int) {
 		self.projectId = projectId
 	}
 
-	private func loadBranches() async {
-		do {
-			let temp = try await API.get(
-				type: [Branch].self, endpoint: "projects/\(projectId)/repository/branches")
+	private func load(reset: Bool) async {
+		if reset {
+			pager.reset()
+			state.isLoading = true
+		} else {
+			state.isLoadingMore = true
+		}
 
-			self.branches = .success(temp)
-		} catch let error {
-			self.branches = .failure(error)
+		defer {
+			state.isLoading = false
+			state.isLoadingMore = false
+		}
+
+		do {
+			let branches = try await API.get(
+				type: [Branch].self,
+				endpoint: "projects/\(projectId)/repository/branches",
+				query: pager.query
+			)
+
+			if Task.isCancelled { return }
+			state.value = (state.value ?? []) + branches
+			state.error = nil
+			pager.advance(branches.count)
+		} catch {
+			if Task.isCancelled { return }
+			state.error = error
 			Notify.status(.error)
 		}
 	}
 
-	public var body: some View {
-		List {
-			if let branches {
-				switch branches {
-				case .success(let branches):
-					if branches.isEmpty {
-						NoContentView(
-							"You'll see your branches after you pushed them",
-							systemImage: Icons.code.rawValue
-						)
-					} else {
-						ForEach(branches, id: \.name) { branch in
-							VStack(alignment: .leading) {
-								HStack {
-									if branch.protected {
-										Image(systemName: Icons.lock.rawValue)
-									}
-									Text(branch.name.emojized())
-										.font(.headline)
-								}
+	private func loadMore() async {
+		guard pager.hasMore, !state.isLoading, !state.isLoadingMore else { return }
+		await load(reset: false)
+	}
 
-								ScrollView(.horizontal) {
-									HStack {
-										PillView(branch.commit.shortId)
-											.font(.system(.footnote, design: .monospaced))
-										PillView(branch.commit.authoredDate.toString(), icon: Icons.clock.rawValue)
-									}
-								}.font(.footnote)
-								Text(branch.commit.title.emojized())
-									.font(.footnote)
-							}
+	public var body: some View {
+		LoadableList(
+			state,
+			hasMore: pager.hasMore,
+			emptyMessage: "You'll see your branches after you pushed them",
+			emptySystemImage: Icons.code.rawValue,
+			loadingMessage: "Loading Branches",
+			loadingSystemImage: Icons.code.rawValue,
+			onLoadMore: { await loadMore() },
+			onRefresh: { await load(reset: true) },
+			row: { branch in
+				VStack(alignment: .leading) {
+					HStack {
+						if branch.protected {
+							Image(systemName: Icons.lock.rawValue)
 						}
+						Text(branch.name.emojized())
+							.font(.headline)
 					}
-				case .failure(let error):
-					FailedView(error)
+
+					ScrollView(.horizontal) {
+						HStack {
+							PillView(branch.commit.shortId)
+								.font(.system(.footnote, design: .monospaced))
+							PillView(branch.commit.authoredDate.toString(), icon: Icons.clock.rawValue)
+						}
+					}.font(.footnote)
+					Text(branch.commit.title.emojized())
+						.font(.footnote)
 				}
-			} else {
-				LoadingView(
-					"Loading Branches",
-					systemImage: Icons.code.rawValue
-				)
 			}
-		}.task {
-			await loadBranches()
-		}.refreshable {
-			await loadBranches()
+		).task {
+			await load(reset: true)
 		}.toolbar {
 			NavigationLink(destination: NewBranchView(projectId: projectId)) {
 				Label("New branch", systemImage: "plus")

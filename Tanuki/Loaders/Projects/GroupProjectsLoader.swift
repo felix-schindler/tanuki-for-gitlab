@@ -13,81 +13,35 @@ struct GroupProjectsLoader: View {
 	private let fullPath: String
 
 	@State
-	private var projects: Result<[GroupProjectsQuery.Data.Group.Projects.Node?], Error>? = nil
+	private var pager = PagedQuery<GroupProjectsQuery, SmallProject>(
+		extract: { ($0.group?.projects.nodes ?? []).compactMap { $0 } },
+		key: { $0.fullPath },
+		hasNext: { $0.group?.projects.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.group?.projects.pageInfo.endCursor }
+	)
 
 	init(fullPath: String) {
 		self.fullPath = fullPath
 	}
 
-	private func loadProjects() {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: GroupProjectsQuery(fullPath: self.fullPath),
-				cachePolicy: .cacheAndNetwork
-			)
-
-			Task {
-				for try await response in responses {
-					if let projects = response.data?.group?.projects.nodes {
-						self.projects = .success(projects)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			}
-		} catch let error {
-			self.projects = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
-	private func reloadProjects() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: GroupProjectsQuery(fullPath: self.fullPath),
-				cachePolicy: .networkOnly
-			)
-
-			if let projects = response.data?.group?.projects.nodes {
-				self.projects = .success(projects)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.projects = .failure(error)
-			Notify.status(.error)
-		}
+	private func query(after: GraphQLNullable<String> = .none) -> GroupProjectsQuery {
+		GroupProjectsQuery(first: 50, after: after, fullPath: fullPath)
 	}
 
 	public var body: some View {
-		List {
-			if let projects {
-				switch projects {
-				case .success(let projects):
-					if projects.isEmpty {
-						NoContentView(
-							"The group \(self.fullPath) doesn't have any projects",
-							systemImage: Icons.projects.rawValue
-						)
-					} else {
-						ForEach(projects, id: \.?.fullPath) { maybeProject in
-							if let project = maybeProject {
-								SmallProjectView(project)
-							}
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
-				}
-			} else {
-				LoadingView("Loading Projects", systemImage: Icons.projects.rawValue)
-			}
+		LoadableList(
+			pager.state,
+			hasMore: pager.hasMore,
+			emptyMessage: "The group \(self.fullPath) doesn't have any projects",
+			emptySystemImage: Icons.projects.rawValue,
+			loadingMessage: "Loading Projects",
+			loadingSystemImage: Icons.projects.rawValue,
+			onLoadMore: { await pager.loadMore() },
+			onRefresh: { await pager.refresh() }
+		) { project in
+			SmallProjectView(project)
 		}.task {
-			loadProjects()
-		}.refreshable {
-			await reloadProjects()
+			await pager.start(query(), setCursor: { $0.after = .some($1) })
 		}.navigationTitle("Projects")
 	}
 }

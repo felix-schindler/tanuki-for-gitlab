@@ -12,50 +12,12 @@ private typealias EmailNode = CurrentUserEmailsQuery.Data.CurrentUser.Emails.Nod
 
 struct EmailsLoader: View {
 	@State
-	private var emails: Result<[EmailNode?], Error>? = nil
+	private var loader = ApolloLoader<CurrentUserEmailsQuery, [EmailNode?]> {
+		$0.currentUser?.emails?.nodes
+	}
 
 	@State private var showAdd = false
 	@State private var emailToDelete: EmailNode?
-
-	private func loadEmails() async {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: CurrentUserEmailsQuery(), cachePolicy: .cacheAndNetwork)
-
-			Task {
-				for try await response in responses {
-					if let emails = response.data?.currentUser?.emails?.nodes {
-						self.emails = .success(emails)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			}
-		} catch let error {
-			self.emails = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
-	private func reloadEmails(notifySuccess: Bool = true) async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: CurrentUserEmailsQuery(), cachePolicy: .networkOnly)
-
-			if let emails = response.data?.currentUser?.emails?.nodes {
-				self.emails = .success(emails)
-			}
-
-			if notifySuccess {
-				Notify.status(.success)
-			}
-		} catch let error {
-			self.emails = .failure(error)
-			Notify.status(.error)
-		}
-	}
 
 	private func deleteEmail(_ email: EmailNode) async {
 		do {
@@ -65,10 +27,7 @@ struct EmailsLoader: View {
 			}
 
 			try await API.delete(endpoint: "user/emails/\(id)")
-
-			if case .success(let emails) = emails {
-				self.emails = .success(emails.filter { $0?.id != email.id })
-			}
+			await loader.reload(CurrentUserEmailsQuery(), notify: false)
 
 			Notify.status(.success, "Email address deleted", systemImage: Icons.email.rawValue)
 		} catch let error {
@@ -77,49 +36,48 @@ struct EmailsLoader: View {
 	}
 
 	public var body: some View {
+		let state = loader.state
+
 		List {
-			if let emails {
-				switch emails {
-				case .success(let emails):
-					if emails.isEmpty {
-						NoContentView(
-							"You'll see your email addresses after you added them",
-							systemImage: Icons.email.rawValue
-						)
-					} else {
-						ForEach(emails, id: \.self?.id) { email in
-							if let email {
-								HStack {
-									Text(email.email)
-										.textSelection(.enabled)
-									Spacer()
-									if email.confirmedAt != nil {
-										Image(systemName: "checkmark.seal.fill")
-											.foregroundStyle(.green)
-									} else {
-										Image(systemName: "xmark.seal.fill")
-											.foregroundStyle(.red)
-									}
-								}.swipeActions(edge: .trailing, allowsFullSwipe: true) {
-									Button(role: .destructive) {
-										emailToDelete = email
-									} label: {
-										Label("Delete", systemImage: "trash")
-									}
+			if state.isInitialLoading {
+				LoadingView("Loading Emails", systemImage: Icons.email.rawValue)
+			} else if state.isColdFailure, let error = state.error {
+				FailedView(error)
+			} else if let emails = state.value {
+				if emails.isEmpty {
+					NoContentView(
+						"You'll see your email addresses after you added them",
+						systemImage: Icons.email.rawValue
+					)
+				} else {
+					ForEach(emails, id: \.self?.id) { email in
+						if let email {
+							HStack {
+								Text(email.email)
+									.textSelection(.enabled)
+								Spacer()
+								if email.confirmedAt != nil {
+									Image(systemName: "checkmark.seal.fill")
+										.foregroundStyle(.green)
+								} else {
+									Image(systemName: "xmark.seal.fill")
+										.foregroundStyle(.red)
+								}
+							}.swipeActions(edge: .trailing, allowsFullSwipe: true) {
+								Button(role: .destructive) {
+									emailToDelete = email
+								} label: {
+									Label("Delete", systemImage: "trash")
 								}
 							}
 						}
 					}
-				case .failure(let error):
-					FailedView(error)
 				}
-			} else {
-				LoadingView("Loading Emails", systemImage: Icons.email.rawValue)
 			}
 		}.task {
-			await loadEmails()
+			await loader.load(CurrentUserEmailsQuery())
 		}.refreshable {
-			await reloadEmails()
+			await loader.reload(CurrentUserEmailsQuery())
 		}.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
 				Button("Add", systemImage: "plus") {
@@ -130,7 +88,7 @@ struct EmailsLoader: View {
 			isPresented: $showAdd,
 			onDismiss: {
 				Task {
-					await reloadEmails(notifySuccess: false)
+					await loader.reload(CurrentUserEmailsQuery(), notify: false)
 				}
 			}
 		) {

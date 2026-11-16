@@ -1,6 +1,10 @@
-query GroupMembers($fullPath: ID!) {
+query GroupMembers($first: Int!, $after: String, $fullPath: ID!) {
   group(fullPath: $fullPath) {
-    groupMembers {
+    groupMembers(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         id
         createdBy {

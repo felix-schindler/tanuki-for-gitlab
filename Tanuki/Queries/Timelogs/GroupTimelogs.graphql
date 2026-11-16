@@ -1,6 +1,10 @@
-query GroupTimelogs($fullPath: ID!) {
+query GroupTimelogs($first: Int!, $after: String, $fullPath: ID!) {
   group(fullPath: $fullPath) {
-    timelogs(sort: SPENT_AT_DESC) {
+    timelogs(sort: SPENT_AT_DESC, first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         id
         user {

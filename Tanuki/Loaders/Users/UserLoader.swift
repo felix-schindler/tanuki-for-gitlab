@@ -12,68 +12,29 @@ struct UserLoader: View {
 	private let username: String
 
 	@State
-	private var user: Result<UserQuery.Data.User, Error>? = nil
+	private var loader = ApolloLoader<UserQuery, UserQuery.Data.User> { $0.user }
 
 	init(username: String) {
 		self.username = username
 	}
 
-	private func loadUser() {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: UserQuery(username: self.username), cachePolicy: .cacheAndNetwork)
-
-			Task {
-				for try await response in responses {
-					if let user = response.data?.user {
-						self.user = .success(user)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			}
-		} catch let error {
-			self.user = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
-	private func reloadUser() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: UserQuery(username: self.username), cachePolicy: .networkOnly)
-
-			if let user = response.data?.user {
-				self.user = .success(user)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.user = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
 	public var body: some View {
+		let state = loader.state
+
 		List {
-			if let user {
-				switch user {
-				case .success(let user):
-					UserView(user, isSelf: false)
-				case .failure(let error):
-					FailedView(error)
-				}
-			} else {
+			if state.isInitialLoading {
 				LoadingView("Loading user \(self.username)", systemImage: Icons.users.rawValue)
+			} else if state.isColdFailure, let error = state.error {
+				FailedView(error)
+			} else if let user = state.value {
+				UserView(user, isSelf: false)
 			}
 		}.task {
-			loadUser()
+			await loader.load(UserQuery(username: self.username))
 		}.refreshable {
-			await reloadUser()
+			await loader.reload(UserQuery(username: self.username))
 		}.toolbar {
-			if let user, case .success(let user) = user,
+			if let user = loader.state.value,
 				let url = URL(string: user.webUrl)
 			{
 				ShareButton(url)

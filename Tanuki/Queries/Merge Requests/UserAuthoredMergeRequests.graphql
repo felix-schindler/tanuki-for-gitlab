@@ -1,4 +1,6 @@
 query UserAuthoredMergeRequests(
+  $first: Int!
+  $after: String
   $state: MergeRequestState
   $search: String
   $draft: Boolean
@@ -12,6 +14,8 @@ query UserAuthoredMergeRequests(
 ) {
   currentUser {
     authoredMergeRequests(
+      first: $first
+      after: $after
       state: $state
       search: $search
       draft: $draft
@@ -23,6 +27,10 @@ query UserAuthoredMergeRequests(
       updatedAfter: $updatedAfter
       updatedBefore: $updatedBefore
     ) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         project {
           fullPath

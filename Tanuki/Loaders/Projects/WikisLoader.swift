@@ -19,57 +19,74 @@ struct WikisLoader: View {
 	private let projectId: Int
 
 	@State
-	private var pages: Result<[WikiPage], Error>? = nil
+	private var state = Loadable<[WikiPage]>()
+
+	@State
+	private var pager = RestPage()
 
 	init(projectId: Int) {
 		self.projectId = projectId
 	}
 
-	private func loadPages() async {
+	private func load(reset: Bool) async {
+		if reset {
+			pager.reset()
+			state.isLoading = true
+		} else {
+			state.isLoadingMore = true
+		}
+
+		defer {
+			state.isLoading = false
+			state.isLoadingMore = false
+		}
+
 		do {
-			pages = .success(
-				try await API.get(
-					type: [WikiPage].self,
-					endpoint: "projects/\(projectId)/wikis"
-				))
+			let pages = try await API.get(
+				type: [WikiPage].self,
+				endpoint: "projects/\(projectId)/wikis",
+				query: pager.query
+			)
+
+			if Task.isCancelled { return }
+			state.value = (state.value ?? []) + pages
+			state.error = nil
+			pager.advance(pages.count)
 		} catch {
-			pages = .failure(error)
+			if Task.isCancelled { return }
+			state.error = error
 			Notify.status(.error)
 		}
 	}
 
+	private func loadMore() async {
+		guard pager.hasMore, !state.isLoading, !state.isLoadingMore else { return }
+		await load(reset: false)
+	}
+
 	var body: some View {
-		List {
-			if let pages {
-				switch pages {
-				case .success(let pages):
-					if pages.isEmpty {
-						NoContentView(
-							"This project has no wiki pages",
-							systemImage: "book.closed")
-					} else {
-						ForEach(pages) { page in
-							NavigationLink(
-								destination: WikiPageLoader(
-									projectId: projectId,
-									slug: page.slug,
-									title: page.title
-								)
-							) {
-								Label(page.title.emojized(), systemImage: Icons.files.rawValue)
-							}
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
+		LoadableList(
+			state,
+			hasMore: pager.hasMore,
+			emptyMessage: "This project has no wiki pages",
+			emptySystemImage: "book.closed",
+			loadingMessage: "Loading Wiki",
+			loadingSystemImage: "book.closed",
+			onLoadMore: { await loadMore() },
+			onRefresh: { await load(reset: true) },
+			row: { page in
+				NavigationLink(
+					destination: WikiPageLoader(
+						projectId: projectId,
+						slug: page.slug,
+						title: page.title
+					)
+				) {
+					Label(page.title.emojized(), systemImage: Icons.files.rawValue)
 				}
-			} else {
-				LoadingView("Loading Wiki", systemImage: "book.closed")
 			}
-		}.task {
-			await loadPages()
-		}.refreshable {
-			await loadPages()
+		).task {
+			await load(reset: true)
 		}.navigationTitle("Wiki")
 	}
 }

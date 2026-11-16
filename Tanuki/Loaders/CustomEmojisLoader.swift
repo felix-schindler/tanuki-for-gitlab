@@ -12,85 +12,44 @@ struct CustomEmojisLoader: View {
 	private var fullPath: String
 
 	@State
-	private var emojis: Result<[GroupCustomEmojiQuery.Data.Group.CustomEmoji.Node?], Error>? = nil
+	private var pager = PagedQuery<GroupCustomEmojiQuery, GroupCustomEmojiQuery.Data.Group.CustomEmoji.Node>(
+		extract: { ($0.group?.customEmoji?.nodes ?? []).compactMap { $0 } },
+		key: { $0.id },
+		hasNext: { $0.group?.customEmoji?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.group?.customEmoji?.pageInfo.endCursor }
+	)
 
 	init(fullPath: String) {
 		self.fullPath = fullPath
 	}
 
-	private func loadEmojis() {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: GroupCustomEmojiQuery(fullPath: self.fullPath), cachePolicy: .cacheAndNetwork
-			)
-
-			Task {
-				for try await response in responses {
-					if let emojis = response.data?.group?.customEmoji?.nodes {
-						self.emojis = .success(emojis)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			}
-		} catch let error {
-			self.emojis = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
-	private func reloadEmojis() async {
-		do {
-			let repsonse = try await Network.shared.apollo.fetch(
-				query: GroupCustomEmojiQuery(fullPath: self.fullPath), cachePolicy: .networkOnly)
-
-			if let emojis = repsonse.data?.group?.customEmoji?.nodes {
-				self.emojis = .success(emojis)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.emojis = .failure(error)
-			Notify.status(.error)
-		}
+	private func query(after: GraphQLNullable<String> = .none) -> GroupCustomEmojiQuery {
+		GroupCustomEmojiQuery(first: 50, after: after, fullPath: fullPath)
 	}
 
 	public var body: some View {
-		List {
-			if let emojis {
-				switch emojis {
-				case .success(let emojis):
-					if emojis.isEmpty {
-						NoContentView(
-							"There are no custom emojis", systemImage: "face.smiling")
-					} else {
-						ForEach(emojis, id: \.?.id) { maybeEmoji in
-							if let emoji = maybeEmoji {
-								HStack {
-									if let url = URL(string: emoji.url) {
-										AvatarImage(url)
-									}
-									VStack(alignment: .leading) {
-										Text(emoji.name)
-										PillView(Date.fromToString(emoji.createdAt), icon: Icons.clock.rawValue)
-											.font(.footnote)
-									}
-								}
-							}
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
+		LoadableList(
+			pager.state,
+			hasMore: pager.hasMore,
+			emptyMessage: "There are no custom emojis",
+			emptySystemImage: "face.smiling",
+			loadingMessage: "Loading custom emojis",
+			loadingSystemImage: "face.smiling",
+			onLoadMore: { await pager.loadMore() },
+			onRefresh: { await pager.refresh() }
+		) { emoji in
+			HStack {
+				if let url = URL(string: emoji.url) {
+					AvatarImage(url)
 				}
-			} else {
-				LoadingView("Loading custom emojis", systemImage: "face.smiling")
+				VStack(alignment: .leading) {
+					Text(emoji.name)
+					PillView(Date.fromToString(emoji.createdAt), icon: Icons.clock.rawValue)
+						.font(.footnote)
+				}
 			}
 		}.task {
-			loadEmojis()
-		}.refreshable {
-			await reloadEmojis()
+			await pager.start(query(), setCursor: { $0.after = .some($1) })
 		}.navigationTitle("Custom Emojis")
 	}
 }

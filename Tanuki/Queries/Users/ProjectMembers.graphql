@@ -1,6 +1,10 @@
-query ProjectMembers($fullPath: ID!) {
+query ProjectMembers($first: Int!, $after: String, $fullPath: ID!) {
   project(fullPath:$fullPath) {
-    projectMembers {
+    projectMembers(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         id
         createdBy {

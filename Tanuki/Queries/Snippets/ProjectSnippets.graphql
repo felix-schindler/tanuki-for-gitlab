@@ -1,6 +1,10 @@
-query ProjectSnippets($fullPath: ID!) {
+query ProjectSnippets($first: Int!, $after: String, $fullPath: ID!) {
   project(fullPath: $fullPath) {
-    snippets {
+    snippets(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         id
         title

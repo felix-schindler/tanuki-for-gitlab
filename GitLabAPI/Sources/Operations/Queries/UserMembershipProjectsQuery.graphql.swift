@@ -8,16 +8,28 @@ nonisolated public struct UserMembershipProjectsQuery: GraphQLQuery {
   public static let operationName: String = "UserMembershipProjects"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query UserMembershipProjects($username: String!) { user(username: $username) { __typename projectMemberships { __typename nodes { __typename project { __typename avatarUrl nameWithNamespace visibility fullPath archived } } } } }"#
+      #"query UserMembershipProjects($first: Int!, $after: String, $username: String!) { user(username: $username) { __typename projectMemberships(first: $first, after: $after) { __typename pageInfo { __typename hasNextPage endCursor } nodes { __typename project { __typename avatarUrl nameWithNamespace visibility fullPath archived } } } } }"#
     ))
 
+  public var first: Int32
+  public var after: GraphQLNullable<String>
   public var username: String
 
-  public init(username: String) {
+  public init(
+    first: Int32,
+    after: GraphQLNullable<String>,
+    username: String
+  ) {
+    self.first = first
+    self.after = after
     self.username = username
   }
 
-  @_spi(Unsafe) public var __variables: Variables? { ["username": username] }
+  @_spi(Unsafe) public var __variables: Variables? { [
+    "first": first,
+    "after": after,
+    "username": username
+  ] }
 
   nonisolated public struct Data: GitLabAPI.SelectionSet {
     @_spi(Unsafe) public let __data: DataDict
@@ -44,7 +56,10 @@ nonisolated public struct UserMembershipProjectsQuery: GraphQLQuery {
       @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.UserCore }
       @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
-        .field("projectMemberships", ProjectMemberships?.self),
+        .field("projectMemberships", ProjectMemberships?.self, arguments: [
+          "first": .variable("first"),
+          "after": .variable("after")
+        ]),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
         UserMembershipProjectsQuery.Data.User.self
@@ -63,14 +78,40 @@ nonisolated public struct UserMembershipProjectsQuery: GraphQLQuery {
         @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.ProjectMemberConnection }
         @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
+          .field("pageInfo", PageInfo.self),
           .field("nodes", [Node?]?.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           UserMembershipProjectsQuery.Data.User.ProjectMemberships.self
         ] }
 
+        /// Information to aid in pagination.
+        public var pageInfo: PageInfo { __data["pageInfo"] }
         /// A list of nodes.
         public var nodes: [Node?]? { __data["nodes"] }
+
+        /// User.ProjectMemberships.PageInfo
+        ///
+        /// Parent Type: `PageInfo`
+        nonisolated public struct PageInfo: GitLabAPI.SelectionSet {
+          @_spi(Unsafe) public let __data: DataDict
+          @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+          @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.PageInfo }
+          @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+            .field("__typename", String.self),
+            .field("hasNextPage", Bool.self),
+            .field("endCursor", String?.self),
+          ] }
+          @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+            UserMembershipProjectsQuery.Data.User.ProjectMemberships.PageInfo.self
+          ] }
+
+          /// When paginating forwards, are there more items?
+          public var hasNextPage: Bool { __data["hasNextPage"] }
+          /// When paginating forwards, the cursor to continue.
+          public var endCursor: String? { __data["endCursor"] }
+        }
 
         /// User.ProjectMemberships.Node
         ///

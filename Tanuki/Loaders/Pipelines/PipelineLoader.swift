@@ -13,95 +13,55 @@ struct PipelineLoader: View {
 	private let iid: String
 
 	@State
-	private var pipeline: Result<PipelineDetailQuery.Data.Project.Pipeline, Error>? = nil
+	private var loader = ApolloLoader<PipelineDetailQuery, PipelineDetailQuery.Data.Project.Pipeline> {
+		$0.project?.pipeline
+	}
 
 	init(fullPath: String, iid: String) {
 		self.fullPath = fullPath
 		self.iid = iid
 	}
 
-	private func loadPipeline() {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: PipelineDetailQuery(fullPath: self.fullPath, iid: self.iid),
-				cachePolicy: .cacheAndNetwork
-			)
+	var body: some View {
+		let state = loader.state
 
-			Task {
-				for try await response in responses {
-					if let pipeline = response.data?.project?.pipeline {
-						self.pipeline = .success(pipeline)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
+		List {
+			if state.isInitialLoading {
+				LoadingView("Loading pipeline", systemImage: Icons.flag.rawValue)
+			} else if state.isColdFailure, let error = state.error {
+				FailedView(error)
+			} else if let pipeline = state.value {
+				Section {
+					PipelineHeaderView(fullPath: fullPath, pipeline: pipeline) {
+						await loader.reload(PipelineDetailQuery(fullPath: fullPath, iid: iid))
 					}
 				}
-			}
-		} catch let error {
-			self.pipeline = .failure(error)
-			Notify.status(.error)
-		}
-	}
 
-	private func reloadPipeline() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: PipelineDetailQuery(fullPath: self.fullPath, iid: self.iid),
-				cachePolicy: .networkOnly)
-
-			if let pipeline = response.data?.project?.pipeline {
-				self.pipeline = .success(pipeline)
-				Notify.status(.success)
-			} else {
-				Notify.status(.error)
-			}
-		} catch let error {
-			self.pipeline = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
-	var body: some View {
-		List {
-			if let pipeline {
-				switch pipeline {
-				case .success(let pipeline):
-					Section {
-						PipelineHeaderView(fullPath: fullPath, pipeline: pipeline) {
-							await reloadPipeline()
-						}
-					}
-
-					Section("Jobs") {
-						let stages = pipeline.stages?.nodes?.compactMap { $0 } ?? []
-						if stages.isEmpty {
-							NoContentView("No jobs", systemImage: Icons.flag.rawValue)
-						} else {
-							ForEach(stages, id: \.name) { stage in
-								let jobs = stage.jobs?.nodes?.compactMap { $0 } ?? []
-								if jobs.isNotEmpty {
-									Section(stage.name?.capitalized ?? "Stage") {
-										ForEach(jobs, id: \.id) { job in
-											PipelineJobView(fullPath: fullPath, job: job) {
-												await reloadPipeline()
-											}
+				Section("Jobs") {
+					let stages = pipeline.stages?.nodes?.compactMap { $0 } ?? []
+					if stages.isEmpty {
+						NoContentView("No jobs", systemImage: Icons.flag.rawValue)
+					} else {
+						ForEach(stages, id: \.name) { stage in
+							let jobs = stage.jobs?.nodes?.compactMap { $0 } ?? []
+							if jobs.isNotEmpty {
+								Section(stage.name?.capitalized ?? "Stage") {
+									ForEach(jobs, id: \.id) { job in
+										PipelineJobView(fullPath: fullPath, job: job) {
+											await loader.reload(PipelineDetailQuery(fullPath: fullPath, iid: iid))
 										}
 									}
 								}
 							}
 						}
 					}
-				case .failure(let error):
-					FailedView(error)
 				}
-			} else {
-				LoadingView("Loading pipeline", systemImage: Icons.flag.rawValue)
 			}
+
 		}.task {
-			loadPipeline()
+			await loader.load(PipelineDetailQuery(fullPath: fullPath, iid: iid))
 		}.refreshable {
-			await reloadPipeline()
+			await loader.reload(PipelineDetailQuery(fullPath: fullPath, iid: iid))
 		}.navigationTitle("Pipeline #\(iid)")
 			.navigationBarTitleDisplayMode(.inline)
 	}

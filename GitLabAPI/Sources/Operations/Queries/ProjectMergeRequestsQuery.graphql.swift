@@ -8,9 +8,11 @@ nonisolated public struct ProjectMergeRequestsQuery: GraphQLQuery {
   public static let operationName: String = "ProjectMergeRequests"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ProjectMergeRequests($fullPath: ID!, $state: MergeRequestState, $search: String, $draft: Boolean, $subscribed: SubscriptionStatus, $labels: [String], $milestone: String, $authorUsername: String, $assigneeUsername: String, $reviewerUsername: String, $createdAfter: Time, $createdBefore: Time, $updatedAfter: Time, $updatedBefore: Time) { project(fullPath: $fullPath) { __typename mergeRequestsEnabled mergeRequests( state: $state search: $search draft: $draft subscribed: $subscribed labelName: $labels milestoneTitle: $milestone authorUsername: $authorUsername assigneeUsername: $assigneeUsername reviewerUsername: $reviewerUsername createdAfter: $createdAfter createdBefore: $createdBefore updatedAfter: $updatedAfter updatedBefore: $updatedBefore ) { __typename nodes { __typename iid title reference(full: true) state upvotes downvotes userNotesCount author { __typename avatarUrl name username } createdAt webUrl } } } }"#
+      #"query ProjectMergeRequests($first: Int!, $after: String, $fullPath: ID!, $state: MergeRequestState, $search: String, $draft: Boolean, $subscribed: SubscriptionStatus, $labels: [String], $milestone: String, $authorUsername: String, $assigneeUsername: String, $reviewerUsername: String, $createdAfter: Time, $createdBefore: Time, $updatedAfter: Time, $updatedBefore: Time) { project(fullPath: $fullPath) { __typename mergeRequestsEnabled mergeRequests( first: $first after: $after state: $state search: $search draft: $draft subscribed: $subscribed labelName: $labels milestoneTitle: $milestone authorUsername: $authorUsername assigneeUsername: $assigneeUsername reviewerUsername: $reviewerUsername createdAfter: $createdAfter createdBefore: $createdBefore updatedAfter: $updatedAfter updatedBefore: $updatedBefore ) { __typename pageInfo { __typename hasNextPage endCursor } nodes { __typename iid title reference(full: true) state upvotes downvotes userNotesCount author { __typename avatarUrl name username } createdAt webUrl } } } }"#
     ))
 
+  public var first: Int32
+  public var after: GraphQLNullable<String>
   public var fullPath: ID
   public var state: GraphQLNullable<GraphQLEnum<MergeRequestState>>
   public var search: GraphQLNullable<String>
@@ -27,6 +29,8 @@ nonisolated public struct ProjectMergeRequestsQuery: GraphQLQuery {
   public var updatedBefore: GraphQLNullable<Time>
 
   public init(
+    first: Int32,
+    after: GraphQLNullable<String>,
     fullPath: ID,
     state: GraphQLNullable<GraphQLEnum<MergeRequestState>>,
     search: GraphQLNullable<String>,
@@ -42,6 +46,8 @@ nonisolated public struct ProjectMergeRequestsQuery: GraphQLQuery {
     updatedAfter: GraphQLNullable<Time>,
     updatedBefore: GraphQLNullable<Time>
   ) {
+    self.first = first
+    self.after = after
     self.fullPath = fullPath
     self.state = state
     self.search = search
@@ -59,6 +65,8 @@ nonisolated public struct ProjectMergeRequestsQuery: GraphQLQuery {
   }
 
   @_spi(Unsafe) public var __variables: Variables? { [
+    "first": first,
+    "after": after,
     "fullPath": fullPath,
     "state": state,
     "search": search,
@@ -102,6 +110,8 @@ nonisolated public struct ProjectMergeRequestsQuery: GraphQLQuery {
         .field("__typename", String.self),
         .field("mergeRequestsEnabled", Bool?.self),
         .field("mergeRequests", MergeRequests?.self, arguments: [
+          "first": .variable("first"),
+          "after": .variable("after"),
           "state": .variable("state"),
           "search": .variable("search"),
           "draft": .variable("draft"),
@@ -136,14 +146,40 @@ nonisolated public struct ProjectMergeRequestsQuery: GraphQLQuery {
         @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.MergeRequestConnection }
         @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
+          .field("pageInfo", PageInfo.self),
           .field("nodes", [Node?]?.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           ProjectMergeRequestsQuery.Data.Project.MergeRequests.self
         ] }
 
+        /// Information to aid in pagination.
+        public var pageInfo: PageInfo { __data["pageInfo"] }
         /// A list of nodes.
         public var nodes: [Node?]? { __data["nodes"] }
+
+        /// Project.MergeRequests.PageInfo
+        ///
+        /// Parent Type: `PageInfo`
+        nonisolated public struct PageInfo: GitLabAPI.SelectionSet {
+          @_spi(Unsafe) public let __data: DataDict
+          @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+          @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.PageInfo }
+          @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+            .field("__typename", String.self),
+            .field("hasNextPage", Bool.self),
+            .field("endCursor", String?.self),
+          ] }
+          @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+            ProjectMergeRequestsQuery.Data.Project.MergeRequests.PageInfo.self
+          ] }
+
+          /// When paginating forwards, are there more items?
+          public var hasNextPage: Bool { __data["hasNextPage"] }
+          /// When paginating forwards, the cursor to continue.
+          public var endCursor: String? { __data["endCursor"] }
+        }
 
         /// Project.MergeRequests.Node
         ///

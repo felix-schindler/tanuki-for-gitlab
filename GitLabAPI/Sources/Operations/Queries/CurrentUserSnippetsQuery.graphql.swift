@@ -8,10 +8,24 @@ nonisolated public struct CurrentUserSnippetsQuery: GraphQLQuery {
   public static let operationName: String = "CurrentUserSnippets"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query CurrentUserSnippets { currentUser { __typename snippets { __typename nodes { __typename id title visibilityLevel author { __typename avatarUrl name username } createdAt webUrl } } } }"#
+      #"query CurrentUserSnippets($first: Int!, $after: String) { currentUser { __typename snippets(first: $first, after: $after) { __typename pageInfo { __typename hasNextPage endCursor } nodes { __typename id title visibilityLevel author { __typename avatarUrl name username } createdAt webUrl } } } }"#
     ))
 
-  public init() {}
+  public var first: Int32
+  public var after: GraphQLNullable<String>
+
+  public init(
+    first: Int32,
+    after: GraphQLNullable<String>
+  ) {
+    self.first = first
+    self.after = after
+  }
+
+  @_spi(Unsafe) public var __variables: Variables? { [
+    "first": first,
+    "after": after
+  ] }
 
   nonisolated public struct Data: GitLabAPI.SelectionSet {
     @_spi(Unsafe) public let __data: DataDict
@@ -38,7 +52,10 @@ nonisolated public struct CurrentUserSnippetsQuery: GraphQLQuery {
       @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.CurrentUser }
       @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
-        .field("snippets", Snippets?.self),
+        .field("snippets", Snippets?.self, arguments: [
+          "first": .variable("first"),
+          "after": .variable("after")
+        ]),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
         CurrentUserSnippetsQuery.Data.CurrentUser.self
@@ -57,14 +74,40 @@ nonisolated public struct CurrentUserSnippetsQuery: GraphQLQuery {
         @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.SnippetConnection }
         @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
+          .field("pageInfo", PageInfo.self),
           .field("nodes", [Node?]?.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           CurrentUserSnippetsQuery.Data.CurrentUser.Snippets.self
         ] }
 
+        /// Information to aid in pagination.
+        public var pageInfo: PageInfo { __data["pageInfo"] }
         /// A list of nodes.
         public var nodes: [Node?]? { __data["nodes"] }
+
+        /// CurrentUser.Snippets.PageInfo
+        ///
+        /// Parent Type: `PageInfo`
+        nonisolated public struct PageInfo: GitLabAPI.SelectionSet {
+          @_spi(Unsafe) public let __data: DataDict
+          @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+          @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.PageInfo }
+          @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+            .field("__typename", String.self),
+            .field("hasNextPage", Bool.self),
+            .field("endCursor", String?.self),
+          ] }
+          @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+            CurrentUserSnippetsQuery.Data.CurrentUser.Snippets.PageInfo.self
+          ] }
+
+          /// When paginating forwards, are there more items?
+          public var hasNextPage: Bool { __data["hasNextPage"] }
+          /// When paginating forwards, the cursor to continue.
+          public var endCursor: String? { __data["endCursor"] }
+        }
 
         /// CurrentUser.Snippets.Node
         ///

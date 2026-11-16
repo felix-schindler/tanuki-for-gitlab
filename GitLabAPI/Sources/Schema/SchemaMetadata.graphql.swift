@@ -74,6 +74,7 @@ nonisolated public enum SchemaMetadata: ApolloAPI.SchemaMetadata {
     "Namespace": GitLabAPI.Objects.Namespace,
     "Note": GitLabAPI.Objects.Note,
     "NoteConnection": GitLabAPI.Objects.NoteConnection,
+    "PageInfo": GitLabAPI.Objects.PageInfo,
     "Pipeline": GitLabAPI.Objects.Pipeline,
     "PipelineConnection": GitLabAPI.Objects.PipelineConnection,
     "Project": GitLabAPI.Objects.Project,

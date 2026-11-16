@@ -10,13 +10,15 @@ import SwiftUI
 
 struct ProjectsLoader: View {
 	@State
-	private var projects: Result<[SmallProject?], Error>? = nil
+	private var pager = PagedQuery<ProjectsQuery, SmallProject>(
+		extract: { ($0.projects?.nodes ?? []).compactMap { $0 } },
+		key: { $0.fullPath },
+		hasNext: { $0.projects?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.projects?.pageInfo.endCursor }
+	)
 
 	@State
 	private var showFilters = false
-
-	@State
-	private var loadTask: Task<Void, Never>?
 
 	// MARK: - Filter
 	@State public private(set) var search: String? = nil
@@ -31,8 +33,10 @@ struct ProjectsLoader: View {
 	@State public private(set) var markedForDeletionOn: SwiftUI.Date? = nil
 	@State public private(set) var active: Bool? = nil
 
-	private var query: ProjectsQuery {
+	private func query(after: GraphQLNullable<String> = .none) -> ProjectsQuery {
 		return ProjectsQuery(
+			first: 50,
+			after: after,
 			membership: .some(self.membership),
 			search: GraphFilter.toFilter(self.search),
 			personal: .some(self.personal),
@@ -48,77 +52,20 @@ struct ProjectsLoader: View {
 		)
 	}
 
-	// MARK: - Data loading
-	private func loadProjects() {
-		self.loadTask?.cancel()
-		self.loadTask = Task {
-			do {
-				let responses = try Network.shared.apollo.fetch(
-					query: self.query,
-					cachePolicy: .cacheAndNetwork
-				)
-
-				for try await response in responses {
-					if Task.isCancelled { return }
-					if let projects = response.data?.projects?.nodes {
-						self.projects = .success(projects)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			} catch {
-				if !Task.isCancelled {
-					self.projects = .failure(error)
-					Notify.status(.error)
-				}
-			}
-		}
-	}
-
-	private func reloadProjects() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: self.query,
-				cachePolicy: .networkOnly
-			)
-
-			if let projects = response.data?.projects?.nodes {
-				self.projects = .success(projects)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.projects = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
 	public var body: some View {
-		List {
-			if let projects {
-				switch projects {
-				case .success(let projects):
-					if projects.isEmpty {
-						NoContentView("There are no projects", systemImage: Icons.projects.rawValue)
-					} else {
-						ForEach(projects, id: \.?.fullPath) { project in
-							if let project {
-								SmallProjectView(project)
-							}
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
-				}
-			} else {
-				LoadingView("Loading Projects", systemImage: Icons.projects.rawValue)
-			}
+		LoadableList(
+			pager.state,
+			hasMore: pager.hasMore,
+			emptyMessage: "There are no projects",
+			emptySystemImage: Icons.projects.rawValue,
+			loadingMessage: "Loading Projects",
+			loadingSystemImage: Icons.projects.rawValue,
+			onLoadMore: { await pager.loadMore() },
+			onRefresh: { await pager.refresh() }
+		) { project in
+			SmallProjectView(project)
 		}.debouncedLoad(search) {
-			loadProjects()
-		}.refreshable {
-			await reloadProjects()
+			await pager.start(query(), setCursor: { $0.after = .some($1) })
 		}.toolbar {
 			Button("Filter", systemImage: Icons.filter.rawValue) {
 				showFilters = true
@@ -217,7 +164,7 @@ struct ProjectsLoader: View {
 					}
 				}.toolbar {
 					AsyncButton("Apply filter", systemImage: "checkmark") {
-						await reloadProjects()
+						await pager.start(query(), setCursor: { $0.after = .some($1) })
 						self.showFilters = false
 					}
 				}

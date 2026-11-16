@@ -1,6 +1,10 @@
-query ProjectReleasesQuery($fullPath: ID!) {
+query ProjectReleasesQuery($first: Int!, $after: String, $fullPath: ID!) {
   project(fullPath: $fullPath) {
-    releases {
+    releases(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         id
         name

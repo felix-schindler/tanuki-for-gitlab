@@ -1,5 +1,5 @@
 {
-  "originHash" : "0f92fd925fa5076835a125ff75cbd1e64434bc7050047bc453c5e1d04eec6567",
+  "originHash" : "09acbeae5569e14857985b256e7b3ba21833aedec535d6980bcecc99346fbf0d",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "fe14c216aaea3d25274343e80ccb3015fc3fb0b0",
         "version" : "2.4.0"
+      }
+    },
+    {
+      "identity" : "apollo-ios-pagination",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apollographql/apollo-ios-pagination",
+      "state" : {
+        "revision" : "f9cafdc4da959dd98eee3254a7f612c067971f1d",
+        "version" : "1.0.0"
       }
     },
     {
@@ -44,6 +53,15 @@
       "state" : {
         "revision" : "e076836c247dc18a84a368eb36fb513017e7a519",
         "version" : "2.1.0"
+      }
+    },
+    {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-collections",
+      "state" : {
+        "revision" : "88754449ab766a739610b660e117762115fabc9c",
+        "version" : "1.7.6"
       }
     },
     {

@@ -1,6 +1,10 @@
-query UserSnippets($username: String!) {
+query UserSnippets($first: Int!, $after: String, $username: String!) {
   user(username:$username) {
-    snippets {
+    snippets(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         id
         title

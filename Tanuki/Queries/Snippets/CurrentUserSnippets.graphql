@@ -1,6 +1,10 @@
-query CurrentUserSnippets {
+query CurrentUserSnippets($first: Int!, $after: String) {
   currentUser {
-    snippets {
+    snippets(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         id
         title

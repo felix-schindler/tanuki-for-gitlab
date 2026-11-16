@@ -1,4 +1,6 @@
 query ProjectMergeRequests(
+  $first: Int!
+  $after: String
   $fullPath: ID!
   $state: MergeRequestState
   $search: String
@@ -18,6 +20,8 @@ query ProjectMergeRequests(
     mergeRequestsEnabled
 
     mergeRequests(
+      first: $first
+      after: $after
       state: $state
       search: $search
       draft: $draft
@@ -32,6 +36,10 @@ query ProjectMergeRequests(
       updatedAfter: $updatedAfter
       updatedBefore: $updatedBefore
     ) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         iid
         title

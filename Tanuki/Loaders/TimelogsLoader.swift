@@ -18,171 +18,141 @@ struct TimelogsLoader: View {
 	private let queryType: TimelogsQueryType
 
 	@State
-	private var timelogs: Result<[Timelog?], Error>? = nil
+	private var groupPager = PagedQuery<GroupTimelogsQuery, Timelog>(
+		extract: { ($0.group?.timelogs.nodes ?? []).compactMap { $0 } },
+		key: { $0.id },
+		hasNext: { $0.group?.timelogs.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.group?.timelogs.pageInfo.endCursor }
+	)
+
+	@State
+	private var userPager = PagedQuery<UserTimelogsQuery, Timelog>(
+		extract: { ($0.user?.timelogs?.nodes ?? []).compactMap { $0 } },
+		key: { $0.id },
+		hasNext: { $0.user?.timelogs?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.user?.timelogs?.pageInfo.endCursor }
+	)
 
 	init(fullPath: String, queryType: TimelogsQueryType) {
 		self.fullPath = fullPath
 		self.queryType = queryType
 	}
 
-	private func loadTimelogs() {
-		do {
-			switch self.queryType {
-			case .group:
-				let responses = try Network.shared.apollo.fetch(
-					query: GroupTimelogsQuery(fullPath: self.fullPath),
-					cachePolicy: .cacheAndNetwork)
-
-				Task {
-					for try await response in responses {
-						if let timelogs = response.data?.group?.timelogs.nodes {
-							self.timelogs = .success(timelogs)
-						} else if let errors = response.errors {
-							for error in errors {
-								Notify.status(.error, error.localizedDescription)
-							}
-						}
-					}
-				}
-				break
-			case .user:
-				let responses = try Network.shared.apollo.fetch(
-					query: UserTimelogsQuery(username: self.fullPath), cachePolicy: .cacheAndNetwork
-				)
-
-				Task {
-					for try await response in responses {
-						if let timelogs = response.data?.user?.timelogs?.nodes {
-							self.timelogs = .success(timelogs)
-						} else if let errors = response.errors {
-							for error in errors {
-								Notify.status(.error, error.localizedDescription)
-							}
-						}
-					}
-				}
-				break
-			}
-		} catch let error {
-			self.timelogs = .failure(error)
-			Notify.status(.error)
+	private var state: Loadable<[Timelog]> {
+		switch queryType {
+		case .group: groupPager.state
+		case .user: userPager.state
 		}
 	}
 
-	private func reloadTimelogs() async {
-		do {
-			switch self.queryType {
-			case .group:
-				let response = try await Network.shared.apollo.fetch(
-					query: GroupTimelogsQuery(fullPath: self.fullPath), cachePolicy: .networkOnly)
+	private var hasMore: Bool {
+		switch queryType {
+		case .group: groupPager.hasMore
+		case .user: userPager.hasMore
+		}
+	}
 
-				if let timelogs = response.data?.group?.timelogs.nodes {
-					self.timelogs = .success(timelogs)
-				}
+	private func load() async {
+		switch queryType {
+		case .group:
+			await groupPager.start(
+				GroupTimelogsQuery(first: 50, after: .none, fullPath: fullPath),
+				setCursor: { $0.after = .some($1) })
+		case .user:
+			await userPager.start(
+				UserTimelogsQuery(first: 50, after: .none, username: fullPath),
+				setCursor: { $0.after = .some($1) })
+		}
+	}
 
-				break
-			case .user:
-				let response = try await Network.shared.apollo.fetch(
-					query: UserTimelogsQuery(username: self.fullPath), cachePolicy: .networkOnly)
+	private func refresh() async {
+		switch queryType {
+		case .group: await groupPager.refresh()
+		case .user: await userPager.refresh()
+		}
+	}
 
-				if let timelogs = response.data?.user?.timelogs?.nodes {
-					self.timelogs = .success(timelogs)
-				}
-
-				break
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.timelogs = .failure(error)
-			Notify.status(.error)
+	private func loadMore() async {
+		switch queryType {
+		case .group: await groupPager.loadMore()
+		case .user: await userPager.loadMore()
 		}
 	}
 
 	public var body: some View {
-		List {
-			if let timelogs {
-				switch timelogs {
-				case .success(let timelogs):
-					if timelogs.isEmpty {
-						NoContentView("There are no timelogs", systemImage: Icons.timeTracking.rawValue)
-					} else {
-						ForEach(timelogs, id: \.?.id) { maybeLog in
-							if let log = maybeLog {
-								VStack(alignment: .leading) {
+		LoadableList(
+			state,
+			hasMore: hasMore,
+			emptyMessage: "There are no timelogs",
+			emptySystemImage: Icons.timeTracking.rawValue,
+			loadingMessage: "Loading Timelogs",
+			loadingSystemImage: Icons.timeTracking.rawValue,
+			onLoadMore: { await loadMore() },
+			onRefresh: { await refresh() }
+		) { log in
+			VStack(alignment: .leading) {
 
-									ScrollView(.horizontal) {
-										HStack {
-											NavigationLink(
-												destination: ProjectLoader(fullPath: log._project.fullPath),
-												label: {
-													Label(
-														log._project.nameWithNamespace,
-														systemImage: Icons.projects.rawValue)
-												}
-											)
-											.controlSize(.mini)
-											.buttonBorderShape(.capsule)
-											.adaptiveButtonStyle()
-
-											AuthorView(log._user)
-
-											if let spentAt = log.spentAt {
-												PillView(Date.fromToString(spentAt), icon: Icons.clock.rawValue)
-											}
-
-											if let issueIid = log._issue?.iid {
-												NavigationLink(
-													destination: IssueLoader(
-														fullPath: log._project.fullPath,
-														iid: issueIid
-													),
-													label: {
-														Label("#\(issueIid)", systemImage: Icons.issues.rawValue)
-													}
-												)
-												.controlSize(.mini)
-												.buttonBorderShape(.capsule)
-												.adaptiveButtonStyle()
-											}
-
-											if let mergeIid = log._mergeRequest?.iid {
-												NavigationLink(
-													destination: MergeRequestLoader(
-														fullPath: log._project.fullPath,
-														iid: mergeIid
-													),
-													label: {
-														Label("!\(mergeIid)", systemImage: "arrow.triangle.pull")
-													}
-												)
-												.controlSize(.mini)
-												.buttonBorderShape(.capsule)
-												.adaptiveButtonStyle()
-											}
-										}.font(.footnote)
-									}
-
-									PillView("\(log.timeSpent / 60) minutes", icon: Icons.clock.rawValue)
-										.font(.footnote)
-
-									if let summary = log.summary, summary.isNotEmpty {
-										Markdown(summary)
-									}
-								}
+				ScrollView(.horizontal) {
+					HStack {
+						NavigationLink(
+							destination: ProjectLoader(fullPath: log._project.fullPath),
+							label: {
+								Label(
+									log._project.nameWithNamespace,
+									systemImage: Icons.projects.rawValue)
 							}
+						)
+						.controlSize(.mini)
+						.buttonBorderShape(.capsule)
+						.adaptiveButtonStyle()
+
+						AuthorView(log._user)
+
+						if let spentAt = log.spentAt {
+							PillView(Date.fromToString(spentAt), icon: Icons.clock.rawValue)
 						}
-					}
-				case .failure(let error):
-					FailedView(error)
+
+						if let issueIid = log._issue?.iid {
+							NavigationLink(
+								destination: IssueLoader(
+									fullPath: log._project.fullPath,
+									iid: issueIid
+								),
+								label: {
+									Label("#\(issueIid)", systemImage: Icons.issues.rawValue)
+								}
+							)
+							.controlSize(.mini)
+							.buttonBorderShape(.capsule)
+							.adaptiveButtonStyle()
+						}
+
+						if let mergeIid = log._mergeRequest?.iid {
+							NavigationLink(
+								destination: MergeRequestLoader(
+									fullPath: log._project.fullPath,
+									iid: mergeIid
+								),
+								label: {
+									Label("!\(mergeIid)", systemImage: "arrow.triangle.pull")
+								}
+							)
+							.controlSize(.mini)
+							.buttonBorderShape(.capsule)
+							.adaptiveButtonStyle()
+						}
+					}.font(.footnote)
 				}
-			} else {
-				LoadingView("Loading Timelogs", systemImage: Icons.timeTracking.rawValue)
+
+				PillView("\(log.timeSpent / 60) minutes", icon: Icons.clock.rawValue)
+					.font(.footnote)
+
+				if let summary = log.summary, summary.isNotEmpty {
+					Markdown(summary)
+				}
 			}
 		}.task {
-			loadTimelogs()
-		}.refreshable {
-			await reloadTimelogs()
+			await load()
 		}.navigationTitle("Timelogs")
 	}
 }

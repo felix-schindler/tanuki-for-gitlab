@@ -19,67 +19,83 @@ struct TagsLoader: View {
 	private let projectId: Int
 
 	@State
-	private var tags: Result<[Tag], Error>? = nil
+	private var state = Loadable<[Tag]>()
+
+	@State
+	private var pager = RestPage()
 
 	init(_ projectId: Int) {
 		self.projectId = projectId
 	}
 
-	private func loadTags() async {
+	private func load(reset: Bool) async {
+		if reset {
+			pager.reset()
+			state.isLoading = true
+		} else {
+			state.isLoadingMore = true
+		}
+
+		defer {
+			state.isLoading = false
+			state.isLoadingMore = false
+		}
+
 		do {
-			let temp = try await API.get(
+			let tags = try await API.get(
 				type: [Tag].self,
-				endpoint: "projects/\(projectId)/repository/tags"
+				endpoint: "projects/\(projectId)/repository/tags",
+				query: pager.query
 			)
 
-			self.tags = .success(temp)
-		} catch let error {
-			self.tags = .failure(error)
+			if Task.isCancelled { return }
+			state.value = (state.value ?? []) + tags
+			state.error = nil
+			pager.advance(tags.count)
+		} catch {
+			if Task.isCancelled { return }
+			state.error = error
 			Notify.status(.error)
 		}
 	}
 
+	private func loadMore() async {
+		guard pager.hasMore, !state.isLoading, !state.isLoadingMore else { return }
+		await load(reset: false)
+	}
+
 	public var body: some View {
-		List {
-			if let tags {
-				switch tags {
-				case .success(let tags):
-					if tags.isEmpty {
-						NoContentView(
-							"You'll see your tags after you pushed them",
-							systemImage: Icons.code.rawValue)
-					} else {
-						ForEach(tags, id: \.name) { tag in
-							VStack(alignment: .leading) {
-								Text(tag.name.emojized())
-									.fontWeight(.medium)
+		LoadableList(
+			state,
+			hasMore: pager.hasMore,
+			emptyMessage: "You'll see your tags after you pushed them",
+			emptySystemImage: Icons.code.rawValue,
+			loadingMessage: "Loading Tags",
+			loadingSystemImage: Icons.code.rawValue,
+			onLoadMore: { await loadMore() },
+			onRefresh: { await load(reset: true) },
+			row: { tag in
+				VStack(alignment: .leading) {
+					Text(tag.name.emojized())
+						.fontWeight(.medium)
 
-								if tag.message.isNotEmpty {
-									InlineMarkdown(tag.message)
-								}
-
-								ScrollView(.horizontal) {
-									HStack {
-										PillView(tag.commit.shortId)
-											.font(.system(.footnote, design: .monospaced))
-										PillView(tag.commit.authoredDate.toString(), icon: Icons.clock.rawValue)
-									}
-								}.font(.footnote)
-								InlineMarkdown(tag.commit.title.emojized())
-									.font(.footnote)
-							}
-						}
+					if tag.message.isNotEmpty {
+						InlineMarkdown(tag.message)
 					}
-				case .failure(let error):
-					FailedView(error)
+
+					ScrollView(.horizontal) {
+						HStack {
+							PillView(tag.commit.shortId)
+								.font(.system(.footnote, design: .monospaced))
+							PillView(tag.commit.authoredDate.toString(), icon: Icons.clock.rawValue)
+						}
+					}.font(.footnote)
+					InlineMarkdown(tag.commit.title.emojized())
+						.font(.footnote)
 				}
-			} else {
-				LoadingView("Loading Tags", systemImage: Icons.code.rawValue)
 			}
-		}.task {
-			await loadTags()
-		}.refreshable {
-			await loadTags()
+		).task {
+			await load(reset: true)
 		}.toolbar {
 			NavigationLink(destination: NewTagView(projectId: projectId)) {
 				Label("New tag", systemImage: "plus")

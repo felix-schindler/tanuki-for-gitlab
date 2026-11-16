@@ -18,17 +18,21 @@ struct GroupMergeLoader: View {
 	private var showFilters = false
 
 	@State
-	private var loadTask: Task<Void, Never>?
-
-	@State
-	private var mergeRequests: Result<[SmallMergeRequest?], Error>? = nil
+	private var pager = PagedQuery<GroupMergeRequestsQuery, SmallMergeRequest>(
+		extract: { ($0.group?.mergeRequests?.nodes ?? []).compactMap { $0 } },
+		key: { $0.reference },
+		hasNext: { $0.group?.mergeRequests?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.group?.mergeRequests?.pageInfo.endCursor }
+	)
 
 	init(fullPath: String) {
 		self.fullPath = fullPath
 	}
 
-	private var query: GroupMergeRequestsQuery {
+	private func query(after: GraphQLNullable<String> = .none) -> GroupMergeRequestsQuery {
 		return GroupMergeRequestsQuery(
+			first: 50,
+			after: after,
 			fullPath: self.fullPath,
 			state: GraphFilter.toFilterEnum(self.filter.state),
 			search: GraphFilter.toFilter(self.filter.search),
@@ -47,79 +51,22 @@ struct GroupMergeLoader: View {
 		)
 	}
 
-	private func loadMergeRequests() {
-		self.loadTask?.cancel()
-		self.loadTask = Task {
-			do {
-				let responses = try Network.shared.apollo.fetch(
-					query: self.query,
-					cachePolicy: .cacheAndNetwork
-				)
-
-				for try await response in responses {
-					if Task.isCancelled { return }
-					if let mrs = response.data?.group?.mergeRequests?.nodes {
-						self.mergeRequests = .success(mrs)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			} catch {
-				if !Task.isCancelled {
-					self.mergeRequests = .failure(error)
-					Notify.status(.error)
-				}
-			}
-		}
-	}
-
-	private func reloadMergeRequests() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: self.query,
-				cachePolicy: .networkOnly
-			)
-
-			if let mrs = response.data?.group?.mergeRequests?.nodes {
-				self.mergeRequests = .success(mrs)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.mergeRequests = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
 	public var body: some View {
-		List {
-			if let mergeRequests {
-				switch mergeRequests {
-				case .success(let mrs):
-					if mrs.isEmpty {
-						NoContentView("There are no Merge Requests", image: Images.mergeRequest.rawValue)
-					} else {
-						ForEach(mrs, id: \.?.reference) { maybeMerge in
-							if let mr = maybeMerge,
-								let fullPath = mr.reference.split(separator: "!").first
-							{
-								SmallMergeView(String(fullPath), mr)
-							}
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
-				}
-			} else {
-				LoadingView(
-					"Loading Merge Requests", image: Images.mergeRequest.rawValue, color: .blue)
+		LoadableList(
+			pager.state,
+			hasMore: pager.hasMore,
+			emptyMessage: "There are no Merge Requests",
+			emptySystemImage: Images.mergeRequest.rawValue,
+			loadingMessage: "Loading Merge Requests",
+			loadingSystemImage: Images.mergeRequest.rawValue,
+			onLoadMore: { await pager.loadMore() },
+			onRefresh: { await pager.refresh() }
+		) { mr in
+			if let fullPath = mr.reference.split(separator: "!").first {
+				SmallMergeView(String(fullPath), mr)
 			}
 		}.debouncedLoad(filter) {
-			loadMergeRequests()
-		}.refreshable {
-			await reloadMergeRequests()
+			await pager.start(query(), setCursor: { $0.after = .some($1) })
 		}.toolbar {
 			Button("Filter", systemImage: Icons.filter.rawValue) {
 				showFilters = true

@@ -8,16 +8,28 @@ nonisolated public struct ProjectPipelinesQuery: GraphQLQuery {
   public static let operationName: String = "ProjectPipelines"
   public static let operationDocument: ApolloAPI.OperationDocument = .init(
     definition: .init(
-      #"query ProjectPipelines($fullPath: ID!) { project(fullPath: $fullPath) { __typename pipelines { __typename nodes { __typename id iid name user { __typename avatarUrl name username } ref commit { __typename shortId } source status createdAt } } } }"#
+      #"query ProjectPipelines($first: Int!, $after: String, $fullPath: ID!) { project(fullPath: $fullPath) { __typename pipelines(first: $first, after: $after) { __typename pageInfo { __typename hasNextPage endCursor } nodes { __typename id iid name user { __typename avatarUrl name username } ref commit { __typename shortId } source status createdAt } } } }"#
     ))
 
+  public var first: Int32
+  public var after: GraphQLNullable<String>
   public var fullPath: ID
 
-  public init(fullPath: ID) {
+  public init(
+    first: Int32,
+    after: GraphQLNullable<String>,
+    fullPath: ID
+  ) {
+    self.first = first
+    self.after = after
     self.fullPath = fullPath
   }
 
-  @_spi(Unsafe) public var __variables: Variables? { ["fullPath": fullPath] }
+  @_spi(Unsafe) public var __variables: Variables? { [
+    "first": first,
+    "after": after,
+    "fullPath": fullPath
+  ] }
 
   nonisolated public struct Data: GitLabAPI.SelectionSet {
     @_spi(Unsafe) public let __data: DataDict
@@ -44,7 +56,10 @@ nonisolated public struct ProjectPipelinesQuery: GraphQLQuery {
       @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.Project }
       @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
         .field("__typename", String.self),
-        .field("pipelines", Pipelines?.self),
+        .field("pipelines", Pipelines?.self, arguments: [
+          "first": .variable("first"),
+          "after": .variable("after")
+        ]),
       ] }
       @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
         ProjectPipelinesQuery.Data.Project.self
@@ -63,14 +78,40 @@ nonisolated public struct ProjectPipelinesQuery: GraphQLQuery {
         @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.PipelineConnection }
         @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
+          .field("pageInfo", PageInfo.self),
           .field("nodes", [Node?]?.self),
         ] }
         @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           ProjectPipelinesQuery.Data.Project.Pipelines.self
         ] }
 
+        /// Information to aid in pagination.
+        public var pageInfo: PageInfo { __data["pageInfo"] }
         /// A list of nodes.
         public var nodes: [Node?]? { __data["nodes"] }
+
+        /// Project.Pipelines.PageInfo
+        ///
+        /// Parent Type: `PageInfo`
+        nonisolated public struct PageInfo: GitLabAPI.SelectionSet {
+          @_spi(Unsafe) public let __data: DataDict
+          @_spi(Unsafe) public init(_dataDict: DataDict) { __data = _dataDict }
+
+          @_spi(Execution) public static var __parentType: any ApolloAPI.ParentType { GitLabAPI.Objects.PageInfo }
+          @_spi(Execution) public static var __selections: [ApolloAPI.Selection] { [
+            .field("__typename", String.self),
+            .field("hasNextPage", Bool.self),
+            .field("endCursor", String?.self),
+          ] }
+          @_spi(Execution) public static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+            ProjectPipelinesQuery.Data.Project.Pipelines.PageInfo.self
+          ] }
+
+          /// When paginating forwards, are there more items?
+          public var hasNextPage: Bool { __data["hasNextPage"] }
+          /// When paginating forwards, the cursor to continue.
+          public var endCursor: String? { __data["endCursor"] }
+        }
 
         /// Project.Pipelines.Node
         ///

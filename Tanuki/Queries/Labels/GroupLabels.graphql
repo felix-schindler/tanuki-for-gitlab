@@ -1,6 +1,10 @@
-query GroupLabels($fullPath: ID!) {
+query GroupLabels($first: Int!, $after: String, $fullPath: ID!) {
   group(fullPath: $fullPath) {
-    labels {
+    labels(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         id
         title

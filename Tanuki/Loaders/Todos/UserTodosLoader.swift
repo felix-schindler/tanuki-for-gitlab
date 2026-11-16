@@ -12,80 +12,38 @@ struct UserTodosLoader: View {
 	private let username: String
 
 	@State
-	private var todos: Result<[Todo?], Error>? = nil
+	private var pager = PagedQuery<UserTodosQuery, Todo>(
+		extract: { ($0.user?.todos?.nodes ?? []).compactMap { $0 } },
+		key: { $0.id },
+		hasNext: { $0.user?.todos?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.user?.todos?.pageInfo.endCursor }
+	)
 
 	init(username: String) {
 		self.username = username
 	}
 
-	private func loadTodos() {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: UserTodosQuery(username: self.username), cachePolicy: .cacheAndNetwork)
-
-			Task {
-				for try await response in responses {
-					if let todos = response.data?.user?.todos?.nodes {
-						self.todos = .success(todos)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			}
-		} catch let error {
-			todos = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
-	public func reloadTodos() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: UserTodosQuery(username: self.username), cachePolicy: .networkOnly)
-
-			if let todos = response.data?.user?.todos?.nodes {
-				self.todos = .success(todos)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			todos = .failure(error)
-			Notify.status(.error)
-		}
+	private func query(after: GraphQLNullable<String> = .none) -> UserTodosQuery {
+		UserTodosQuery(first: 50, after: after, username: username)
 	}
 
 	public var body: some View {
-		List {
-			if let todos {
-				switch todos {
-				case .success(let todos):
-					if todos.isEmpty {
-						NoContentView(
-							"All caught up!",
-							systemImage: Icons.todos.rawValue,
-							description: "There are no Todos"
-						)
-					} else {
-						ForEach(todos, id: \.?.id) { maybeTodo in
-							if let todo = maybeTodo {
-								TodoView(todo) {
-									await reloadTodos()
-								}
-							}
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
-				}
-			} else {
-				LoadingView("Loading Todos", systemImage: Icons.todos.rawValue)
+		LoadableList(
+			pager.state,
+			hasMore: pager.hasMore,
+			emptyMessage: "All caught up!",
+			emptySystemImage: Icons.todos.rawValue,
+			emptyDescription: "There are no Todos",
+			loadingMessage: "Loading Todos",
+			loadingSystemImage: Icons.todos.rawValue,
+			onLoadMore: { await pager.loadMore() },
+			onRefresh: { await pager.refresh() }
+		) { todo in
+			TodoView(todo) {
+				await pager.refresh()
 			}
 		}.task {
-			loadTodos()
-		}.refreshable {
-			await reloadTodos()
+			await pager.start(query(), setCursor: { $0.after = .some($1) })
 		}.navigationTitle("Todos")
 	}
 }

@@ -1,5 +1,9 @@
-query Users($search: String, $admins: Boolean, $active: Boolean, $humans: Boolean) {
-  users(search: $search, admins: $admins, active: $active, humans: $humans) {
+query Users($first: Int!, $after: String, $search: String, $admins: Boolean, $active: Boolean, $humans: Boolean) {
+  users(search: $search, admins: $admins, active: $active, humans: $humans, first: $first, after: $after) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
     nodes {
       avatarUrl
       name

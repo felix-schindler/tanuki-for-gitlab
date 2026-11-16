@@ -15,71 +15,13 @@ struct MergeRequestLoader: View {
 	private let iid: String
 
 	@State
-	private var project: Result<GitLabAPI.MergeRequestQuery.Data.Project, Error>? = nil
+	private var loader = ApolloLoader<MergeRequestQuery, MergeRequestQuery.Data.Project> {
+		$0.project
+	}
 
 	init(fullPath: String, iid: String) {
 		self.fullPath = fullPath
 		self.iid = iid
-	}
-
-	private func handleGraphQLErrors(_ errors: [any Error]?) {
-		guard let errors, !errors.isEmpty else { return }
-
-		let messages = errors.map(\.localizedDescription)
-		Notify.status(
-			.error, "Couldn't load merge request !\(iid)", messages.first,
-			systemImage: "exclamationmark.triangle")
-
-		if project == nil {
-			self.project = .failure(
-				ProjectLoadError(fullPath: "\(fullPath) !\(iid)", messages: messages))
-		}
-	}
-
-	private func loadMergeRequest() {
-		do {
-			let responses = try Network.shared.apollo.fetch(
-				query: MergeRequestQuery(fullPath: self.fullPath, iid: self.iid),
-				cachePolicy: .cacheAndNetwork
-			)
-
-			Task {
-				for try await response in responses {
-					if let project = response.data?.project {
-						self.project = .success(project)
-					}
-					self.handleGraphQLErrors(response.errors)
-				}
-			}
-		} catch let error {
-			self.project = .failure(error)
-			Notify.status(.error, "Couldn't load merge request !\(iid)", error.localizedDescription)
-		}
-	}
-
-	private func reloadMergeRequest() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: MergeRequestQuery(fullPath: self.fullPath, iid: self.iid),
-				cachePolicy: .networkOnly
-			)
-
-			if let project = response.data?.project {
-				self.project = .success(project)
-				Notify.status(.success)
-			} else {
-				handleGraphQLErrors(response.errors)
-				if response.errors?.isEmpty ?? true {
-					self.project = .failure(
-						ProjectLoadError(
-							fullPath: "\(fullPath) !\(iid)",
-							messages: ["GitLab returned no merge request."]))
-				}
-			}
-		} catch let error {
-			self.project = .failure(error)
-			Notify.status(.error, "Couldn't load merge request !\(iid)", error.localizedDescription)
-		}
 	}
 
 	private func approve(_ projectId: Int) async {
@@ -87,7 +29,7 @@ struct MergeRequestLoader: View {
 			_ = try await API.req(
 				type: RestAPIMergeRequest.self, method: .post,
 				endpoint: "projects/\(projectId)/merge_requests/\(self.iid)/approve")
-			await reloadMergeRequest()
+			await loader.reload(MergeRequestQuery(fullPath: fullPath, iid: iid))
 		} catch let error {
 			Notify.status(.error, "Failed to approve", error.localizedDescription)
 		}
@@ -98,7 +40,7 @@ struct MergeRequestLoader: View {
 			_ = try await API.req(
 				type: RestAPIMergeRequest.self, method: .post,
 				endpoint: "projects/\(projectId)/merge_requests/\(self.iid)/unapprove")
-			await reloadMergeRequest()
+			await loader.reload(MergeRequestQuery(fullPath: fullPath, iid: iid))
 		} catch let error {
 			Notify.status(.error, "Failed to unapprove", error.localizedDescription)
 		}
@@ -115,7 +57,7 @@ struct MergeRequestLoader: View {
 				endpoint: "projects/\(projectId)/merge_requests/\(self.iid)",
 				body: body
 			)
-			await reloadMergeRequest()
+			await loader.reload(MergeRequestQuery(fullPath: fullPath, iid: iid))
 		} catch let error {
 			Notify.status(.error, "Failed to change state", error.localizedDescription)
 		}
@@ -150,7 +92,7 @@ struct MergeRequestLoader: View {
 				endpoint: "projects/\(projectId)/merge_requests/\(self.iid)",
 				body: body
 			)
-			await reloadMergeRequest()
+			await loader.reload(MergeRequestQuery(fullPath: fullPath, iid: iid))
 		} catch let error {
 			Notify.status(.error, "Failed to change draft state", error.localizedDescription)
 		}
@@ -175,76 +117,68 @@ struct MergeRequestLoader: View {
 			Notify.status(
 				.success, "Rebase started", "The branch is rebased in the background.",
 				systemImage: "arrow.triangle.2.circlepath")
-			await reloadMergeRequest()
+			await loader.reload(MergeRequestQuery(fullPath: fullPath, iid: iid))
 		} catch let error {
 			Notify.status(.error, "Failed to rebase", error.localizedDescription)
 		}
 	}
 
 	public var body: some View {
+		let state = loader.state
+
 		List {
-			if let project {
-				switch project {
-				case .success(let project):
-					if let mr = project.mergeRequest {
-						VStack(alignment: .leading) {
-							HStack(spacing: 5) {
-								if let url = URL.fromAvatar(project.avatarUrl) {
-									AvatarImage(url, size: .tiny)
-								}
-								ScrollView(.horizontal) {
-									Text(mr.reference)
-										.foregroundStyle(.secondary)
-								}
-								Spacer()
-								Text(Date.fromToString(mr.createdAt))
+			if state.isInitialLoading {
+				LoadingView("Loading Merge Request !\(self.iid)", image: Images.mergeRequest.rawValue, color: .blue)
+			} else if state.isColdFailure, let error = state.error {
+				FailedView(error)
+			} else if let project = state.value {
+				if let mr = project.mergeRequest {
+					VStack(alignment: .leading) {
+						HStack(spacing: 5) {
+							if let url = URL.fromAvatar(project.avatarUrl) {
+								AvatarImage(url, size: .tiny)
 							}
-							.font(.footnote)
+							ScrollView(.horizontal) {
+								Text(mr.reference)
+									.foregroundStyle(.secondary)
+							}
+							Spacer()
+							Text(Date.fromToString(mr.createdAt))
+						}
+						.font(.footnote)
+						.padding(.bottom, 1)
+
+						Text(mr.title.emojized())
+							.font(.title3)
+							.fontWeight(.medium)
 							.padding(.bottom, 1)
 
-							Text(mr.title.emojized())
-								.font(.title3)
-								.fontWeight(.medium)
-								.padding(.bottom, 1)
+						ScrollView(.horizontal) {
+							HStack(spacing: 5) {
+								if let author = mr._author {
+									ScrollView(.horizontal) {
+										AuthorView(author)
+									}
+								}
 
-							ScrollView(.horizontal) {
-								HStack(spacing: 5) {
-									if let author = mr._author {
-										ScrollView(.horizontal) {
-											AuthorView(author)
+								if let sourceProject = mr.sourceProject,
+									sourceProject.fullPath != self.fullPath
+								{
+									NavigationLink(
+										destination: ProjectLoader(
+											fullPath: sourceProject.fullPath
+										),
+										label: {
+											Text("\(sourceProject.fullPath)/\(mr.sourceBranch)")
+												.font(.system(.footnote, design: .monospaced))
 										}
-									}
-
-									if let sourceProject = mr.sourceProject,
-										sourceProject.fullPath != self.fullPath
-									{
-										NavigationLink(
-											destination: ProjectLoader(
-												fullPath: sourceProject.fullPath
-											),
-											label: {
-												Text("\(sourceProject.fullPath)/\(mr.sourceBranch)")
-													.font(.system(.footnote, design: .monospaced))
-											}
-										)
-										.controlSize(.mini)
-										.buttonBorderShape(.capsule)
-										.adaptiveButtonStyle()
-									} else {
-										PillView(
-											mr.sourceBranch,
-											bgColor: .blue,
-											fgColor: .white,
-											cornerRadius: 5
-										)
-										.font(.system(.footnote, design: .monospaced))
-										.textSelection(.enabled)
-									}
-
-									Image(systemName: "arrow.right")
-
+									)
+									.controlSize(.mini)
+									.buttonBorderShape(.capsule)
+									.adaptiveButtonStyle()
+								} else {
 									PillView(
-										mr.targetBranch,
+										mr.sourceBranch,
 										bgColor: .blue,
 										fgColor: .white,
 										cornerRadius: 5
@@ -252,361 +186,369 @@ struct MergeRequestLoader: View {
 									.font(.system(.footnote, design: .monospaced))
 									.textSelection(.enabled)
 								}
-							}.font(.footnote)
 
-							if let description = mr.description, description.isNotEmpty {
-								Markdown(description)
-							}
+								Image(systemName: "arrow.right")
 
-							HStack {
-								VotePillsView(
-									projectId: project.id.toIntId(),
-									iid: self.iid,
-									type: .mergeRequest,
-									upvotes: mr.upvotes,
-									downvotes: mr.downvotes
-								) {
-									await reloadMergeRequest()
-								}
+								PillView(
+									mr.targetBranch,
+									bgColor: .blue,
+									fgColor: .white,
+									cornerRadius: 5
+								)
+								.font(.system(.footnote, design: .monospaced))
+								.textSelection(.enabled)
 							}
-							.font(.footnote)
+						}.font(.footnote)
+
+						if let description = mr.description, description.isNotEmpty {
+							Markdown(description)
 						}
 
-						Section("Details") {
-							let assgineeCount = mr.assignees?.nodes?.count ?? 0
-							DisclosureGroup(
-								content: {
-									if assgineeCount > 0 {
-										ForEach(mr.assignees!.nodes!, id: \.self) {
-											maybeUser in
-											if let user = maybeUser {
-												NavigationLink(
-													destination: UserLoader(
-														username: user.username),
-													label: {
-														HStack {
-															if let url =
-																URL.fromAvatar(
-																	user.avatarUrl)
-															{
-																AvatarImage(
-																	url,
-																	size: .small)
-															}
-															Text(user.username)
-														}
-													}
-												)
-											}
-										}
-									} else {
-										Text("There are no assignees")
-									}
-								},
-								label: {
-									Label(
-										title: {
-											HStack {
-												Text("Assignees")
-												Spacer()
-												Text("\(assgineeCount)")
-											}
-										},
-										icon: {
-											Image(systemName: "person.crop.circle")
-										})
-								}
-							)
+						HStack {
+							VotePillsView(
+								projectId: project.id.toIntId(),
+								iid: self.iid,
+								type: .mergeRequest,
+								upvotes: mr.upvotes,
+								downvotes: mr.downvotes
+							) {
+								await loader.reload(MergeRequestQuery(fullPath: fullPath, iid: iid))
+							}
+						}
+						.font(.footnote)
+					}
 
-							let reviewerCount = mr.reviewers?.nodes?.count ?? 0
-							DisclosureGroup(
-								content: {
-									if reviewerCount > 0 {
-										ForEach(mr.reviewers!.nodes!, id: \.self) {
-											maybeUser in
-											if let user = maybeUser {
-												NavigationLink(
-													destination: UserLoader(
-														username: user.username),
-													label: {
-														HStack {
-															if let url = URL.fromAvatar(user.avatarUrl) {
-																AvatarImage(url, size: .small)
-															}
-															Text(user.username)
+					Section("Details") {
+						let assgineeCount = mr.assignees?.nodes?.count ?? 0
+						DisclosureGroup(
+							content: {
+								if assgineeCount > 0 {
+									ForEach(mr.assignees!.nodes!, id: \.self) {
+										maybeUser in
+										if let user = maybeUser {
+											NavigationLink(
+												destination: UserLoader(
+													username: user.username),
+												label: {
+													HStack {
+														if let url =
+															URL.fromAvatar(
+																user.avatarUrl)
+														{
+															AvatarImage(
+																url,
+																size: .small)
 														}
-													}
-												)
-											}
-										}
-									} else {
-										Text("There are no reviewers")
-									}
-								},
-								label: {
-									Label(
-										title: {
-											HStack {
-												Text("Reviewers")
-												Spacer()
-												Text("\(reviewerCount)")
-											}
-										},
-										icon: {
-											Image(
-												systemName:
-													"person.line.dotted.person.fill"
-											)
-										})
-								}
-							)
-
-							if let labels = mr.labels?.nodes, labels.isNotEmpty {
-								Label(
-									title: {
-										ScrollView(.horizontal) {
-											HStack {
-												ForEach(labels, id: \.?.title) { label in
-													if let label {
-														PillView(
-															label.title,
-															bgColor: Color(hex: label.color),
-															fgColor: Color(hex: label.textColor)
-														)
+														Text(user.username)
 													}
 												}
-											}
+											)
 										}
-									},
-									icon: {
-										Image(systemName: Icons.tag.rawValue)
 									}
-								)
-							}
-
-							if let milestone = mr.milestone {
-								Label(
-									milestone.title,
-									systemImage: Icons.milestones.rawValue
-								)
-								.labelStyle(TrailingIconLabelStyle())
-							}
-
-							if mr.humanTimeEstimate != nil
-								|| mr.humanTotalTimeSpent != nil
-							{
+								} else {
+									Text("There are no assignees")
+								}
+							},
+							label: {
 								Label(
 									title: {
 										HStack {
-											Text("Estimate: \(mr.humanTimeEstimate ?? "none")")
+											Text("Assignees")
 											Spacer()
-											Text("Spent: \(mr.humanTotalTimeSpent ?? "none")")
+											Text("\(assgineeCount)")
 										}
 									},
 									icon: {
-										Image(systemName: Icons.timeTracking.rawValue)
+										Image(systemName: "person.crop.circle")
+									})
+							}
+						)
+
+						let reviewerCount = mr.reviewers?.nodes?.count ?? 0
+						DisclosureGroup(
+							content: {
+								if reviewerCount > 0 {
+									ForEach(mr.reviewers!.nodes!, id: \.self) {
+										maybeUser in
+										if let user = maybeUser {
+											NavigationLink(
+												destination: UserLoader(
+													username: user.username),
+												label: {
+													HStack {
+														if let url = URL.fromAvatar(user.avatarUrl) {
+															AvatarImage(url, size: .small)
+														}
+														Text(user.username)
+													}
+												}
+											)
+										}
 									}
+								} else {
+									Text("There are no reviewers")
+								}
+							},
+							label: {
+								Label(
+									title: {
+										HStack {
+											Text("Reviewers")
+											Spacer()
+											Text("\(reviewerCount)")
+										}
+									},
+									icon: {
+										Image(
+											systemName:
+												"person.line.dotted.person.fill"
+										)
+									})
+							}
+						)
+
+						if let labels = mr.labels?.nodes, labels.isNotEmpty {
+							Label(
+								title: {
+									ScrollView(.horizontal) {
+										HStack {
+											ForEach(labels, id: \.?.title) { label in
+												if let label {
+													PillView(
+														label.title,
+														bgColor: Color(hex: label.color),
+														fgColor: Color(hex: label.textColor)
+													)
+												}
+											}
+										}
+									}
+								},
+								icon: {
+									Image(systemName: Icons.tag.rawValue)
+								}
+							)
+						}
+
+						if let milestone = mr.milestone {
+							Label(
+								milestone.title,
+								systemImage: Icons.milestones.rawValue
+							)
+							.labelStyle(TrailingIconLabelStyle())
+						}
+
+						if mr.humanTimeEstimate != nil
+							|| mr.humanTotalTimeSpent != nil
+						{
+							Label(
+								title: {
+									HStack {
+										Text("Estimate: \(mr.humanTimeEstimate ?? "none")")
+										Spacer()
+										Text("Spent: \(mr.humanTotalTimeSpent ?? "none")")
+									}
+								},
+								icon: {
+									Image(systemName: Icons.timeTracking.rawValue)
+								}
+							)
+						}
+					}
+
+					Section("Changes") {
+						let projectId = project.id.toIntId()
+						let iid = self.iid.toIntId()
+						NavigationLink(
+							destination: DiffLoader(
+								projectId: projectId ?? 0,
+								mrIid: iid ?? 0
+							),
+							label: {
+								if let diffStats = mr.diffStatsSummary {
+									Label(
+										title: {
+											HStack {
+												Text("\(diffStats.fileCount) files changed")
+												Spacer()
+												HStack {
+													Text("+\(diffStats.additions)")
+														.foregroundStyle(.green)
+													Text("-\(diffStats.deletions)")
+														.foregroundStyle(.red)
+												}.font(.system(.body, design: .monospaced))
+											}
+										},
+										icon: {
+											Image(systemName: Icons.files.rawValue)
+										}
+									)
+								} else {
+									Text("Diff")
+								}
+							}
+						).disabled(projectId == nil || iid == 0)
+
+						NavigationLink(
+							destination: DiffsStatsLoader(
+								fullPath: self.fullPath,
+								iid: self.iid
+							),
+							label: {
+								Label("Changed files overview", systemImage: Icons.diffStats.rawValue)
+							}
+						)
+
+						NavigationLink(
+							destination: MrCommitsLoader(
+								fullPath: self.fullPath,
+								iid: self.iid
+							),
+							label: {
+								Label("Commits", systemImage: Icons.commits.rawValue)
+							}
+						)
+					}
+
+					let showMergeSection =
+						(mr.userPermissions.canApprove
+							|| mr.userPermissions.canMerge
+							|| mr.userPermissions.updateMergeRequest)
+					if showMergeSection,
+						let projectId = project.id.toIntId()
+					{
+						Section("Actions") {
+							if mr.userPermissions.canMerge {
+								MergeButton(
+									iid: mr.iid,
+									projectId: projectId,
+									onMerge: {
+										await loader.reload(MergeRequestQuery(fullPath: fullPath, iid: iid))
+									},
+									hasConflicts: mr.conflicts,
+									mergeStatusEnum: mr.mergeStatusEnum ?? .case(.canBeMerged),
+									detailedMergeStatus: mr.detailedMergeStatus
 								)
 							}
-						}
 
-						Section("Changes") {
-							let projectId = project.id.toIntId()
-							let iid = self.iid.toIntId()
-							NavigationLink(
-								destination: DiffLoader(
-									projectId: projectId ?? 0,
-									mrIid: iid ?? 0
-								),
-								label: {
-									if let diffStats = mr.diffStatsSummary {
-										Label(
-											title: {
-												HStack {
-													Text("\(diffStats.fileCount) files changed")
-													Spacer()
-													HStack {
-														Text("+\(diffStats.additions)")
-															.foregroundStyle(.green)
-														Text("-\(diffStats.deletions)")
-															.foregroundStyle(.red)
-													}.font(.system(.body, design: .monospaced))
-												}
-											},
-											icon: {
-												Image(systemName: Icons.files.rawValue)
-											}
-										)
-									} else {
-										Text("Diff")
-									}
-								}
-							).disabled(projectId == nil || iid == 0)
+							if mr.userPermissions.canApprove {
+								AsyncButton(
+									"Approve",
+									systemImage: "person.fill.checkmark"
+								) {
+									await approve(projectId)
+								}.tint(.green)
+							} else if mr.approved {
+								AsyncButton(
+									"Revoke approval",
+									systemImage: "person.fill.xmark"
+								) {
+									await unapprove(projectId)
+								}.tint(.red)
+							}
 
-							NavigationLink(
-								destination: DiffsStatsLoader(
-									fullPath: self.fullPath,
-									iid: self.iid
-								),
-								label: {
-									Label("Changed files overview", systemImage: Icons.diffStats.rawValue)
-								}
-							)
-
-							NavigationLink(
-								destination: MrCommitsLoader(
-									fullPath: self.fullPath,
-									iid: self.iid
-								),
-								label: {
-									Label("Commits", systemImage: Icons.commits.rawValue)
-								}
-							)
-						}
-
-						let showMergeSection =
-							(mr.userPermissions.canApprove
-								|| mr.userPermissions.canMerge
-								|| mr.userPermissions.updateMergeRequest)
-						if showMergeSection,
-							let projectId = project.id.toIntId()
-						{
-							Section("Actions") {
-								if mr.userPermissions.canMerge {
-									MergeButton(
-										iid: mr.iid,
+							if mr.userPermissions.updateMergeRequest {
+								NavigationLink(
+									destination: EditTitleDescriptionView(
 										projectId: projectId,
-										onMerge: {
-											await reloadMergeRequest()
+										iid: self.iid,
+										type: .mergeRequest,
+										initialTitle: mr.title,
+										initialDescription: mr.description ?? ""
+									) {
+										await loader.reload(MergeRequestQuery(fullPath: fullPath, iid: iid))
+									}
+								) {
+									Label("Edit MR", systemImage: "pencil")
+								}
+
+								if mr.state == .opened {
+									AsyncButton(
+										Self.isDraft(mr.title) ? "Mark as ready" : "Mark as draft",
+										systemImage: Self.isDraft(mr.title) ? "flag.slash" : "flag"
+									) {
+										await changeDraft(
+											projectId, title: mr.title,
+											toDraft: !Self.isDraft(mr.title))
+									}.tint(Self.isDraft(mr.title) ? .green : .orange)
+
+									AsyncButton(
+										mr.rebaseInProgress == true ? "Rebasing branch…" : "Rebase branch",
+										systemImage: "arrow.triangle.2.circlepath"
+									) {
+										await rebase(projectId)
+									}
+									.tint(.blue)
+									.disabled(mr.rebaseInProgress == true)
+
+									AsyncButton(
+										action: {
+											await changeState(projectId, state: "close")
 										},
-										hasConflicts: mr.conflicts,
-										mergeStatusEnum: mr.mergeStatusEnum ?? .case(.canBeMerged),
-										detailedMergeStatus: mr.detailedMergeStatus
-									)
-								}
-
-								if mr.userPermissions.canApprove {
-									AsyncButton(
-										"Approve",
-										systemImage: "person.fill.checkmark"
-									) {
-										await approve(projectId)
-									}.tint(.green)
-								} else if mr.approved {
-									AsyncButton(
-										"Revoke approval",
-										systemImage: "person.fill.xmark"
-									) {
-										await unapprove(projectId)
-									}.tint(.red)
-								}
-
-								if mr.userPermissions.updateMergeRequest {
-									NavigationLink(
-										destination: EditTitleDescriptionView(
-											projectId: projectId,
-											iid: self.iid,
-											type: .mergeRequest,
-											initialTitle: mr.title,
-											initialDescription: mr.description ?? ""
-										) {
-											await reloadMergeRequest()
+										label: {
+											Label(
+												title: {
+													Text("Close MR")
+												},
+												icon: {
+													Image(Images.mergeRequestClosed.rawValue)
+												})
 										}
-									) {
-										Label("Edit MR", systemImage: "pencil")
-									}
-
-									if mr.state == .opened {
-										AsyncButton(
-											Self.isDraft(mr.title) ? "Mark as ready" : "Mark as draft",
-											systemImage: Self.isDraft(mr.title) ? "flag.slash" : "flag"
-										) {
-											await changeDraft(
-												projectId, title: mr.title,
-												toDraft: !Self.isDraft(mr.title))
-										}.tint(Self.isDraft(mr.title) ? .green : .orange)
-
-										AsyncButton(
-											mr.rebaseInProgress == true ? "Rebasing branch…" : "Rebase branch",
-											systemImage: "arrow.triangle.2.circlepath"
-										) {
-											await rebase(projectId)
+									).tint(.blue)
+								} else if mr.state == .closed {
+									AsyncButton(
+										action: {
+											await changeState(projectId, state: "reopen")
+										},
+										label: {
+											Label(
+												title: {
+													Text("Reopen MR")
+												},
+												icon: {
+													Image(Images.mergeRequest.rawValue)
+												})
 										}
-										.tint(.blue)
-										.disabled(mr.rebaseInProgress == true)
-
-										AsyncButton(
-											action: {
-												await changeState(projectId, state: "close")
-											},
-											label: {
-												Label(
-													title: {
-														Text("Close MR")
-													},
-													icon: {
-														Image(Images.mergeRequestClosed.rawValue)
-													})
-											}
-										).tint(.blue)
-									} else if mr.state == .closed {
-										AsyncButton(
-											action: {
-												await changeState(projectId, state: "reopen")
-											},
-											label: {
-												Label(
-													title: {
-														Text("Reopen MR")
-													},
-													icon: {
-														Image(Images.mergeRequest.rawValue)
-													})
-											}
-										).tint(.green)
-									}
-
-									AsyncButton("Delete MR", systemImage: "trash") {
-										await remove(projectId)
-									}.tint(.red)
+									).tint(.green)
 								}
+
+								AsyncButton("Delete MR", systemImage: "trash") {
+									await remove(projectId)
+								}.tint(.red)
 							}
 						}
-
-						let noteCount = mr.notes.nodes?.count ?? 0
-						if mr.userPermissions.createNote || noteCount > 0 {
-							Section("Notes (\(mr.userNotesCount ?? 0))") {
-								if let projectId = project.id.toIntId(),
-									mr.userPermissions.createNote
-								{
-									NewNoteView(projectId, iid: mr.iid, type: .mergeRequest)
-								}
-
-								if noteCount > 0 {
-									ForEach(mr.notes.nodes!, id: \.self?.id) {
-										maybeNote in
-										if let note = maybeNote {
-											NoteView(note, projectId: project.id.toIntId() ?? 0)
-										}
-									}
-								}
-							}
-						}
-					} else {
-						NoContentView("Can't find merge request", image: Images.mergeRequest.rawValue)
 					}
-				case .failure(let error):
-					FailedView(error)
+
+					let noteCount = mr.notes.nodes?.count ?? 0
+					if mr.userPermissions.createNote || noteCount > 0 {
+						Section("Notes (\(mr.userNotesCount ?? 0))") {
+							if let projectId = project.id.toIntId(),
+								mr.userPermissions.createNote
+							{
+								NewNoteView(projectId, iid: mr.iid, type: .mergeRequest)
+							}
+
+							if noteCount > 0 {
+								ForEach(mr.notes.nodes!, id: \.self?.id) {
+									maybeNote in
+									if let note = maybeNote {
+										NoteView(note, projectId: project.id.toIntId() ?? 0)
+									}
+								}
+							}
+						}
+					}
+				} else {
+					NoContentView("Can't find merge request", image: Images.mergeRequest.rawValue)
 				}
-			} else {
-				LoadingView("Loading Merge Request !\(self.iid)", image: Images.mergeRequest.rawValue, color: .blue)
 			}
+
 		}.task {
-			loadMergeRequest()
+			await loader.load(MergeRequestQuery(fullPath: fullPath, iid: iid))
 		}.refreshable {
-			await reloadMergeRequest()
+			await loader.reload(MergeRequestQuery(fullPath: fullPath, iid: iid))
 		}.toolbar {
-			if let project, case .success(let project) = project {
+			if let project = loader.state.value {
 				if let mr = project.mergeRequest {
 					HStack {
 						Button(

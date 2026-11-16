@@ -1,10 +1,16 @@
-query ProjectMilestones($fullPath: ID!, $state: MilestoneStateEnum, $searchTitle: String, $includeAncestors: Boolean) {
+query ProjectMilestones($first: Int!, $after: String, $fullPath: ID!, $state: MilestoneStateEnum, $searchTitle: String, $includeAncestors: Boolean) {
   project(fullPath: $fullPath) {
     milestones(
+      first: $first
+      after: $after
       state: $state
       searchTitle: $searchTitle
       includeAncestors: $includeAncestors
     ) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         id
         iid

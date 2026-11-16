@@ -25,10 +25,28 @@ struct UserMergeLoader: View {
 	private var showFilters = false
 
 	@State
-	private var loadTask: Task<Void, Never>?
+	private var assignedPager = PagedQuery<UserAssignedMergeRequestsQuery, UserSmallMergeRequest>(
+		extract: { ($0.currentUser?.assignedMergeRequests?.nodes ?? []).compactMap { $0 } },
+		key: { $0.reference },
+		hasNext: { $0.currentUser?.assignedMergeRequests?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.currentUser?.assignedMergeRequests?.pageInfo.endCursor }
+	)
 
 	@State
-	private var mergeRequests: Result<[UserSmallMergeRequest?], Error>? = nil
+	private var authoredPager = PagedQuery<UserAuthoredMergeRequestsQuery, UserSmallMergeRequest>(
+		extract: { ($0.currentUser?.authoredMergeRequests?.nodes ?? []).compactMap { $0 } },
+		key: { $0.reference },
+		hasNext: { $0.currentUser?.authoredMergeRequests?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.currentUser?.authoredMergeRequests?.pageInfo.endCursor }
+	)
+
+	@State
+	private var reviewPager = PagedQuery<UserReviewRequestedMergeRequestsQuery, UserSmallMergeRequest>(
+		extract: { ($0.currentUser?.reviewRequestedMergeRequests?.nodes ?? []).compactMap { $0 } },
+		key: { $0.reference },
+		hasNext: { $0.currentUser?.reviewRequestedMergeRequests?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.currentUser?.reviewRequestedMergeRequests?.pageInfo.endCursor }
+	)
 
 	init(_ userRequestType: UserMergeRequestType) {
 		self.userRequestType = userRequestType
@@ -44,8 +62,10 @@ struct UserMergeLoader: View {
 			}
 	}
 
-	private func assignedQuery() -> UserAssignedMergeRequestsQuery {
+	private func assignedQuery(after: GraphQLNullable<String> = .none) -> UserAssignedMergeRequestsQuery {
 		return UserAssignedMergeRequestsQuery(
+			first: 50,
+			after: after,
 			state: GraphFilter.toFilterEnum(self.filter.state),
 			search: GraphFilter.toFilter(self.filter.search),
 			draft: GraphFilter.toFilter(self.filter.draft),
@@ -59,8 +79,10 @@ struct UserMergeLoader: View {
 		)
 	}
 
-	private func authoredQuery() -> UserAuthoredMergeRequestsQuery {
+	private func authoredQuery(after: GraphQLNullable<String> = .none) -> UserAuthoredMergeRequestsQuery {
 		return UserAuthoredMergeRequestsQuery(
+			first: 50,
+			after: after,
 			state: GraphFilter.toFilterEnum(self.filter.state),
 			search: GraphFilter.toFilter(self.filter.search),
 			draft: GraphFilter.toFilter(self.filter.draft),
@@ -74,8 +96,10 @@ struct UserMergeLoader: View {
 		)
 	}
 
-	private func reviewRequestedQuery() -> UserReviewRequestedMergeRequestsQuery {
+	private func reviewRequestedQuery(after: GraphQLNullable<String> = .none) -> UserReviewRequestedMergeRequestsQuery {
 		return UserReviewRequestedMergeRequestsQuery(
+			first: 50,
+			after: after,
 			state: GraphFilter.toFilterEnum(self.filter.state),
 			search: GraphFilter.toFilter(self.filter.search),
 			draft: GraphFilter.toFilter(self.filter.draft),
@@ -89,133 +113,66 @@ struct UserMergeLoader: View {
 		)
 	}
 
-	private func loadMergeRequests() {
-		self.loadTask?.cancel()
-		self.loadTask = Task {
-			do {
-				switch self.userRequestType {
-				case .assgined:
-					let responses = try Network.shared.apollo.fetch(
-						query: self.assignedQuery(),
-						cachePolicy: .cacheAndNetwork
-					)
-
-					for try await response in responses {
-						if Task.isCancelled { return }
-						if let mrs = response.data?.currentUser?.assignedMergeRequests?.nodes {
-							self.mergeRequests = .success(mrs)
-						} else if let errors = response.errors {
-							for error in errors {
-								Notify.status(.error, error.localizedDescription)
-							}
-						}
-					}
-				case .authored:
-					let responses = try Network.shared.apollo.fetch(
-						query: self.authoredQuery(),
-						cachePolicy: .cacheAndNetwork
-					)
-
-					for try await response in responses {
-						if Task.isCancelled { return }
-						if let mrs = response.data?.currentUser?.authoredMergeRequests?.nodes {
-							self.mergeRequests = .success(mrs)
-						} else if let errors = response.errors {
-							for error in errors {
-								Notify.status(.error, error.localizedDescription)
-							}
-						}
-					}
-				case .reviewRequested:
-					let responses = try Network.shared.apollo.fetch(
-						query: self.reviewRequestedQuery(),
-						cachePolicy: .cacheAndNetwork
-					)
-
-					for try await response in responses {
-						if Task.isCancelled { return }
-						if let mrs = response.data?.currentUser?.reviewRequestedMergeRequests?.nodes {
-							self.mergeRequests = .success(mrs)
-						} else if let errors = response.errors {
-							for error in errors {
-								Notify.status(.error, error.localizedDescription)
-							}
-						}
-					}
-				}
-			} catch {
-				if !Task.isCancelled {
-					self.mergeRequests = .failure(error)
-					Notify.status(.error)
-				}
-			}
+	private var state: Loadable<[UserSmallMergeRequest]> {
+		switch userRequestType {
+		case .assgined: assignedPager.state
+		case .authored: authoredPager.state
+		case .reviewRequested: reviewPager.state
 		}
 	}
 
-	private func reloadMergeRequests() async {
-		do {
-			switch self.userRequestType {
-			case .assgined:
-				let response = try await Network.shared.apollo.fetch(
-					query: self.assignedQuery(),
-					cachePolicy: .networkOnly
-				)
+	private var hasMore: Bool {
+		switch userRequestType {
+		case .assgined: assignedPager.hasMore
+		case .authored: authoredPager.hasMore
+		case .reviewRequested: reviewPager.hasMore
+		}
+	}
 
-				if let mrs = response.data?.currentUser?.assignedMergeRequests?.nodes {
-					self.mergeRequests = .success(mrs)
-				}
-			case .authored:
-				let response = try await Network.shared.apollo.fetch(
-					query: self.authoredQuery(),
-					cachePolicy: .networkOnly
-				)
+	private func load() async {
+		switch userRequestType {
+		case .assgined:
+			await assignedPager.start(
+				assignedQuery(), setCursor: { $0.after = .some($1) })
+		case .authored:
+			await authoredPager.start(
+				authoredQuery(), setCursor: { $0.after = .some($1) })
+		case .reviewRequested:
+			await reviewPager.start(
+				reviewRequestedQuery(), setCursor: { $0.after = .some($1) })
+		}
+	}
 
-				if let mrs = response.data?.currentUser?.authoredMergeRequests?.nodes {
-					self.mergeRequests = .success(mrs)
-				}
-			case .reviewRequested:
-				let response = try await Network.shared.apollo.fetch(
-					query: self.reviewRequestedQuery(),
-					cachePolicy: .networkOnly
-				)
+	private func refresh() async {
+		switch userRequestType {
+		case .assgined: await assignedPager.refresh()
+		case .authored: await authoredPager.refresh()
+		case .reviewRequested: await reviewPager.refresh()
+		}
+	}
 
-				if let mrs = response.data?.currentUser?.reviewRequestedMergeRequests?.nodes {
-					self.mergeRequests = .success(mrs)
-				}
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.mergeRequests = .failure(error)
-			Notify.status(.error)
+	private func loadMore() async {
+		switch userRequestType {
+		case .assgined: await assignedPager.loadMore()
+		case .authored: await authoredPager.loadMore()
+		case .reviewRequested: await reviewPager.loadMore()
 		}
 	}
 
 	public var body: some View {
-		List {
-			if let mergeRequests {
-				switch mergeRequests {
-				case .success(let mergeRequests):
-					if mergeRequests.isEmpty {
-						NoContentView("There are no merge requests", image: Images.mergeRequest.rawValue)
-					} else {
-						ForEach(mergeRequests, id: \.?.reference) {
-							maybeMerge in
-							if let mr = maybeMerge {
-								SmallMergeView(mr._project.fullPath, mr)
-							}
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
-				}
-			} else {
-				LoadingView("Loading Merge Requests", image: Images.mergeRequest.rawValue, color: .blue)
-			}
+		LoadableList(
+			state,
+			hasMore: hasMore,
+			emptyMessage: "There are no merge requests",
+			emptySystemImage: Images.mergeRequest.rawValue,
+			loadingMessage: "Loading Merge Requests",
+			loadingSystemImage: Images.mergeRequest.rawValue,
+			onLoadMore: { await loadMore() },
+			onRefresh: { await refresh() }
+		) { mr in
+			SmallMergeView(mr._project.fullPath, mr)
 		}.debouncedLoad(filter) {
-			loadMergeRequests()
-		}.refreshable {
-			await reloadMergeRequests()
+			await load()
 		}.toolbar {
 			Button("Filter", systemImage: Icons.filter.rawValue) {
 				showFilters = true

@@ -1,5 +1,7 @@
-query Groups($topLevelOnly: Boolean, $ownedOnly: Boolean, $search: String, $parentPath: ID, $allAvailable: Boolean, $markedForDeletionOn: Date, $active: Boolean) {
+query Groups($first: Int!, $after: String, $topLevelOnly: Boolean, $ownedOnly: Boolean, $search: String, $parentPath: ID, $allAvailable: Boolean, $markedForDeletionOn: Date, $active: Boolean) {
   groups(
+    first: $first
+    after: $after
     topLevelOnly: $topLevelOnly
     ownedOnly: $ownedOnly
     search: $search
@@ -8,6 +10,10 @@ query Groups($topLevelOnly: Boolean, $ownedOnly: Boolean, $search: String, $pare
     markedForDeletionOn: $markedForDeletionOn
     active: $active
   ) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
     nodes {
       avatarUrl
       name

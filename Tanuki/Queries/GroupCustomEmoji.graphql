@@ -1,6 +1,10 @@
-query GroupCustomEmoji($fullPath: ID!) {
+query GroupCustomEmoji($first: Int!, $after: String, $fullPath: ID!) {
   group(fullPath: $fullPath) {
-    customEmoji {
+    customEmoji(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         id
         url

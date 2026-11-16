@@ -20,17 +20,21 @@ struct ProjectIssuesLoader: View {
 	private var showFilters = false
 
 	@State
-	private var loadTask: Task<Void, Never>?
-
-	@State
-	private var project: Result<GitLabAPI.ProjectIssuesQuery.Data.Project, Error>? = nil
+	private var pager = PagedQuery<ProjectIssuesQuery, ProjectIssuesQuery.Data.Project.Issues.Node>(
+		extract: { ($0.project?.issues?.nodes ?? []).compactMap { $0 } },
+		key: { $0.iid },
+		hasNext: { $0.project?.issues?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.project?.issues?.pageInfo.endCursor }
+	)
 
 	init(fullPath: String) {
 		self.fullPath = fullPath
 	}
 
-	private var query: ProjectIssuesQuery {
+	private func query(after: GraphQLNullable<String> = .none) -> ProjectIssuesQuery {
 		ProjectIssuesQuery(
+			first: 50,
+			after: after,
 			fullPath: self.fullPath,
 			state: GraphFilter.toFilterEnum(self.filter.state),
 			search: GraphFilter.toFilter(self.filter.search),
@@ -48,88 +52,32 @@ struct ProjectIssuesLoader: View {
 		)
 	}
 
-	private func loadIssues() {
-		self.loadTask?.cancel()
-		self.loadTask = Task {
-			do {
-				let responses = try Network.shared.apollo.fetch(
-					query: self.query,
-					cachePolicy: .cacheAndNetwork
-				)
-
-				for try await response in responses {
-					if Task.isCancelled { return }
-					if let project = response.data?.project {
-						self.project = .success(project)
-					} else if let errors = response.errors {
-						for error in errors {
-							Notify.status(.error, error.localizedDescription)
-						}
-					}
-				}
-			} catch {
-				if !Task.isCancelled {
-					self.project = .failure(error)
-					Notify.status(.error)
-				}
-			}
-		}
-	}
-
-	private func reloadIssues() async {
-		do {
-			let response = try await Network.shared.apollo.fetch(
-				query: self.query,
-				cachePolicy: .networkOnly
-			)
-
-			if let project = response.data?.project {
-				self.project = .success(project)
-			}
-
-			Notify.status(.success)
-		} catch let error {
-			self.project = .failure(error)
-			Notify.status(.error)
-		}
-	}
-
 	public var body: some View {
-		List {
-			if let project {
-				switch project {
-				case .success(let project):
-					if !(project.issuesEnabled ?? false) {
-						NoContentView(
-							"Issues are not enabled for this project",
-							systemImage: Icons.issues.rawValue
-						)
-					} else if let issues = project.issues?.nodes {
-						if issues.isEmpty {
-							NoContentView(
-								"There are no issues", systemImage: Icons.issues.rawValue)
-						} else {
-							ForEach(issues, id: \.?.iid) { issue in
-								if let issue {
-									SmallIssueView(self.fullPath, issue)
-								}
-							}
-						}
-					}
-				case .failure(let error):
-					FailedView(error)
-				}
+		SwiftUI.Group {
+			if pager.firstPage?.project?.issuesEnabled == false {
+				NoContentView(
+					"Issues are not enabled for this project",
+					systemImage: Icons.issues.rawValue
+				)
 			} else {
-				LoadingView("Loading Issues", systemImage: Icons.issues.rawValue, color: .green)
+				LoadableList(
+					pager.state,
+					hasMore: pager.hasMore,
+					emptyMessage: "There are no issues",
+					emptySystemImage: Icons.issues.rawValue,
+					loadingMessage: "Loading Issues",
+					loadingSystemImage: Icons.issues.rawValue,
+					onLoadMore: { await pager.loadMore() },
+					onRefresh: { await pager.refresh() }
+				) { issue in
+					SmallIssueView(self.fullPath, issue)
+				}
 			}
 		}.debouncedLoad(filter) {
-			loadIssues()
-		}.refreshable {
-			await reloadIssues()
+			await pager.start(query(), setCursor: { $0.after = .some($1) })
 		}.toolbar {
 			HStack {
-				if let project,
-					case .success(let project) = project,
+				if let project = pager.firstPage?.project,
 					let projectId = project.id.toIntId()
 				{
 					NavigationLink(
