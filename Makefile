@@ -8,7 +8,7 @@ APOLLO_CONFIG := ./apollo-codegen-config.json
 APOLLO_CLI := ./apollo-ios-cli
 APOLLO_URL := https://github.com/apollographql/apollo-ios/releases/latest/download/apollo-ios-cli.tar.gz
 
-.PHONY: help fmt lint check install-apollo-cli fetch-schema generate
+.PHONY: help fmt lint licenses check install-apollo-cli fetch-schema generate
 
 help:
 	@printf 'make fmt                 format sources in place\n'
@@ -29,6 +29,9 @@ lint:
 		exit 1; \
 	fi
 	@printf 'lint passed\n'
+
+licenses:
+	license-plist --config-path license_plist.yml
 
 check: fmt lint
 

@@ -1,0 +1,7 @@
+options:
+  xcworkspacePath: "Tanuki.xcworkspace"
+  singlePage: true
+  outputPath: "./Settings.bundle"
+
+spm:
+  - path: "Tanuki.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
