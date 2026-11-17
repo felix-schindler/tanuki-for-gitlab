@@ -133,7 +133,7 @@ struct NewIssueView: View {
 
 		if setDueDate {
 			let inputFormatter = DateFormatter()
-			inputFormatter.dateFormat = "yyyyMMdd"
+			inputFormatter.dateFormat = "yyyy-MM-dd"
 
 			body["due_date"] = .string(inputFormatter.string(from: dueDate))
 		}
