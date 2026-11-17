@@ -44,10 +44,9 @@ struct TreeLoader: View {
 
 	private func loadBranches() async {
 		do {
-			self.branches = try await API.get(
-				type: [Branch].self,
-				endpoint: "projects/\(self.projectId)/repository/branches",
-				query: ["per_page": "100"]
+			self.branches = try await API.allPages(
+				[Branch].self,
+				endpoint: "projects/\(self.projectId)/repository/branches"
 			)
 		} catch let error {
 			Notify.status(.error, error.localizedDescription)

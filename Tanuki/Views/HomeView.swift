@@ -22,9 +22,12 @@ private enum HomeRoute: Hashable {
 
 struct HomeView: View {
 	@State
-	private var starredLoader = ApolloLoader<CurrentUserStarredProjectsQuery, [SmallProject?]> {
-		$0.currentUser?.starredProjects?.nodes
-	}
+	private var starred = PagedQuery<CurrentUserStarredProjectsQuery, SmallProject>(
+		extract: { ($0.currentUser?.starredProjects?.nodes ?? []).compactMap { $0 } },
+		key: { $0.fullPath },
+		hasNext: { $0.currentUser?.starredProjects?.pageInfo.hasNextPage ?? false },
+		endCursor: { $0.currentUser?.starredProjects?.pageInfo.endCursor }
+	)
 
 	@State
 	private var versionWarning: String?
@@ -270,7 +273,7 @@ struct HomeView: View {
 			}
 
 			Section("Starred projects") {
-				let state = starredLoader.state
+				let state = starred.state
 				if state.isInitialLoading {
 					LoadingView("Loading starred Projects", systemImage: Icons.star.rawValue, color: .yellow)
 				} else if state.isColdFailure, let error = state.error {
@@ -282,13 +285,17 @@ struct HomeView: View {
 							"There are no starred projects",
 							systemImage: "star.square.on.square.fill")
 					} else {
-						ForEach(projects, id: \.?.fullPath) { maybeProject in
-							if let project = maybeProject {
-								NavigationLink(
-									value: HomeRoute.project(fullPath: project.fullPath),
-									label: {
-										SmallProjectLabel(project)
-									})
+						ForEach(projects, id: \.fullPath) { project in
+							NavigationLink(
+								value: HomeRoute.project(fullPath: project.fullPath),
+								label: {
+									SmallProjectLabel(project)
+								})
+						}
+
+						if starred.hasMore {
+							Button("Load more") {
+								Task { await starred.loadMore() }
 							}
 						}
 					}
@@ -296,11 +303,14 @@ struct HomeView: View {
 
 			}
 		}.task {
-			await starredLoader.load(CurrentUserStarredProjectsQuery(first: 100, after: .none))
+			await starred.start(
+				CurrentUserStarredProjectsQuery(first: 50, after: .none),
+				setCursor: { $0.after = .some($1) }
+			)
 		}.task {
 			await checkVersion()
 		}.refreshable {
-			await starredLoader.reload(CurrentUserStarredProjectsQuery(first: 100, after: .none))
+			await starred.refresh()
 			await checkVersion()
 		}
 		.listStyle(.sidebar)

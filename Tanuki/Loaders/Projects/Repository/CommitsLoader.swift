@@ -84,31 +84,54 @@ struct CommitsLoader: View {
 	private var isLoading = false
 
 	@State
+	private var isLoadingMore = false
+
+	@State
+	private var pager = RestPage()
+
+	@State
 	private var loadTask: Task<Void, Never>?
 
-	private func loadCommits() async {
+	private func loadCommits(reset: Bool = true) async {
+		if reset {
+			pager.reset()
+		}
+
 		do {
-			let temp = try await API.get(
+			let page = try await API.get(
 				type: [Commit].self,
 				endpoint: "projects/\(projectId)/repository/commits",
-				query: ["ref_name": refName, "per_page": "100"]
+				query: ["ref_name": refName].merging(pager.query) { _, new in new }
 			)
 
 			if Task.isCancelled { return }
-			self.commits = .success(temp)
+			pager.advance(page.count)
+			if reset {
+				self.commits = .success(page)
+			} else if case .success(let existing) = self.commits {
+				self.commits = .success(existing + page)
+			}
 		} catch let error {
 			if Task.isCancelled { return }
-			self.commits = .failure(error)
+			if reset {
+				self.commits = .failure(error)
+			}
 			Notify.status(.error)
 		}
 	}
 
+	private func loadMoreCommits() async {
+		guard pager.hasMore, !isLoadingMore else { return }
+		isLoadingMore = true
+		defer { isLoadingMore = false }
+		await loadCommits(reset: false)
+	}
+
 	private func loadBranches() async {
 		do {
-			self.branches = try await API.get(
-				type: [Branch].self,
-				endpoint: "projects/\(projectId)/repository/branches",
-				query: ["per_page": "100"]
+			self.branches = try await API.allPages(
+				[Branch].self,
+				endpoint: "projects/\(projectId)/repository/branches"
 			)
 		} catch let error {
 			Notify.status(.error, error.localizedDescription)
@@ -154,6 +177,21 @@ struct CommitsLoader: View {
 						Section("Commits") {
 							ForEach(commits, id: \.id) { commit in
 								CommitRow(commit: commit, projectId: self.projectId)
+									.onAppear {
+										if commit.id == commits.last?.id {
+											loadTask = Task {
+												await loadMoreCommits()
+											}
+										}
+									}
+							}
+
+							if pager.hasMore {
+								HStack {
+									Spacer()
+									ProgressView()
+									Spacer()
+								}
 							}
 						}
 					}

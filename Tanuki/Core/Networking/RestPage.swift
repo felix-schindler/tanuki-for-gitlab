@@ -27,3 +27,27 @@ struct RestPage {
 		["per_page": String(Self.size), "page": String(page)]
 	}
 }
+
+extension API {
+	/// Every page of a REST list, for pickers that need the whole set up front.
+	static func allPages<T: Codable>(
+		_ type: [T].Type,
+		endpoint: String,
+		query: [String: String] = [:]
+	) async throws -> [T] {
+		var items: [T] = []
+		var page = RestPage()
+		// shortcut: caps at 5000 items, raise if a picker ever needs more
+		while page.page <= 50 {
+			let batch = try await API.get(
+				type: [T].self,
+				endpoint: endpoint,
+				query: query.merging(page.query) { _, new in new }
+			)
+			items += batch
+			page.advance(batch.count)
+			if !page.hasMore { break }
+		}
+		return items
+	}
+}
