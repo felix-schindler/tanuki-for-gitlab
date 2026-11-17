@@ -44,7 +44,7 @@ struct ConfigView: View {
 
 			Section(
 				content: {
-					TextField("glpat-4Rzq-VKwapmWqj4MfBsi", text: $newToken)
+					TextField("glpat-xxxxxxxxxxxxxxxxxxxx", text: $newToken)
 						.textInputAutocapitalization(.never)
 						.autocorrectionDisabled()
 				},
