@@ -100,6 +100,7 @@ struct CookiesView: View {
 		store.getAllCookies { all in
 			for cookie in all {
 				store.delete(cookie)
+				HTTPCookieStorage.shared.deleteCookie(cookie)
 			}
 			cookies.removeAll()
 			PersistedCookies.clear()
