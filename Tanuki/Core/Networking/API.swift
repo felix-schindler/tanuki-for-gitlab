@@ -325,6 +325,15 @@ class API {
 	private static let decoder = JSONDecoder()
 	private static let session: Session = .default
 
+	/// GitLab returns dates with and without fractional seconds. `ISO8601DateFormatter` is safe to
+	/// read from multiple threads once configured, so two shared instances replace per-date setup.
+	private nonisolated(unsafe) static let isoFractionalFormatter: ISO8601DateFormatter = {
+		let formatter = ISO8601DateFormatter()
+		formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+		return formatter
+	}()
+	private nonisolated(unsafe) static let isoFormatter = ISO8601DateFormatter()
+
 	public static var host: String {
 		InstanceManager.selected?.host ?? "gitlab.com"
 	}
@@ -711,14 +720,12 @@ class API {
 		decoder.keyDecodingStrategy = .convertFromSnakeCase
 
 		decoder.dateDecodingStrategy = .custom({ decoder -> Date in
-			let formatter = ISO8601DateFormatter()
-			formatter.formatOptions = [
-				.withInternetDateTime, .withFractionalSeconds,
-			]
-
 			let dateStr = try decoder.singleValueContainer().decode(String.self)
 
-			if let date = formatter.date(from: dateStr) {
+			if let date =
+				API.isoFractionalFormatter.date(from: dateStr)
+				?? API.isoFormatter.date(from: dateStr)
+			{
 				return date
 			}
 
