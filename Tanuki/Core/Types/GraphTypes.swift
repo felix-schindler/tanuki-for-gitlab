@@ -250,7 +250,7 @@ protocol SmallIssue {
 	var webUrl: String { get }
 }
 
-extension IssueQuery.Data.Project.Issue: HasAuthor {
+extension IssueQuery.Data.Project.Issue {
 	var _author: MyAuthor {
 		return MyAuthor(
 			avatarUrl: author.avatarUrl,
@@ -573,7 +573,7 @@ extension UserTimelogsQuery.Data.User.Timelogs.Node: Timelog {
 }
 
 // MARK: - Pipelines
-extension ProjectPipelinesQuery.Data.Project.Pipelines.Node: MaybeHasAuthor {
+extension ProjectPipelinesQuery.Data.Project.Pipelines.Node {
 	var _author: MyAuthor? {
 		guard let authorData = user else { return nil }
 		return MyAuthor(
@@ -584,7 +584,7 @@ extension ProjectPipelinesQuery.Data.Project.Pipelines.Node: MaybeHasAuthor {
 	}
 }
 
-extension PipelineDetailQuery.Data.Project.Pipeline: MaybeHasAuthor {
+extension PipelineDetailQuery.Data.Project.Pipeline {
 	var _author: MyAuthor? {
 		guard let authorData = user else { return nil }
 		return MyAuthor(
