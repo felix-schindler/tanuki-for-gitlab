@@ -31,6 +31,19 @@ struct ProjectLoadError: LocalizedError {
 	}
 }
 
+private struct SpecialFile {
+	let name: String
+	let content: String
+	let showsImages: Bool
+
+	init?(name: String, content: String?, showsImages: Bool) {
+		guard let content else { return nil }
+		self.name = name
+		self.content = content
+		self.showsImages = showsImages
+	}
+}
+
 struct ProjectLoader: View {
 	private let fullPath: String
 
@@ -304,15 +317,18 @@ struct ProjectLoader: View {
 						})
 				}
 
-				let readme = project.repository?.readme?.nodes?.first??
-					.rawTextBlob?
-					.emojized()
-				let license = project.repository?.license?.nodes?.first??
-					.rawTextBlob?
-					.emojized()
-				let contributing = project.repository?.contributing?.nodes?.first??
-					.rawTextBlob?
-					.emojized()
+				let files = [
+					SpecialFile(
+						name: "README", content: project.repository?.readme?.nodes?.first??.rawTextBlob?.emojized(),
+						showsImages: true),
+					SpecialFile(
+						name: "LICENSE", content: project.repository?.license?.nodes?.first??.rawTextBlob?.emojized(),
+						showsImages: false),
+					SpecialFile(
+						name: "CONTRIBUTING",
+						content: project.repository?.contributing?.nodes?.first??.rawTextBlob?.emojized(),
+						showsImages: true),
+				].compactMap { $0 }
 
 				let baseUrl = URL(string: project.webUrl ?? "")
 				let imgUrl = URL(
@@ -320,38 +336,23 @@ struct ProjectLoader: View {
 						"\(project.webUrl ?? "")/-/raw/\(project.repository?.rootRef ?? "")/"
 				)
 
-				if readme != nil || license != nil || contributing != nil {
+				if !files.isEmpty {
+					let selected = files[min(selectedFile, files.count - 1)]
 					Section("Special files") {
 						VStack {
-							Picker("", selection: $selectedFile) {
-								if readme != nil {
-									Text("README").tag(0)
-								}
-
-								if license != nil {
-									Text("LICENSE").tag(1)
-								}
-
-								if contributing != nil {
-									Text("CONTRIBUTING").tag(2)
-								}
-							}.pickerStyle(.segmented)
-
-							if selectedFile == 0, let readme {
-								Markdown(
-									readme,
-									baseURL: baseUrl,
-									imageBaseURL: imgUrl
-								)
-							} else if selectedFile == 1, let license {
-								Markdown(license)
-							} else if selectedFile == 2, let contributing {
-								Markdown(
-									contributing,
-									baseURL: baseUrl,
-									imageBaseURL: imgUrl
-								)
+							if files.count > 1 {
+								Picker("", selection: $selectedFile) {
+									ForEach(files.indices, id: \.self) { index in
+										Text(files[index].name).tag(index)
+									}
+								}.pickerStyle(.segmented)
 							}
+
+							Markdown(
+								selected.content,
+								baseURL: baseUrl,
+								imageBaseURL: selected.showsImages ? imgUrl : nil
+							)
 						}
 					}
 				}
