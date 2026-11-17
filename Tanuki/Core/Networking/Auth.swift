@@ -79,7 +79,7 @@ class Auth {
 			InstanceManager.remove(instance)
 			if let previousInstance {
 				InstanceManager.select(previousInstance)
-				try await resetSessionCaches(host: previousInstance.host)
+				try? await resetSessionCaches(host: previousInstance.host)
 			}
 			SessionStore.shared.refresh()
 			throw error
