@@ -79,7 +79,7 @@ struct EventsLoader: View {
 				type: [Event].self, endpoint: endpoint, query: pager.query)
 
 			if Task.isCancelled { return }
-			state.value = (state.value ?? []) + events
+			state.value = reset ? events : (state.value ?? []) + events
 			state.error = nil
 			pager.advance(events.count)
 		} catch {

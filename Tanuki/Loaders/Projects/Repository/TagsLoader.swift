@@ -50,7 +50,7 @@ struct TagsLoader: View {
 			)
 
 			if Task.isCancelled { return }
-			state.value = (state.value ?? []) + tags
+			state.value = reset ? tags : (state.value ?? []) + tags
 			state.error = nil
 			pager.advance(tags.count)
 		} catch {

@@ -50,7 +50,7 @@ struct WikisLoader: View {
 			)
 
 			if Task.isCancelled { return }
-			state.value = (state.value ?? []) + pages
+			state.value = reset ? pages : (state.value ?? []) + pages
 			state.error = nil
 			pager.advance(pages.count)
 		} catch {

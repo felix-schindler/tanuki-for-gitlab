@@ -42,7 +42,7 @@ struct BranchesLoader: View {
 			)
 
 			if Task.isCancelled { return }
-			state.value = (state.value ?? []) + branches
+			state.value = reset ? branches : (state.value ?? []) + branches
 			state.error = nil
 			pager.advance(branches.count)
 		} catch {
