@@ -210,7 +210,7 @@ class Auth {
 	}
 
 	// MARK: - Token refresh (OAuth)
-	private static var refreshTask: Task<OAuthToken, Error>?
+	private static var refreshTasks: [String: Task<OAuthToken, Error>] = [:]
 
 	public static func ensureValidToken() async {
 		guard let instance = InstanceManager.selected, instance.needsTokenRefresh else {
@@ -230,10 +230,6 @@ class Auth {
 	}
 
 	public static func refreshAccessToken() async throws -> String {
-		if let refreshTask {
-			return try await refreshTask.value.accessToken
-		}
-
 		guard let instance = InstanceManager.selected,
 			instance.isOAuth,
 			let refreshToken = instance.refreshToken,
@@ -243,6 +239,10 @@ class Auth {
 		}
 
 		let instanceId = instance.id
+		if let task = refreshTasks[instanceId] {
+			return try await task.value.accessToken
+		}
+
 		let host = instance.host
 		let task = Task<OAuthToken, Error> { @MainActor in
 			try await API.req(
@@ -261,11 +261,11 @@ class Auth {
 				host: host
 			)
 		}
-		refreshTask = task
+		refreshTasks[instanceId] = task
 
 		do {
 			let token = try await task.value
-			refreshTask = nil
+			refreshTasks[instanceId] = nil
 			if InstanceManager.selected?.id == instanceId {
 				InstanceManager.update(
 					GitLabInstance(
@@ -279,7 +279,7 @@ class Auth {
 			}
 			return token.accessToken
 		} catch {
-			refreshTask = nil
+			refreshTasks[instanceId] = nil
 			throw error
 		}
 	}
