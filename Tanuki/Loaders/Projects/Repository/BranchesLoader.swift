@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct BranchesLoader: View {
 	private var projectId: Int

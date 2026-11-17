@@ -8,6 +8,7 @@
 import AuthenticationServices
 import Foundation
 import SwiftUI
+import TanukiShared
 
 enum OAuthError: LocalizedError {
 	case invalidRequest

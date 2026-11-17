@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct SmallIssueView: View {
 	private let fullPath: String

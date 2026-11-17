@@ -8,6 +8,7 @@
 import GitLabAPI
 import HighlightedTextEditor
 import SwiftUI
+import TanukiShared
 
 enum IssueType: String, CaseIterable {
 	case issue = "issue"

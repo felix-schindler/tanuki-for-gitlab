@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 /// Downloads a file to the temporary cache, then opens the share sheet.
 struct DownloadButton<Label: View>: View {

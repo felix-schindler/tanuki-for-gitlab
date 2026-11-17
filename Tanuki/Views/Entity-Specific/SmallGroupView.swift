@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 private struct _Group: Group {
 	var avatarUrl: String?

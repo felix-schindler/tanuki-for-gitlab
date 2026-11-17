@@ -8,6 +8,7 @@
 
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 struct IssueLoader: View {
 	@Environment(\.dismiss) private var dismiss

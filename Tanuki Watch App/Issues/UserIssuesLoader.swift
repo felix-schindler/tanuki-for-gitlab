@@ -9,6 +9,7 @@
 import Apollo
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 private struct DisplayIssue: Identifiable {
 	let id: String

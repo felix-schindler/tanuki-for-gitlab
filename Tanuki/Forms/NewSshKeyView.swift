@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct NewSshKeyView: View {
 	@Environment(\.dismiss) private var dismiss

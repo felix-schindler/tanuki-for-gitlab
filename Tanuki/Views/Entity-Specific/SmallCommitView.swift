@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct SmallCommitView: View {
 	private let projectId: Int?

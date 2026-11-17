@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct Tag: Codable {
 	let name: String

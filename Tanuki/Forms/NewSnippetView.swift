@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct NewSnippetView: View {
 	@Environment(\.dismiss) private var dismiss

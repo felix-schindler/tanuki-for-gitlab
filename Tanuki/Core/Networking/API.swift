@@ -25,68 +25,6 @@ enum ContentType: String {
 	case formUrlEncoded = "application/x-www-form-urlencoded"
 }
 
-struct GitLabInstance: Codable, Identifiable, Equatable, Sendable {
-	var id: String { host }
-	let host: String
-	let token: String
-	let isOAuth: Bool
-	let refreshToken: String?
-	let expiresAt: Date?
-
-	init(
-		host: String,
-		token: String,
-		isOAuth: Bool = false,
-		refreshToken: String? = nil,
-		expiresAt: Date? = nil
-	) {
-		self.host = host
-		self.token = token
-		self.isOAuth = isOAuth
-		self.refreshToken = refreshToken
-		self.expiresAt = expiresAt
-	}
-
-	var needsTokenRefresh: Bool {
-		guard isOAuth, refreshToken?.isNotEmpty == true else {
-			return false
-		}
-		guard let expiresAt else {
-			return true
-		}
-		return expiresAt < Date().addingTimeInterval(300)
-	}
-
-	static func normalizedHost(from input: String) -> String? {
-		let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
-		guard trimmed.isNotEmpty else { return nil }
-
-		let candidate = trimmed.contains("://") ? trimmed : "https://\(trimmed)"
-		guard let url = URL(string: candidate),
-			let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https",
-			let parsedHost = url.host()?.lowercased(), parsedHost.isNotEmpty
-		else {
-			return nil
-		}
-
-		var authority = parsedHost
-		if let port = url.port, port != 443, port != 80 {
-			authority += ":\(port)"
-		}
-
-		var segments = url.pathComponents.filter { $0 != "/" && !$0.isEmpty }
-		// Pasting the REST root should still configure the instance itself.
-		if Array(segments.suffix(2)) == ["api", "v4"] {
-			segments.removeLast(2)
-		}
-		if segments.count > 1 {
-			segments.removeAll()
-		}
-
-		return segments.isEmpty ? authority : authority + "/" + segments.joined(separator: "/")
-	}
-}
-
 @MainActor
 class InstanceManager {
 	private static let userDefaults = UserDefaults(suiteName: "group.de.schindlerfelix.GitLab")!

@@ -5,6 +5,7 @@
 
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 struct ProjectSnippetsLoader: View {
 	private let fullPath: String

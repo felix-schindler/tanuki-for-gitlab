@@ -7,6 +7,7 @@
 
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 struct GroupMergeLoader: View {
 	private let fullPath: String

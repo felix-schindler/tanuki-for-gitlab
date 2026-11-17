@@ -7,6 +7,7 @@
 
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 import UIKit
 
 private enum HomeRoute: Hashable {

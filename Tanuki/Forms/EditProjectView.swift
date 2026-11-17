@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct EditProjectView: View {
 	@Environment(\.dismiss) private var dismiss

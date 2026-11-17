@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import TanukiShared
 
 enum JumpTarget: Hashable {
 	/// A bare `host/namespace/path` — a project, group or user, resolved at runtime.

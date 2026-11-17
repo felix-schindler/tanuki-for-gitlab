@@ -8,6 +8,7 @@
 import Charts
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 struct ProjectHeaderView: View {
 	private let project: ProjectQuery.Data.Project

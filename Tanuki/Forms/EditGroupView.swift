@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct SavedGroup: Codable {
 	let id: Int

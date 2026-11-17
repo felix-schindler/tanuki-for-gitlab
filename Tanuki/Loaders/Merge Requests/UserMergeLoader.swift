@@ -7,6 +7,7 @@
 
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 enum UserMergeRequestType {
 	case assgined,

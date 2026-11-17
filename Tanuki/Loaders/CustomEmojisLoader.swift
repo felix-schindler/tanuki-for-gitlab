@@ -7,6 +7,7 @@
 
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 struct CustomEmojisLoader: View {
 	private var fullPath: String

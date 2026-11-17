@@ -8,6 +8,7 @@
 import Foundation
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 struct MergeRequestFilter: Equatable {
 	var search: String?

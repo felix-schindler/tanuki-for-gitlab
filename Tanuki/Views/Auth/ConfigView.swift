@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct ConfigView: View {
 	@Environment(\.dismiss) var dismiss

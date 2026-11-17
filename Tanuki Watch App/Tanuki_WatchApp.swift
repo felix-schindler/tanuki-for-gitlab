@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 @main
 struct Tanuki_Watch_Watch_AppApp: App {

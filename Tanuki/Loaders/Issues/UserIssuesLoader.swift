@@ -8,6 +8,7 @@
 
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 struct UserIssuesLoader: View {
 	private let username: String?

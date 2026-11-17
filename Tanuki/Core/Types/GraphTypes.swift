@@ -7,16 +7,9 @@
 
 import Foundation
 import GitLabAPI
+import TanukiShared
 
 // MARK: - Global
-protocol HasAuthor {
-	var _author: MyAuthor { get }
-}
-
-protocol MaybeHasAuthor {
-	var _author: MyAuthor? { get }
-}
-
 struct MyAuthor: Codable, Author {
 	let avatarUrl: String?
 	let name: String

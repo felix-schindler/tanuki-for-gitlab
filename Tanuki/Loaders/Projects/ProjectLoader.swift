@@ -8,6 +8,7 @@
 
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 enum NavDest {
 	case issue,

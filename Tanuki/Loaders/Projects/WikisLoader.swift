@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct WikiPage: Codable, Identifiable {
 	var id: String { slug }

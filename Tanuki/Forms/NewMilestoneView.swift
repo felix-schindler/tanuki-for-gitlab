@@ -7,6 +7,7 @@
 
 import HighlightedTextEditor
 import SwiftUI
+import TanukiShared
 
 struct NewMilestoneView: View {
 	@Environment(\.dismiss) private var dismiss

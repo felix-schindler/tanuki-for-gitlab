@@ -7,6 +7,7 @@
 
 import Alamofire
 import SwiftUI
+import TanukiShared
 
 struct JobTraceView: View {
 	let fullPath: String

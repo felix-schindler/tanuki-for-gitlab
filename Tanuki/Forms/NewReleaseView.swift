@@ -8,6 +8,7 @@
 import GitLabAPI
 import HighlightedTextEditor
 import SwiftUI
+import TanukiShared
 
 struct NewReleaseView: View {
 	@Environment(\.dismiss) private var dismiss

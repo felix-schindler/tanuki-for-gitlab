@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 private enum TimeSpan: String, CaseIterable {
 	case minutes30 = "30_minutes"

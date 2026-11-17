@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct CreatedBranch: Codable {
 	let name: String

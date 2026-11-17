@@ -100,30 +100,8 @@ private struct DebouncedLoad<Value: Equatable>: ViewModifier {
 	}
 }
 
-// MARK: - Array helpers
-extension Array {
-	var isNotEmpty: Bool {
-		return !self.isEmpty
-	}
-}
-
-// MARK: - Set helpers
-extension Set {
-	var isNotEmpty: Bool {
-		return !self.isEmpty
-	}
-}
-
 // MARK: - String helpers
 extension String {
-	var isNotEmpty: Bool {
-		return !self.isEmpty
-	}
-
-	func emojized() -> String {
-		return EmojiHelper.emojizedStringWithString(text: self)
-	}
-
 	/// Writes the string to clipboard
 	func copyToClipboard() {
 		UIPasteboard.general.string = self
@@ -166,68 +144,5 @@ extension URL {
 		}
 
 		return nil
-	}
-}
-
-// MARK: - Date helpers
-extension Foundation.Date {
-	@MainActor
-	private static let isoWithFractional: ISO8601DateFormatter = {
-		let formatter = ISO8601DateFormatter()
-		formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-		return formatter
-	}()
-
-	@MainActor
-	private static let isoWithoutFractional: ISO8601DateFormatter = {
-		ISO8601DateFormatter()
-	}()
-
-	@MainActor
-	static func fromToString(
-		_ date: String, dateStyle: DateFormatter.Style = .medium,
-		timeStyle: DateFormatter.Style = .none
-	) -> String {
-		let dateObj =
-			isoWithFractional.date(from: date)
-			?? isoWithoutFractional.date(from: date)
-		if let dateObj {
-			return dateObj.toString(dateStyle, timeStyle: timeStyle)
-		} else {
-			return date
-		}
-	}
-
-	func toString(
-		_ dateStyle: DateFormatter.Style = .medium,
-		timeStyle: DateFormatter.Style = .none
-	) -> String {
-		formatted(
-			date: dateStyle.dateStyle ?? .omitted,
-			time: timeStyle.timeStyle ?? .omitted
-		)
-	}
-}
-
-extension DateFormatter.Style {
-	fileprivate var dateStyle: Foundation.Date.FormatStyle.DateStyle? {
-		switch self {
-		case .none: nil
-		case .short: .numeric
-		case .medium: .abbreviated
-		case .long: .long
-		case .full: .complete
-		@unknown default: .abbreviated
-		}
-	}
-
-	fileprivate var timeStyle: Foundation.Date.FormatStyle.TimeStyle? {
-		switch self {
-		case .none: nil
-		case .short: .shortened
-		case .medium, .long: .standard
-		case .full: .complete
-		@unknown default: .standard
-		}
 	}
 }

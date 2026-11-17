@@ -7,6 +7,7 @@
 
 import MarkdownView
 import SwiftUI
+import TanukiShared
 import Textual
 
 struct Markdown: View {

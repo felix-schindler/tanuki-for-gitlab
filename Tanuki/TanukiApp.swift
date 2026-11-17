@@ -8,6 +8,7 @@
 
 import OSLog
 import SwiftUI
+import TanukiShared
 import WebKit
 
 let logger: Logger = Logger(subsystem: "de.schindlerfelix.GitLab", category: "Tanuki")

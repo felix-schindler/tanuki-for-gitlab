@@ -7,6 +7,7 @@
 
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 struct ProjectReleasesLoader: View {
 	private var fullPath: String

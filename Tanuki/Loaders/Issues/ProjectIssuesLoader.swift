@@ -8,6 +8,7 @@
 
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 struct ProjectIssuesLoader: View {
 	/// Path of project to load issues from

@@ -7,6 +7,7 @@
 
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 struct PipelineHeaderView: View {
 	private let fullPath: String

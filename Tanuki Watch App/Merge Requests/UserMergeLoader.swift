@@ -8,6 +8,7 @@
 import Apollo
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 enum UserMergeRequestType {
 	case assigned

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct EventsLoader: View {
 	private var projectId = 0

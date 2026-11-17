@@ -8,6 +8,7 @@
 
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 struct GroupIssuesLoader: View {
 	private let fullPath: String

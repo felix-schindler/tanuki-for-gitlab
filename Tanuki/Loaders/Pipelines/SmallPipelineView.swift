@@ -7,6 +7,7 @@
 
 import GitLabAPI
 import SwiftUI
+import TanukiShared
 
 struct SmallPipelineView: View {
 	private let pipeline: ProjectPipelinesQuery.Data.Project.Pipelines.Node

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TanukiShared
 
 struct CreatedFile: Codable {
 	let filePath: String

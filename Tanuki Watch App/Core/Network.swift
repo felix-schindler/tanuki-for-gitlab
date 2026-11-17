@@ -12,43 +12,6 @@ import SwiftUI
 import TanukiShared
 import WatchConnectivity
 
-struct GitLabInstance: Codable, Identifiable, Equatable, Sendable {
-	var id: String { host }
-	let host: String
-	let token: String
-	let isOAuth: Bool
-	let refreshToken: String?
-	let expiresAt: Date?
-
-	init(
-		host: String,
-		token: String,
-		isOAuth: Bool = false,
-		refreshToken: String? = nil,
-		expiresAt: Date? = nil
-	) {
-		self.host = host
-		self.token = token
-		self.isOAuth = isOAuth
-		self.refreshToken = refreshToken
-		self.expiresAt = expiresAt
-	}
-
-	var isValid: Bool {
-		!token.isEmpty && !host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-	}
-
-	var needsTokenRefresh: Bool {
-		guard isOAuth, refreshToken?.isNotEmpty == true else {
-			return false
-		}
-		guard let expiresAt else {
-			return true
-		}
-		return expiresAt < Date().addingTimeInterval(300)
-	}
-}
-
 @MainActor
 class InstanceManager {
 	private static let userDefaults: UserDefaults =
