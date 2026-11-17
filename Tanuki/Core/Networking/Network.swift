@@ -25,20 +25,14 @@ final class Network {
 	}
 
 	private static func buildApolloClient() -> ApolloClient {
-		let documentsPath = NSSearchPathForDirectoriesInDomains(
-			.documentDirectory,
-			.userDomainMask,
-			true
-		).first!
-		let documentsURL = URL(fileURLWithPath: documentsPath)
-		let sqliteFileURL = documentsURL.appendingPathComponent("tanuki_graphql_cache.sqlite")
+		let sqliteFileURL = URL.documentsDirectory.appendingPathComponent("tanuki_graphql_cache.sqlite")
 
 		// Cache on disk; Fall back to in-memory cache if unavailable
 		var cache: NormalizedCache
 		do {
 			cache = try SQLiteNormalizedCache(fileURL: sqliteFileURL)
 		} catch let error {
-			print("Using in-memory cache", error)
+			logger.error("Using in-memory cache — \(error.localizedDescription)")
 			cache = InMemoryNormalizedCache()
 		}
 
