@@ -34,8 +34,14 @@ struct NewProjectView: View {
 	}
 
 	private func createProject() async {
+		let name = projectName.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard name.isNotEmpty else {
+			Notify.status(.error, "Please enter a project name.")
+			return
+		}
+
 		var body: [String: EncodableValue] = [
-			"name": .string(projectName),
+			"name": .string(name),
 			"visibility": .string(visibility.rawValue),
 		]
 
