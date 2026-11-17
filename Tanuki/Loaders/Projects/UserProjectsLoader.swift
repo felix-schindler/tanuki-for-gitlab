@@ -31,6 +31,7 @@ struct UserProjectsLoader: View {
 	public var body: some View {
 		LoadableList(
 			pager.state,
+			id: \.fullPath,
 			hasMore: pager.hasMore,
 			emptyMessage: "There are no projects",
 			emptySystemImage: Icons.projects.rawValue,

@@ -74,6 +74,7 @@ struct UserSnippetsLoader: View {
 	public var body: some View {
 		LoadableList(
 			state,
+			id: \.id,
 			hasMore: hasMore,
 			emptyMessage: "There are no snippets",
 			emptySystemImage: Icons.snippets.rawValue,

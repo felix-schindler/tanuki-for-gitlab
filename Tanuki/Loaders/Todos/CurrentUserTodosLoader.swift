@@ -24,6 +24,7 @@ struct CurrentUserTodosLoader: View {
 	public var body: some View {
 		LoadableList(
 			pager.state,
+			id: \.id,
 			hasMore: pager.hasMore,
 			emptyMessage: "All caught up!",
 			emptySystemImage: Icons.todos.rawValue,

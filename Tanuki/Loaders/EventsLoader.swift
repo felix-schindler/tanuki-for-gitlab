@@ -97,6 +97,7 @@ struct EventsLoader: View {
 	public var body: some View {
 		LoadableList(
 			state,
+			id: \.id,
 			hasMore: pager.hasMore,
 			emptyMessage: "There are no events",
 			emptySystemImage: "clock.arrow.circlepath",

@@ -42,6 +42,7 @@ struct UsersLoader: View {
 	public var body: some View {
 		LoadableList(
 			pager.state,
+			id: \.username,
 			hasMore: pager.hasMore,
 			emptyMessage: "There are no users",
 			emptySystemImage: Icons.members.rawValue,

@@ -85,6 +85,7 @@ struct MembersLoader: View {
 	public var body: some View {
 		LoadableList(
 			state,
+			id: \.id,
 			hasMore: hasMore,
 			emptyMessage: "This project has no members",
 			emptySystemImage: Icons.members.rawValue,

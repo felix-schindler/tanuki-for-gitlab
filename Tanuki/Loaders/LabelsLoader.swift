@@ -85,6 +85,7 @@ struct LabelsLoader: View {
 	public var body: some View {
 		LoadableList(
 			state,
+			id: \.id,
 			hasMore: hasMore,
 			emptyMessage: "There are no labels",
 			emptySystemImage: Icons.tag.rawValue,

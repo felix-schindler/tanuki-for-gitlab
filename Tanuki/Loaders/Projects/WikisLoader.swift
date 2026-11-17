@@ -68,6 +68,7 @@ struct WikisLoader: View {
 	var body: some View {
 		LoadableList(
 			state,
+			id: \.slug,
 			hasMore: pager.hasMore,
 			emptyMessage: "This project has no wiki pages",
 			emptySystemImage: "book.closed",

@@ -30,6 +30,7 @@ struct ProjectPipelinesLoader: View {
 	public var body: some View {
 		LoadableList(
 			pager.state,
+			id: \.id,
 			hasMore: pager.hasMore,
 			emptyMessage: "There are no pipelines",
 			emptySystemImage: Icons.flag.rawValue,

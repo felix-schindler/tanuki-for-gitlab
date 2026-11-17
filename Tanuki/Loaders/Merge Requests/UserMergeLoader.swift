@@ -28,7 +28,7 @@ struct UserMergeLoader: View {
 	@State
 	private var assignedPager = PagedQuery<UserAssignedMergeRequestsQuery, UserSmallMergeRequest>(
 		extract: { ($0.currentUser?.assignedMergeRequests?.nodes ?? []).compactMap { $0 } },
-		key: { $0.reference },
+		key: { $0.webUrl },
 		hasNext: { $0.currentUser?.assignedMergeRequests?.pageInfo.hasNextPage ?? false },
 		endCursor: { $0.currentUser?.assignedMergeRequests?.pageInfo.endCursor }
 	)
@@ -36,7 +36,7 @@ struct UserMergeLoader: View {
 	@State
 	private var authoredPager = PagedQuery<UserAuthoredMergeRequestsQuery, UserSmallMergeRequest>(
 		extract: { ($0.currentUser?.authoredMergeRequests?.nodes ?? []).compactMap { $0 } },
-		key: { $0.reference },
+		key: { $0.webUrl },
 		hasNext: { $0.currentUser?.authoredMergeRequests?.pageInfo.hasNextPage ?? false },
 		endCursor: { $0.currentUser?.authoredMergeRequests?.pageInfo.endCursor }
 	)
@@ -44,7 +44,7 @@ struct UserMergeLoader: View {
 	@State
 	private var reviewPager = PagedQuery<UserReviewRequestedMergeRequestsQuery, UserSmallMergeRequest>(
 		extract: { ($0.currentUser?.reviewRequestedMergeRequests?.nodes ?? []).compactMap { $0 } },
-		key: { $0.reference },
+		key: { $0.webUrl },
 		hasNext: { $0.currentUser?.reviewRequestedMergeRequests?.pageInfo.hasNextPage ?? false },
 		endCursor: { $0.currentUser?.reviewRequestedMergeRequests?.pageInfo.endCursor }
 	)
@@ -163,6 +163,7 @@ struct UserMergeLoader: View {
 	public var body: some View {
 		LoadableList(
 			state,
+			id: \.webUrl,
 			hasMore: hasMore,
 			emptyMessage: "There are no merge requests",
 			emptySystemImage: Images.mergeRequest.rawValue,

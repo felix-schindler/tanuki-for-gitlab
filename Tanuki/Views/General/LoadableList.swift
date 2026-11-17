@@ -5,11 +5,12 @@
 
 import SwiftUI
 
-struct LoadableList<Item, Row: View>: View {
+struct LoadableList<Item, ItemID: Hashable, Row: View>: View {
 	let state: Loadable<[Item]>
 	let hasMore: Bool
 	let onLoadMore: () async -> Void
 	let onRefresh: () async -> Void
+	let id: KeyPath<Item, ItemID>
 	let row: (Item) -> Row
 
 	private let emptyMessage: String
@@ -20,6 +21,7 @@ struct LoadableList<Item, Row: View>: View {
 
 	init(
 		_ state: Loadable<[Item]>,
+		id: KeyPath<Item, ItemID>,
 		hasMore: Bool = false,
 		emptyMessage: String,
 		emptySystemImage: String,
@@ -31,6 +33,7 @@ struct LoadableList<Item, Row: View>: View {
 		@ViewBuilder row: @escaping (Item) -> Row
 	) {
 		self.state = state
+		self.id = id
 		self.hasMore = hasMore
 		self.emptyMessage = emptyMessage
 		self.emptySystemImage = emptySystemImage
@@ -52,7 +55,7 @@ struct LoadableList<Item, Row: View>: View {
 				if items.isEmpty {
 					NoContentView(emptyMessage, systemImage: emptySystemImage, description: emptyDescription)
 				} else {
-					ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+					ForEach(items, id: id) { item in
 						row(item)
 					}
 

@@ -63,6 +63,7 @@ struct ProjectIssuesLoader: View {
 			} else {
 				LoadableList(
 					pager.state,
+					id: \.iid,
 					hasMore: pager.hasMore,
 					emptyMessage: "There are no issues",
 					emptySystemImage: Icons.issues.rawValue,

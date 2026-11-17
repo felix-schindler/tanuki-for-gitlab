@@ -60,6 +60,7 @@ struct BranchesLoader: View {
 	public var body: some View {
 		LoadableList(
 			state,
+			id: \.name,
 			hasMore: pager.hasMore,
 			emptyMessage: "You'll see your branches after you pushed them",
 			emptySystemImage: Icons.code.rawValue,

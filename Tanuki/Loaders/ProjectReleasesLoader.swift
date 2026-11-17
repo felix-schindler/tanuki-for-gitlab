@@ -75,6 +75,7 @@ struct ProjectReleasesLoader: View {
 	public var body: some View {
 		LoadableList(
 			pager.state,
+			id: \.id,
 			hasMore: pager.hasMore,
 			emptyMessage: "There are no releases",
 			emptySystemImage: Icons.flag.rawValue,

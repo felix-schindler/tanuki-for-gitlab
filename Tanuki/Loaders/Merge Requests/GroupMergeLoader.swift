@@ -21,7 +21,7 @@ struct GroupMergeLoader: View {
 	@State
 	private var pager = PagedQuery<GroupMergeRequestsQuery, SmallMergeRequest>(
 		extract: { ($0.group?.mergeRequests?.nodes ?? []).compactMap { $0 } },
-		key: { $0.reference },
+		key: { $0.webUrl },
 		hasNext: { $0.group?.mergeRequests?.pageInfo.hasNextPage ?? false },
 		endCursor: { $0.group?.mergeRequests?.pageInfo.endCursor }
 	)
@@ -55,6 +55,7 @@ struct GroupMergeLoader: View {
 	public var body: some View {
 		LoadableList(
 			pager.state,
+			id: \.webUrl,
 			hasMore: pager.hasMore,
 			emptyMessage: "There are no Merge Requests",
 			emptySystemImage: Images.mergeRequest.rawValue,

@@ -26,7 +26,7 @@ struct GroupIssuesLoader: View {
 	@State
 	private var pager = PagedQuery<GroupIssuesQuery, SmallIssue>(
 		extract: { ($0.group?.issues?.nodes ?? []).compactMap { $0 } },
-		key: { $0.reference },
+		key: { $0.webUrl },
 		hasNext: { $0.group?.issues?.pageInfo.hasNextPage ?? false },
 		endCursor: { $0.group?.issues?.pageInfo.endCursor }
 	)
@@ -56,6 +56,7 @@ struct GroupIssuesLoader: View {
 	public var body: some View {
 		LoadableList(
 			pager.state,
+			id: \.webUrl,
 			hasMore: pager.hasMore,
 			emptyMessage: "There are no issues",
 			emptySystemImage: Icons.issues.rawValue,

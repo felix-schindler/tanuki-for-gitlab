@@ -31,6 +31,7 @@ struct GroupProjectsLoader: View {
 	public var body: some View {
 		LoadableList(
 			pager.state,
+			id: \.fullPath,
 			hasMore: pager.hasMore,
 			emptyMessage: "The group \(self.fullPath) doesn't have any projects",
 			emptySystemImage: Icons.projects.rawValue,

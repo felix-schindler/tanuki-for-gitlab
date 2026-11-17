@@ -68,6 +68,7 @@ struct TagsLoader: View {
 	public var body: some View {
 		LoadableList(
 			state,
+			id: \.name,
 			hasMore: pager.hasMore,
 			emptyMessage: "You'll see your tags after you pushed them",
 			emptySystemImage: Icons.code.rawValue,

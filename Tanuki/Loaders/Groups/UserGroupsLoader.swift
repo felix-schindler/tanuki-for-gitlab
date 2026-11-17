@@ -30,6 +30,7 @@ struct UserGroupsLoader: View {
 	public var body: some View {
 		LoadableList(
 			pager.state,
+			id: \.fullPath,
 			hasMore: pager.hasMore,
 			emptyMessage: "There are no groups",
 			emptySystemImage: Icons.groups.rawValue,

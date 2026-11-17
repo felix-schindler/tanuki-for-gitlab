@@ -111,6 +111,7 @@ struct MilestonesLoader: View {
 	public var body: some View {
 		LoadableList(
 			loadState,
+			id: \.iid,
 			hasMore: hasMore,
 			emptyMessage: "There are no milestones",
 			emptySystemImage: Icons.milestones.rawValue,

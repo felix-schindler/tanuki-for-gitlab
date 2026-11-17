@@ -83,6 +83,7 @@ struct TimelogsLoader: View {
 	public var body: some View {
 		LoadableList(
 			state,
+			id: \.id,
 			hasMore: hasMore,
 			emptyMessage: "There are no timelogs",
 			emptySystemImage: Icons.timeTracking.rawValue,

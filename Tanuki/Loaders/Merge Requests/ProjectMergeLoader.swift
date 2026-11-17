@@ -63,6 +63,7 @@ struct ProjectMergeLoader: View {
 			} else {
 				LoadableList(
 					pager.state,
+					id: \.iid,
 					hasMore: pager.hasMore,
 					emptyMessage: "There are no merge requests",
 					emptySystemImage: Images.mergeRequest.rawValue,

@@ -31,6 +31,7 @@ struct CustomEmojisLoader: View {
 	public var body: some View {
 		LoadableList(
 			pager.state,
+			id: \.id,
 			hasMore: pager.hasMore,
 			emptyMessage: "There are no custom emojis",
 			emptySystemImage: "face.smiling",
