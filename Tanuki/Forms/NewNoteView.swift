@@ -41,7 +41,7 @@ struct NewNoteView: View {
 				type: _Note.self,
 				method: .post,
 				endpoint: endpoint,
-				query: ["body": content, "internal": self.type != .snippet && self.internal ? "true" : "false"]
+				body: ["body": content, "internal": self.type != .snippet && self.internal ? "true" : "false"]
 			)
 
 			Notify.status(.success, "Note created", systemImage: "checkmark")
