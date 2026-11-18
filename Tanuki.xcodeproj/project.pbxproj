@@ -12,7 +12,6 @@
 		DC42A2112C62D36E00B1EA85 /* HighlightedTextEditor in Frameworks */ = {isa = PBXBuildFile; productRef = DC42A2102C62D36E00B1EA85 /* HighlightedTextEditor */; };
 		DC53A0D32F9D000100000003 /* TanukiIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = DC53A0D22F9D000100000002 /* TanukiIcon.icon */; };
 		DC5AD7CF2E697E4B0031FC7B /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = DC5AD7CE2E697E4B0031FC7B /* Apollo */; };
-		DCAA00012FA1000000000003 /* ApolloPagination in Frameworks */ = {isa = PBXBuildFile; productRef = DCAA00012FA1000000000002 /* ApolloPagination */; };
 		DC5AD7D12E697E4B0031FC7B /* ApolloAPI in Frameworks */ = {isa = PBXBuildFile; productRef = DC5AD7D02E697E4B0031FC7B /* ApolloAPI */; };
 		DC5AD7D32E697E4B0031FC7B /* ApolloSQLite in Frameworks */ = {isa = PBXBuildFile; productRef = DC5AD7D22E697E4B0031FC7B /* ApolloSQLite */; };
 		DC5AD7DD2E69D6E50031FC7B /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = DC5AD7DC2E69D6E50031FC7B /* Toast */; };
@@ -22,6 +21,7 @@
 		DC8978242E7F515800D42E4C /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = DC8978232E7F515800D42E4C /* Apollo */; };
 		DC8978262E7F515800D42E4C /* ApolloAPI in Frameworks */ = {isa = PBXBuildFile; productRef = DC8978252E7F515800D42E4C /* ApolloAPI */; };
 		DC89783D2E7F558300D42E4C /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = DC89783C2E7F558300D42E4C /* CachedAsyncImage */; };
+		DCAA00012FA1000000000003 /* ApolloPagination in Frameworks */ = {isa = PBXBuildFile; productRef = DCAA00012FA1000000000002 /* ApolloPagination */; };
 		DCAE856B2FA0D20000F64C2B /* Textual in Frameworks */ = {isa = PBXBuildFile; productRef = DCAE856D2FA0D20000F64C2B /* Textual */; };
 		DCAE856C2FA0D20000F64C2B /* MarkdownView in Frameworks */ = {isa = PBXBuildFile; productRef = DCAE856E2FA0D20000F64C2B /* MarkdownView */; };
 		DCAF9D9F2BC3755F001FF2E5 /* Highlightr in Frameworks */ = {isa = PBXBuildFile; productRef = DCAF9D9E2BC3755F001FF2E5 /* Highlightr */; };
@@ -659,6 +659,14 @@
 				minimumVersion = 2.1.3;
 			};
 		};
+		DCAA00012FA1000000000001 /* XCRemoteSwiftPackageReference "apollo-ios-pagination" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apollographql/apollo-ios-pagination";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		DCAE856F2FA0D20000F64C2B /* XCRemoteSwiftPackageReference "textual" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/gonzalezreal/textual";
@@ -691,14 +699,6 @@
 				minimumVersion = 5.12.2;
 			};
 		};
-		DCAA00012FA1000000000001 /* XCRemoteSwiftPackageReference "apollo-ios-pagination" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apollographql/apollo-ios-pagination";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -716,11 +716,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DC5AD7CD2E697E4B0031FC7B /* XCRemoteSwiftPackageReference "apollo-ios" */;
 			productName = Apollo;
-		};
-		DCAA00012FA1000000000002 /* ApolloPagination */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DCAA00012FA1000000000001 /* XCRemoteSwiftPackageReference "apollo-ios-pagination" */;
-			productName = ApolloPagination;
 		};
 		DC5AD7D02E697E4B0031FC7B /* ApolloAPI */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -766,6 +761,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DC0A6A532B8D148000C53D56 /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */;
 			productName = CachedAsyncImage;
+		};
+		DCAA00012FA1000000000002 /* ApolloPagination */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DCAA00012FA1000000000001 /* XCRemoteSwiftPackageReference "apollo-ios-pagination" */;
+			productName = ApolloPagination;
 		};
 		DCAE856D2FA0D20000F64C2B /* Textual */ = {
 			isa = XCSwiftPackageProductDependency;
