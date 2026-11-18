@@ -113,7 +113,7 @@ where Query.ResponseFormat == SingleResponseFormat {
 			}
 		)
 		self.pager = pager
-		subscription = pager.sink { [weak self] result in
+		subscription = pager.sink { @Sendable [weak self] result in
 			Task { @MainActor [weak self] in
 				self?.apply(result, generation: current)
 			}
